@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-1, #f9f9f9);
+    color: var(--text-1, #1a1a1a);
+    padding: 24px;
+    font-size: 13px;
+  }
+  h1 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: var(--text-3, #888); margin-bottom: 24px; font-size: 12px; }
+
+  .layer-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3, #888);
+    margin-bottom: 8px;
+  }
+
+  /* TRIGGERS */
+  .triggers {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .trigger {
+    flex: 1;
+    border: 1.5px solid var(--border-1, #e0e0e0);
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: var(--bg-2, #fff);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .trigger:hover { border-color: var(--accent, #5b6ee1); }
+  .trigger-icon { font-size: 18px; margin-bottom: 6px; }
+  .trigger-title { font-weight: 600; font-size: 12px; margin-bottom: 3px; }
+  .trigger-desc { color: var(--text-3, #888); font-size: 11px; line-height: 1.4; }
+
+  /* ORCHESTRATOR */
+  .orchestrator {
+    background: var(--bg-2, #fff);
+    border: 2px solid #5b6ee1;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .orchestrator-icon { font-size: 22px; }
+  .orchestrator-text { flex: 1; }
+  .orchestrator-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .ctx-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+  .pill {
+    background: var(--bg-3, #f0f0f0);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 10px;
+    color: var(--text-2, #444);
+  }
+
+  /* ARROW */
+  .arrow {
+    text-align: center;
+    color: var(--text-3, #888);
+    font-size: 16px;
+    margin: -6px 0;
+    letter-spacing: 2px;
+  }
+
+  /* AGENTS */
+  .agents {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .agent {
+    background: var(--bg-2, #fff);
+    border: 1.5px solid var(--border-1, #e0e0e0);
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .agent:hover { border-color: var(--accent, #5b6ee1); box-shadow: 0 2px 8px rgba(91,110,225,0.1); }
+  .agent.selected { border-color: var(--accent, #5b6ee1); background: #f4f5ff; }
+  .agent-icon { font-size: 18px; margin-bottom: 6px; }
+  .agent-title { font-weight: 600; font-size: 12px; margin-bottom: 4px; }
+  .agent-tools { color: var(--text-3, #888); font-size: 10px; line-height: 1.5; }
+
+  /* DETAIL PANEL */
+  .detail-panel {
+    background: var(--bg-2, #fff);
+    border: 1.5px solid #5b6ee1;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .detail-panel.visible { display: block; }
+  .detail-title { font-weight: 700; margin-bottom: 10px; font-size: 13px; }
+  .op-group { margin-bottom: 10px; }
+  .op-group-label { font-weight: 600; font-size: 11px; color: #5b6ee1; margin-bottom: 5px; }
+  .op-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-size: 11px;
+    color: var(--text-2, #444);
+  }
+  .op-item::before { content: '→'; color: var(--text-3, #999); flex-shrink: 0; }
+
+  /* SOURCES */
+  .sources {
+    display: flex;
+    gap: 10px;
+  }
+  .source {
+    flex: 1;
+    background: var(--bg-2, #fff);
+    border: 1.5px solid var(--border-1, #e0e0e0);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .source-icon { font-size: 16px; margin-bottom: 4px; }
+  .source-name { font-weight: 600; font-size: 11px; }
+  .source-type { font-size: 10px; color: var(--text-3, #888); }
+
+  .connector { text-align: center; color: var(--text-3, #888); font-size: 11px; margin: 8px 0; }
+</style>
+</head>
+<body>
+
+<h2 class="sr-only">Arquitetura do sistema de agentes de IA para gestão empresarial</h2>
+<h1>Sistema de Agentes IA — Visão Geral</h1>
+<p class="subtitle">Como os agentes serão acionados, o que fazem e onde buscam dados</p>
+
+<!-- TRIGGERS -->
+<div class="layer-label">Como os agentes são acionados</div>
+<div class="triggers">
+  <div class="trigger">
+    <div class="trigger-icon">🕐</div>
+    <div class="trigger-title">Agendado</div>
+    <div class="trigger-desc">Roda em horários fixos — diário, múltiplas vezes por dia</div>
+  </div>
+  <div class="trigger">
+    <div class="trigger-icon">⚡</div>
+    <div class="trigger-title">Reativo</div>
+    <div class="trigger-desc">Disparado por webhook — ex: e-mail com NF ou boleto chega</div>
+  </div>
+  <div class="trigger">
+    <div class="trigger-icon">💬</div>
+    <div class="trigger-title">Sob demanda</div>
+    <div class="trigger-desc">Chat direto — você pede, ele executa</div>
+  </div>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- ORCHESTRATOR -->
+<div class="layer-label" style="margin-top:14px;">Orquestrador central</div>
+<div class="orchestrator">
+  <div class="orchestrator-icon">🧠</div>
+  <div class="orchestrator-text">
+    <div class="orchestrator-title">Agente Orquestrador</div>
+    <div style="font-size:11px; color: var(--text-2,#444);">Conhece a empresa, distribui tarefas, decide quando chamar um humano</div>
+    <div class="ctx-pills">
+      <span class="pill">📋 Missão & valores</span>
+      <span class="pill">👥 Pessoas & times</span>
+      <span class="pill">🎯 Metas & projetos</span>
+      <span class="pill">📅 Calendário</span>
+      <span class="pill">⚙️ Processos digitais</span>
+      <span class="pill">🚨 Regras de escalada</span>
+    </div>
+  </div>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- AGENTS -->
+<div class="layer-label" style="margin-top:14px;">Sub-agentes especialistas <span style="font-weight:400;color:var(--text-3,#aaa)">(clique para ver detalhes)</span></div>
+<div class="agents">
+  <div class="agent" onclick="showDetail('financas')">
+    <div class="agent-icon">💰</div>
+    <div class="agent-title">Finanças</div>
+    <div class="agent-tools">Conta Azul CLI<br>Leitura & escrita<br>Conciliação bancária</div>
+  </div>
+  <div class="agent" onclick="showDetail('marketing')">
+    <div class="agent-icon">📣</div>
+    <div class="agent-title">Marketing</div>
+    <div class="agent-tools">Redes sociais<br>Google Analytics<br>Website</div>
+  </div>
+  <div class="agent" onclick="showDetail('vendas')">
+    <div class="agent-icon">📈</div>
+    <div class="agent-title">Vendas</div>
+    <div class="agent-tools">Pipeline<br>Follow-ups<br>Dados de clientes</div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detail-financas">
+  <div class="detail-title">💰 Agente de Finanças — Conta Azul CLI</div>
+  <div class="op-group">
+    <div class="op-group-label">LEITURA (read)</div>
+    <div class="op-item">O que tenho a receber amanhã?</div>
+    <div class="op-item">Como está o fluxo de caixa?</div>
+    <div class="op-item">Despesas da categoria "tinta" nos últimos 60 dias</div>
+    <div class="op-item">Contas a pagar e a receber</div>
+  </div>
+  <div class="op-group">
+    <div class="op-group-label">ESCRITA (write)</div>
+    <div class="op-item">Lançar despesas automaticamente (via e-mail com NF/boleto)</div>
+    <div class="op-item">Conciliação bancária — fatura de cartão, extrato de banco</div>
+    <div class="op-item">Verificar se despesa já existe antes de lançar</div>
+    <div class="op-item">Lançar na categoria e centro de custo corretos</div>
+  </div>
+  <div class="op-group">
+    <div class="op-group-label">FLUXO AUTOMÁTICO (exemplo)</div>
+    <div class="op-item">E-mail com NF chega → agente detecta → verifica no Conta Azul → lança se não existir → notifica gestor</div>
+  </div>
+</div>
+
+<div class="detail-panel" id="detail-marketing">
+  <div class="detail-title">📣 Agente de Marketing</div>
+  <div class="op-group">
+    <div class="op-group-label">ANÁLISE DE DESEMPENHO</div>
+    <div class="op-item">Métricas de cada post em todas as redes sociais</div>
+    <div class="op-item">Identificar padrões — o que performa melhor/pior</div>
+    <div class="op-item">Google Analytics — dados do website</div>
+  </div>
+  <div class="op-group">
+    <div class="op-group-label">INTELIGÊNCIA DE AUDIÊNCIA</div>
+    <div class="op-item">Dados demográficos do público</div>
+    <div class="op-item">Perfil do cliente ideal</div>
+    <div class="op-item">Subsidiar decisões: quais produtos anunciar, onde investir</div>
+  </div>
+</div>
+
+<div class="detail-panel" id="detail-vendas">
+  <div class="detail-title">📈 Agente de Vendas</div>
+  <div class="op-group">
+    <div class="op-group-label">EM DEFINIÇÃO</div>
+    <div class="op-item">Domínio citado como importante, ferramental a definir</div>
+    <div class="op-item">Diretamente ligado ao coração da empresa</div>
+  </div>
+</div>
+
+<div class="connector">↑ todos buscam dados de fontes dispersas ↑</div>
+
+<!-- SOURCES -->
+<div class="layer-label">Fontes de dados conectadas</div>
+<div class="sources">
+  <div class="source">
+    <div class="source-icon">📧</div>
+    <div class="source-name">E-mail</div>
+    <div class="source-type">NF, boletos, comunicações</div>
+  </div>
+  <div class="source">
+    <div class="source-icon">💼</div>
+    <div class="source-name">Conta Azul</div>
+    <div class="source-type">ERP / financeiro</div>
+  </div>
+  <div class="source">
+    <div class="source-icon">💬</div>
+    <div class="source-name">WhatsApp</div>
+    <div class="source-type">Comunicação da equipe</div>
+  </div>
+  <div class="source">
+    <div class="source-icon">📁</div>
+    <div class="source-name">Google Drive</div>
+    <div class="source-type">Documentos, processos</div>
+  </div>
+  <div class="source">
+    <div class="source-icon">📊</div>
+    <div class="source-name">Analytics & Social</div>
+    <div class="source-type">GA4, redes sociais</div>
+  </div>
+</div>
+
+<script>
+  let current = null;
+  function showDetail(id) {
+    const panels = document.querySelectorAll('.detail-panel');
+    const agents = document.querySelectorAll('.agent');
+    panels.forEach(p => p.classList.remove('visible'));
+    agents.forEach(a => a.classList.remove('selected'));
+
+    if (current === id) { current = null; return; }
+
+    const panel = document.getElementById('detail-' + id);
+    const agentEls = document.querySelectorAll('.agent');
+    const map = ['financas','marketing','vendas'];
+    if (panel) {
+      panel.classList.add('visible');
+      agentEls[map.indexOf(id)].classList.add('selected');
+      current = id;
+    }
+  }
+</script>
+</body>
+</html>
