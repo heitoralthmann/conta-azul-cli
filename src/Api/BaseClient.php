@@ -13,15 +13,17 @@ use ContaAzulCli\Output\Logger;
 use ContaAzulCli\Output\Redactor;
 use Ramsey\Uuid\Uuid;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class BaseClient
 {
     private readonly string $correlationId;
     private readonly HttpErrorMapper $errorMapper;
 
+    /** @var list<float> */
     private const GET_RETRY_BACKOFF = [0.5, 2.0, 8.0];
     private const POLL_INITIAL_SLEEP = 1.0;
-    private const POLL_MAX_SLEEP = 8.0;
+    private const POLL_MAX_SLEEP     = 8.0;
 
     public function __construct(
         private readonly Configuration $config,
@@ -31,7 +33,7 @@ class BaseClient
         private readonly HttpClientInterface $httpClient,
     ) {
         $this->correlationId = Uuid::uuid4()->toString();
-        $this->errorMapper = new HttpErrorMapper();
+        $this->errorMapper   = new HttpErrorMapper();
     }
 
     public function getCorrelationId(): string
@@ -45,21 +47,21 @@ class BaseClient
      */
     public function request(string $method, string $path, array $options = []): array
     {
-        $url = $this->config->getApiBaseUrl() . $path;
+        $url     = $this->config->getApiBaseUrl() . $path;
         $isWrite = in_array(strtoupper($method), ['POST', 'PUT', 'PATCH', 'DELETE'], true);
 
         $retryable429 = [429];
         $retryableGet = [429, 502, 503, 504];
 
         $maxAttempts = 3;
-        $attempt = 0;
+        $attempt     = 0;
 
         while (true) {
             $attempt++;
             $accessToken = $this->authManager->getValidAccessToken();
 
             /** @var array<string, string> $existingHeaders */
-            $existingHeaders = is_array($options['headers'] ?? []) ? ($options['headers'] ?? []) : [];
+            $existingHeaders = is_array($options['headers'] ?? null) ? $options['headers'] : [];
             $headers         = array_merge(
                 $existingHeaders,
                 [
@@ -76,15 +78,17 @@ class BaseClient
             $requestOptions = array_merge($options, ['headers' => $headers]);
 
             if ($this->logger->isEnabled()) {
+                /** @var array<mixed> $queryForLog */
+                $queryForLog = is_array($options['query'] ?? null) ? $options['query'] : [];
                 $this->logger->log('debug', 'API request', [
                     'method' => $method,
                     'url'    => $url,
-                    'query'  => $this->redactor->redact(is_array($options['query'] ?? []) ? (array) ($options['query'] ?? []) : []),
+                    'query'  => $this->redactor->redact($queryForLog),
                 ], $this->correlationId);
             }
 
             try {
-                $response = $this->httpClient->request($method, $url, $requestOptions);
+                $response   = $this->httpClient->request($method, $url, $requestOptions);
                 $statusCode = $response->getStatusCode();
             } catch (\Throwable $e) {
                 if (!$isWrite && $attempt < $maxAttempts) {
@@ -113,16 +117,8 @@ class BaseClient
 
             $retryStatuses = $isWrite ? $retryable429 : $retryableGet;
             if (in_array($statusCode, $retryStatuses, true) && $attempt < $maxAttempts) {
-                $retryAfter = null;
-                try {
-                    $retryAfterHeader = $response->getHeaders(false)['retry-after'][0] ?? null;
-                    if ($retryAfterHeader !== null) {
-                        $retryAfter = (float) $retryAfterHeader;
-                    }
-                } catch (\Throwable) {
-                }
-
-                $backoff = $retryAfter ?? (self::GET_RETRY_BACKOFF[$attempt - 1] ?? 8.0);
+                $retryAfter = $this->extractRetryAfter($response);
+                $backoff     = $retryAfter ?? (self::GET_RETRY_BACKOFF[$attempt - 1] ?? 8.0);
                 $this->sleep($backoff);
                 continue;
             }
@@ -136,7 +132,7 @@ class BaseClient
      */
     public function pollProtocol(string $protocolId, int $timeoutSeconds = 60): array
     {
-        $start = time();
+        $start        = time();
         $sleepSeconds = self::POLL_INITIAL_SLEEP;
 
         while (true) {
@@ -186,7 +182,7 @@ class BaseClient
             }
 
             $this->sleep($sleepSeconds);
-            $sleepSeconds = min($sleepSeconds * 2, self::POLL_MAX_SLEEP);
+            $sleepSeconds = min($sleepSeconds * 2.0, self::POLL_MAX_SLEEP);
         }
     }
 
@@ -205,10 +201,24 @@ class BaseClient
         return $this->pollProtocol($protocolId, $pollTimeout);
     }
 
+    private function extractRetryAfter(ResponseInterface $response): ?float
+    {
+        try {
+            $headers = $response->getHeaders(false);
+            $values  = $headers['retry-after'] ?? [];
+            if ($values !== []) {
+                return (float) $values[0];
+            }
+        } catch (\Throwable) {
+        }
+
+        return null;
+    }
+
     private function sleep(float $seconds): void
     {
         $jitter = $seconds * 0.2;
-        $actual = $seconds + (mt_rand() / mt_getrandmax() * 2 - 1) * $jitter;
+        $actual = $seconds + (mt_rand() / mt_getrandmax() * 2.0 - 1.0) * $jitter;
         usleep((int) ($actual * 1_000_000));
     }
 }

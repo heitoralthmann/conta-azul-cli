@@ -10,7 +10,10 @@ final class FinanceiroClient extends BaseClient
     // Lançamentos
     // -------------------------------------------------------------------------
 
-    /** @param array<string, mixed> $filters */
+    /**
+     * @param array<string, mixed> $filters
+     * @return array<mixed>
+     */
     public function listLancamentos(int $pagina = 1, int $tamanhoPagina = 50, array $filters = []): array
     {
         return $this->request('GET', '/v1/financeiro/lancamentos', [
@@ -18,6 +21,7 @@ final class FinanceiroClient extends BaseClient
         ]);
     }
 
+    /** @return array<mixed> */
     public function getLancamento(string $id): array
     {
         return $this->request('GET', "/v1/financeiro/lancamentos/{$id}");
@@ -27,7 +31,10 @@ final class FinanceiroClient extends BaseClient
     // Contas a Receber
     // -------------------------------------------------------------------------
 
-    /** @param array<string, mixed> $filters */
+    /**
+     * @param array<string, mixed> $filters
+     * @return array<mixed>
+     */
     public function listContasAReceber(int $pagina = 1, int $tamanhoPagina = 50, array $filters = []): array
     {
         return $this->request('GET', '/v1/financeiro/contas-a-receber', [
@@ -35,12 +42,16 @@ final class FinanceiroClient extends BaseClient
         ]);
     }
 
+    /** @return array<mixed> */
     public function getContaAReceber(string $id): array
     {
         return $this->request('GET', "/v1/financeiro/contas-a-receber/{$id}");
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<mixed>
+     */
     public function createContaAReceber(array $payload, int $pollTimeout = 60, bool $noWait = false): array
     {
         $response = $this->request('POST', '/v1/financeiro/contas-a-receber', ['json' => $payload]);
@@ -48,7 +59,10 @@ final class FinanceiroClient extends BaseClient
         return $this->handleAsyncResponse($response, $pollTimeout, $noWait);
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<mixed>
+     */
     public function updateContaAReceber(string $id, array $payload): array
     {
         return $this->request('PUT', "/v1/financeiro/contas-a-receber/{$id}", ['json' => $payload]);
@@ -63,7 +77,10 @@ final class FinanceiroClient extends BaseClient
     // Contas a Pagar
     // -------------------------------------------------------------------------
 
-    /** @param array<string, mixed> $filters */
+    /**
+     * @param array<string, mixed> $filters
+     * @return array<mixed>
+     */
     public function listContasAPagar(int $pagina = 1, int $tamanhoPagina = 50, array $filters = []): array
     {
         return $this->request('GET', '/v1/financeiro/contas-a-pagar', [
@@ -71,12 +88,16 @@ final class FinanceiroClient extends BaseClient
         ]);
     }
 
+    /** @return array<mixed> */
     public function getContaAPagar(string $id): array
     {
         return $this->request('GET', "/v1/financeiro/contas-a-pagar/{$id}");
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<mixed>
+     */
     public function createContaAPagar(array $payload, int $pollTimeout = 60, bool $noWait = false): array
     {
         $response = $this->request('POST', '/v1/financeiro/contas-a-pagar', ['json' => $payload]);
@@ -84,7 +105,10 @@ final class FinanceiroClient extends BaseClient
         return $this->handleAsyncResponse($response, $pollTimeout, $noWait);
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<mixed>
+     */
     public function updateContaAPagar(string $id, array $payload): array
     {
         return $this->request('PUT', "/v1/financeiro/contas-a-pagar/{$id}", ['json' => $payload]);
@@ -99,12 +123,16 @@ final class FinanceiroClient extends BaseClient
     // Parcelas
     // -------------------------------------------------------------------------
 
+    /** @return array<mixed> */
     public function getParcela(string $id): array
     {
         return $this->request('GET', "/v1/financeiro/parcelas/{$id}");
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<mixed>
+     */
     public function baixarParcela(string $id, array $payload, int $pollTimeout = 60, bool $noWait = false): array
     {
         $response = $this->request('POST', "/v1/financeiro/parcelas/{$id}/baixar", ['json' => $payload]);
@@ -116,7 +144,10 @@ final class FinanceiroClient extends BaseClient
     // Cobranças
     // -------------------------------------------------------------------------
 
-    /** @param array<string, mixed> $filters */
+    /**
+     * @param array<string, mixed> $filters
+     * @return array<mixed>
+     */
     public function listCobrancas(int $pagina = 1, int $tamanhoPagina = 50, array $filters = []): array
     {
         return $this->request('GET', '/v1/financeiro/cobrancas', [
@@ -124,6 +155,7 @@ final class FinanceiroClient extends BaseClient
         ]);
     }
 
+    /** @return array<mixed> */
     public function getCobranca(string $id): array
     {
         return $this->request('GET', "/v1/financeiro/cobrancas/{$id}");
@@ -133,11 +165,13 @@ final class FinanceiroClient extends BaseClient
     // Contas Financeiras
     // -------------------------------------------------------------------------
 
+    /** @return array<mixed> */
     public function listContasFinanceiras(): array
     {
         return $this->request('GET', '/v1/financeiro/contas');
     }
 
+    /** @return array<mixed> */
     public function getSaldoContaFinanceira(string $id): array
     {
         return $this->request('GET', "/v1/financeiro/contas/{$id}/saldo");
@@ -147,6 +181,7 @@ final class FinanceiroClient extends BaseClient
     // Categorias
     // -------------------------------------------------------------------------
 
+    /** @return array<mixed> */
     public function listCategorias(): array
     {
         return $this->request('GET', '/v1/financeiro/categorias');
@@ -156,6 +191,7 @@ final class FinanceiroClient extends BaseClient
     // Centros de Custo
     // -------------------------------------------------------------------------
 
+    /** @return array<mixed> */
     public function listCentrosDeCusto(): array
     {
         return $this->request('GET', '/v1/financeiro/centros-de-custo');
@@ -165,7 +201,10 @@ final class FinanceiroClient extends BaseClient
     // Transferências
     // -------------------------------------------------------------------------
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<mixed>
+     */
     public function createTransferencia(array $payload, int $pollTimeout = 60, bool $noWait = false): array
     {
         $response = $this->request('POST', '/v1/financeiro/transferencias', ['json' => $payload]);
@@ -177,7 +216,10 @@ final class FinanceiroClient extends BaseClient
     // Eventos Financeiros / Alterações
     // -------------------------------------------------------------------------
 
-    /** @param array<string, mixed> $filters */
+    /**
+     * @param array<string, mixed> $filters
+     * @return array<mixed>
+     */
     public function getAlteracoes(string $desde, array $filters = []): array
     {
         return $this->request('GET', '/v1/financeiro/eventos-financeiros/alteracoes', [
@@ -189,6 +231,7 @@ final class FinanceiroClient extends BaseClient
     // Protocolo
     // -------------------------------------------------------------------------
 
+    /** @return array<mixed> */
     public function getProtocolo(string $id): array
     {
         return $this->request('GET', "/v1/protocolo/{$id}");
