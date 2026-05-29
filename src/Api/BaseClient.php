@@ -58,12 +58,14 @@ class BaseClient
             $attempt++;
             $accessToken = $this->authManager->getValidAccessToken();
 
-            $headers = array_merge(
-                $options['headers'] ?? [],
+            /** @var array<string, string> $existingHeaders */
+            $existingHeaders = is_array($options['headers'] ?? []) ? ($options['headers'] ?? []) : [];
+            $headers         = array_merge(
+                $existingHeaders,
                 [
-                    'Authorization'   => "Bearer {$accessToken}",
+                    'Authorization'    => "Bearer {$accessToken}",
                     'X-Correlation-Id' => $this->correlationId,
-                    'Accept'          => 'application/json',
+                    'Accept'           => 'application/json',
                 ],
             );
 
@@ -77,7 +79,7 @@ class BaseClient
                 $this->logger->log('debug', 'API request', [
                     'method' => $method,
                     'url'    => $url,
-                    'query'  => $this->redactor->redact($options['query'] ?? []),
+                    'query'  => $this->redactor->redact(is_array($options['query'] ?? []) ? (array) ($options['query'] ?? []) : []),
                 ], $this->correlationId);
             }
 
@@ -155,7 +157,10 @@ class BaseClient
             $status = (string) ($data['status'] ?? '');
 
             if ($status === 'SUCCESS') {
-                return $data['data'] ?? $data;
+                /** @var array<mixed> $payload */
+                $payload = is_array($data['data'] ?? null) ? $data['data'] : $data;
+
+                return $payload;
             }
 
             if ($status === 'ERROR') {

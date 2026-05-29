@@ -1,0 +1,21 @@
+# Placeholder — populate from official Conta Azul developer documentation.
+#
+# This file is referenced by .github/workflows/api-drift.yml for change detection.
+# When updated, review src/Api/FinanceiroClient.php for new or changed endpoints.
+#
+# Source: https://developers.contaazul.com (check for OpenAPI/Swagger link)
+openapi: "3.0.0"
+info:
+  title: "Conta Azul Financial APIs"
+  version: "placeholder"
+  description: >
+    Placeholder — replace with the official spec from the Conta Azul developer portal.
+    Endpoints covered by this CLI are under the Financeiro family:
+    /v1/financeiro/lancamentos, /v1/financeiro/contas-a-receber,
+    /v1/financeiro/contas-a-pagar, /v1/financeiro/parcelas,
+    /v1/financeiro/cobrancas, /v1/financeiro/contas,
+    /v1/financeiro/categorias, /v1/financeiro/centros-de-custo,
+    /v1/financeiro/transferencias,
+    /v1/financeiro/eventos-financeiros/alteracoes,
+    /v1/protocolo
+paths: {}

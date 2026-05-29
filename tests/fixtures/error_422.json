@@ -1,0 +1,1 @@
+{"error":"validation_error","message":"Dados inválidos na requisição","details":["O campo valor é obrigatório","O campo data deve ser uma data válida"],"statusCode":422}
