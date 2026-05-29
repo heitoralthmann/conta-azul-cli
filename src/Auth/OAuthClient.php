@@ -14,7 +14,8 @@ final class OAuthClient
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly Configuration $config,
-    ) {}
+    ) {
+    }
 
     public function exchangeCode(string $code): TokenData
     {
@@ -52,8 +53,9 @@ final class OAuthClient
         } catch (\Symfony\Component\HttpClient\Exception\ClientException $e) {
             $errorCode = '';
             try {
-                $errData = $e->getResponse()->toArray(false);
-                $errorCode = (string) ($errData['error'] ?? '');
+                $errData   = $e->getResponse()->toArray(false);
+                $rawCode   = $errData['error'] ?? '';
+                $errorCode = is_string($rawCode) ? $rawCode : '';
             } catch (\Throwable) {
             }
 
@@ -83,6 +85,7 @@ final class OAuthClient
             );
         }
 
+        /** @var array<string, mixed> $data */
         return TokenData::fromOAuthResponse($data);
     }
 }

@@ -35,10 +35,10 @@ final class SaldoCommand extends Command
     {
         try {
             $id = $input->getOption('id');
-            if ($id === null || $id === '') {
+            if (!is_string($id) || $id === '') {
                 throw new CliException(ErrorKind::ClientError, false, 'A opção --id é obrigatória.');
             }
-            $this->jsonRenderer->render($this->client->getSaldoContaFinanceira((string) $id));
+            $this->jsonRenderer->render($this->client->getSaldoContaFinanceira($id));
 
             return Command::SUCCESS;
         } catch (CliException $e) {

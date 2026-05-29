@@ -37,8 +37,10 @@ final class ListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $pagina = (int) $input->getOption('pagina');
-            $tamanhoPagina = (int) $input->getOption('tamanho-pagina');
+            $paginaRaw        = $input->getOption('pagina');
+            $tamanhoPaginaRaw = $input->getOption('tamanho-pagina');
+            $pagina           = is_numeric($paginaRaw) ? (int) $paginaRaw : 1;
+            $tamanhoPagina    = is_numeric($tamanhoPaginaRaw) ? (int) $tamanhoPaginaRaw : 50;
             $this->paginationValidator->validatePageSize($tamanhoPagina);
             $this->jsonRenderer->render($this->client->listContasAReceber($pagina, $tamanhoPagina));
 

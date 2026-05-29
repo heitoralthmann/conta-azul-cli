@@ -18,7 +18,7 @@ final class PaginationValidatorTest extends TestCase
         $this->validator = new PaginationValidator();
     }
 
-    /** @dataProvider validPageSizes */
+    #[\PHPUnit\Framework\Attributes\DataProvider('validPageSizes')]
     public function testValidPageSizesPass(int $size): void
     {
         $this->expectNotToPerformAssertions();

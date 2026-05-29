@@ -17,7 +17,8 @@ final class AuthManager
         private readonly TokenStore $tokenStore,
         private readonly OAuthClient $oauthClient,
         private readonly Configuration $config,
-    ) {}
+    ) {
+    }
 
     public function getValidAccessToken(): string
     {

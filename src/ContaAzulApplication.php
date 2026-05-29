@@ -11,7 +11,6 @@ use ContaAzulCli\Auth\CallbackServer;
 use ContaAzulCli\Auth\OAuthClient;
 use ContaAzulCli\Auth\TokenStore;
 use ContaAzulCli\Command\Auth\LoginCommand;
-use ContaAzulCli\Command\Auth\LogoutCommand;
 use ContaAzulCli\Command\Categoria\ListCommand as CategoriaListCommand;
 use ContaAzulCli\Command\CentroDeCusto\ListCommand as CentroDeCustoListCommand;
 use ContaAzulCli\Command\Cobranca\ListCommand as CobrancaListCommand;
@@ -54,16 +53,6 @@ final class ContaAzulApplication extends Application
         $jsonRenderer = new JsonRenderer();
         $paginationValidator = new PaginationValidator();
 
-        // Auth commands don't need API config — register unconditionally
-        // so "ca auth login" works even without credentials set.
-        $this->addCommands([
-            new LogoutCommand(new AuthManager(
-                new TokenStore($this->makeConfigSilently()),
-                new OAuthClient(HttpClient::create(), $this->makeConfigSilently()),
-                $this->makeConfigSilently(),
-            )),
-        ]);
-
         try {
             $config = new Configuration();
             $redactor = new Redactor();
@@ -97,15 +86,14 @@ final class ContaAzulApplication extends Application
                 new ProtocoloGetCommand($client, $errorEnvelope, $jsonRenderer),
             ]);
         } catch (\Throwable) {
-            // Config missing — only auth login/logout available until credentials are set.
-            // LoginCommand requires a valid config, so provide a no-config stub login.
+            // CA_CLIENT_ID / CA_CLIENT_SECRET not set — run "ca auth login" after configuring them.
         }
     }
 
     protected function doRenderThrowable(\Throwable $e, OutputInterface $output): void
     {
         // Commands handle their own error output via ErrorEnvelope.
-        // Suppress the default Symfony rendering to keep stderr clean.
+        // Suppress default Symfony rendering to keep stderr clean.
     }
 
     public function run(?InputInterface $input = null, ?OutputInterface $output = null): int
@@ -114,38 +102,6 @@ final class ContaAzulApplication extends Application
             return parent::run($input, $output);
         } catch (\Throwable) {
             return 1;
-        }
-    }
-
-    private function makeConfigSilently(): Configuration
-    {
-        try {
-            return new Configuration();
-        } catch (\Throwable) {
-            // Return a dummy config for auth commands when credentials are not set yet.
-            // This allows "ca auth login" to run before credentials are configured.
-            return new class extends Configuration {
-                public function __construct() {}
-
-                public function getClientId(): string { return ''; }
-
-                public function getClientSecret(): string { return ''; }
-
-                public function getRedirectUri(): string { return 'http://localhost:9876/callback'; }
-
-                public function getApiBaseUrl(): string { return 'https://api-v2.contaazul.com'; }
-
-                public function getAuthBaseUrl(): string { return 'https://auth.contaazul.com'; }
-
-                public function getTokenPath(): string
-                {
-                    $home = getenv('HOME') ?: '/tmp';
-
-                    return $home . '/.config/conta-azul-cli/tokens.json';
-                }
-
-                public function getBootstrapRefreshToken(): ?string { return null; }
-            };
         }
     }
 }

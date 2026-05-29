@@ -41,7 +41,12 @@ final class TokenStore
                 return null;
             }
 
-            return TokenData::fromArray(json_decode($content, true, 512, JSON_THROW_ON_ERROR));
+            $decoded = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+            if (!is_array($decoded)) {
+                return null;
+            }
+            /** @var array<string, mixed> $decoded */
+            return TokenData::fromArray($decoded);
         } catch (\Throwable) {
             return null;
         }

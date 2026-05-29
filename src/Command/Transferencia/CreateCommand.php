@@ -38,20 +38,25 @@ final class CreateCommand extends Command
     {
         try {
             $jsonOption = $input->getOption('json');
-            if ($jsonOption === null || $jsonOption === '') {
+            if (!is_string($jsonOption) || $jsonOption === '') {
                 throw new CliException(ErrorKind::ClientError, false, 'A opção --json é obrigatória.');
             }
 
             try {
-                $payload = json_decode((string) $jsonOption, true, 512, JSON_THROW_ON_ERROR);
+                $decoded = json_decode($jsonOption, true, 512, JSON_THROW_ON_ERROR);
             } catch (\JsonException $e) {
                 throw new CliException(ErrorKind::ClientError, false, 'JSON inválido: ' . $e->getMessage(), previous: $e);
             }
+            if (!is_array($decoded)) {
+                throw new CliException(ErrorKind::ClientError, false, 'JSON deve ser um objeto.');
+            }
+            /** @var array<string, mixed> $decoded */
 
-            $pollTimeout = (int) $input->getOption('poll-timeout');
-            $noWait = (bool) $input->getOption('no-wait');
+            $pollTimeoutRaw = $input->getOption('poll-timeout');
+            $pollTimeout    = is_numeric($pollTimeoutRaw) ? (int) $pollTimeoutRaw : 60;
+            $noWait         = (bool) $input->getOption('no-wait');
 
-            $this->jsonRenderer->render($this->client->createTransferencia($payload, $pollTimeout, $noWait));
+            $this->jsonRenderer->render($this->client->createTransferencia($decoded, $pollTimeout, $noWait));
 
             return Command::SUCCESS;
         } catch (CliException $e) {

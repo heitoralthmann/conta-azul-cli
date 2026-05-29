@@ -12,7 +12,8 @@ final class CallbackServer
     public function __construct(
         private readonly int $port = 9876,
         private readonly int $timeoutSeconds = 120,
-    ) {}
+    ) {
+    }
 
     public function waitForCallback(string $expectedState): string
     {
@@ -62,9 +63,12 @@ final class CallbackServer
             );
         }
 
+        /** @var array<string, mixed> $params */
+        $params = [];
         parse_str($m[1], $params);
 
-        if (($params['state'] ?? '') !== $expectedState) {
+        $stateParam = $params['state'] ?? '';
+        if (!is_string($stateParam) || $stateParam !== $expectedState) {
             throw new CliException(
                 ErrorKind::ClientError,
                 false,
@@ -72,8 +76,10 @@ final class CallbackServer
             );
         }
 
-        if (empty($params['code'])) {
-            $error = (string) ($params['error'] ?? 'desconhecido');
+        $code = $params['code'] ?? '';
+        if (!is_string($code) || $code === '') {
+            $rawError = $params['error'] ?? 'desconhecido';
+            $error    = is_string($rawError) ? $rawError : 'desconhecido';
             throw new CliException(
                 ErrorKind::AuthFailed,
                 false,
@@ -81,6 +87,6 @@ final class CallbackServer
             );
         }
 
-        return (string) $params['code'];
+        return $code;
     }
 }

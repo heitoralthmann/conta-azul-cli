@@ -39,19 +39,20 @@ final class BaixarCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $id = (string) $input->getArgument('id');
+            $rawId = $input->getArgument('id');
+            $id    = is_string($rawId) ? $rawId : '';
 
             $valorOption = $input->getOption('valor');
-            $dataOption = $input->getOption('data');
+            $dataOption  = $input->getOption('data');
 
-            if ($valorOption === null || $valorOption === '') {
+            if (!is_string($valorOption) || $valorOption === '') {
                 throw new CliException(
                     \ContaAzulCli\Error\ErrorKind::ClientError,
                     false,
                     'A opção --valor é obrigatória.',
                 );
             }
-            if ($dataOption === null || $dataOption === '') {
+            if (!is_string($dataOption) || $dataOption === '') {
                 throw new CliException(
                     \ContaAzulCli\Error\ErrorKind::ClientError,
                     false,
@@ -61,11 +62,12 @@ final class BaixarCommand extends Command
 
             $payload = [
                 'valor' => (float) $valorOption,
-                'data'  => (string) $dataOption,
+                'data'  => $dataOption,
             ];
 
-            $pollTimeout = (int) $input->getOption('poll-timeout');
-            $noWait = (bool) $input->getOption('no-wait');
+            $pollTimeoutRaw = $input->getOption('poll-timeout');
+            $pollTimeout    = is_numeric($pollTimeoutRaw) ? (int) $pollTimeoutRaw : 60;
+            $noWait         = (bool) $input->getOption('no-wait');
 
             $this->jsonRenderer->render($this->client->baixarParcela($id, $payload, $pollTimeout, $noWait));
 

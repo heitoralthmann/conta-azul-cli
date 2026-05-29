@@ -33,7 +33,8 @@ final class GetCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $this->jsonRenderer->render($this->client->getContaAPagar((string) $input->getArgument('id')));
+            $id = $input->getArgument('id');
+            $this->jsonRenderer->render($this->client->getContaAPagar(is_string($id) ? $id : ''));
 
             return Command::SUCCESS;
         } catch (CliException $e) {

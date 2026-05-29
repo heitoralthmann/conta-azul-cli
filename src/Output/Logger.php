@@ -11,7 +11,9 @@ final class Logger
     private const MAX_SIZE = 10 * 1024 * 1024;
     private const MAX_FILES = 3;
 
-    public function __construct(private readonly Redactor $redactor) {}
+    public function __construct(private readonly Redactor $redactor)
+    {
+    }
 
     public function enable(): void
     {

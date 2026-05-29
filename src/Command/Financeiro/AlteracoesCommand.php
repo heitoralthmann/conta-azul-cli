@@ -40,10 +40,10 @@ final class AlteracoesCommand extends Command
     {
         try {
             $desde = $input->getOption('desde');
-            if ($desde === null || $desde === '') {
+            if (!is_string($desde) || $desde === '') {
                 throw new CliException(ErrorKind::ClientError, false, 'A opção --desde é obrigatória. Use formato ISO 8601, ex: 2026-05-26T00:00:00-03:00');
             }
-            $this->jsonRenderer->render($this->client->getAlteracoes((string) $desde));
+            $this->jsonRenderer->render($this->client->getAlteracoes($desde));
 
             return Command::SUCCESS;
         } catch (CliException $e) {

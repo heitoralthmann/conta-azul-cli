@@ -92,7 +92,7 @@ class BaseClient
                 $statusCode = $response->getStatusCode();
             } catch (\Throwable $e) {
                 if (!$isWrite && $attempt < $maxAttempts) {
-                    $this->sleep(self::GET_RETRY_BACKOFF[$attempt - 1] ?? 8.0);
+                    $this->sleep(self::GET_RETRY_BACKOFF[$attempt - 1]);
                     continue;
                 }
                 throw $this->errorMapper->mapTransportError($e, $this->correlationId);
@@ -118,7 +118,7 @@ class BaseClient
             $retryStatuses = $isWrite ? $retryable429 : $retryableGet;
             if (in_array($statusCode, $retryStatuses, true) && $attempt < $maxAttempts) {
                 $retryAfter = $this->extractRetryAfter($response);
-                $backoff     = $retryAfter ?? (self::GET_RETRY_BACKOFF[$attempt - 1] ?? 8.0);
+                $backoff     = $retryAfter ?? self::GET_RETRY_BACKOFF[$attempt - 1];
                 $this->sleep($backoff);
                 continue;
             }
@@ -150,7 +150,8 @@ class BaseClient
                 );
             }
 
-            $status = (string) ($data['status'] ?? '');
+            $rawStatus = $data['status'] ?? '';
+            $status    = is_string($rawStatus) ? $rawStatus : '';
 
             if ($status === 'SUCCESS') {
                 /** @var array<mixed> $payload */
@@ -192,7 +193,8 @@ class BaseClient
      */
     public function handleAsyncResponse(array $response, int $pollTimeout = 60, bool $noWait = false): array
     {
-        $protocolId = (string) ($response['protocolId'] ?? '');
+        $rawProtocolId = $response['protocolId'] ?? '';
+        $protocolId    = is_string($rawProtocolId) ? $rawProtocolId : '';
 
         if ($protocolId === '' || $noWait) {
             return $response;

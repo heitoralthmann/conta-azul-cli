@@ -15,7 +15,10 @@ final class Redactor
         'password',
     ];
 
-    /** @param array<mixed> $data */
+    /**
+     * @param array<string|int, mixed> $data
+     * @return array<string|int, mixed>
+     */
     public function redact(array $data): array
     {
         $result = [];
