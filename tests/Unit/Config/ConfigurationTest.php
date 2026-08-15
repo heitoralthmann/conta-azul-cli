@@ -14,7 +14,7 @@ final class ConfigurationTest extends TestCase
     private array $originalEnv = [];
 
     private const REQUIRED_VARS = ['CA_CLIENT_ID', 'CA_CLIENT_SECRET'];
-    private const OPTIONAL_VARS = ['CA_REDIRECT_URI', 'CA_API_BASE_URL', 'CA_AUTH_BASE_URL', 'CA_CLI_TOKEN_PATH', 'CA_BOOTSTRAP_REFRESH_TOKEN'];
+    private const OPTIONAL_VARS = ['CA_REDIRECT_URI', 'CA_SCOPE', 'CA_API_BASE_URL', 'CA_AUTH_BASE_URL', 'CA_CLI_TOKEN_PATH', 'CA_BOOTSTRAP_REFRESH_TOKEN', 'CA_CALLBACK_CERT', 'CA_CALLBACK_KEY'];
 
     protected function setUp(): void
     {
@@ -106,6 +106,63 @@ final class ConfigurationTest extends TestCase
         $config = new Configuration();
 
         self::assertSame('my-refresh-token', $config->getBootstrapRefreshToken());
+    }
+
+    public function testScopeIsNullWhenNotSet(): void
+    {
+        putenv('CA_CLIENT_ID=id');
+        putenv('CA_CLIENT_SECRET=secret');
+
+        $config = new Configuration();
+
+        self::assertNull($config->getScope());
+    }
+
+    public function testScopeIsReadFromEnv(): void
+    {
+        putenv('CA_CLIENT_ID=id');
+        putenv('CA_CLIENT_SECRET=secret');
+        putenv('CA_SCOPE=sales');
+
+        $config = new Configuration();
+
+        self::assertSame('sales', $config->getScope());
+    }
+
+    public function testCallbackCertAndKeyAreNullWhenNotSet(): void
+    {
+        putenv('CA_CLIENT_ID=id');
+        putenv('CA_CLIENT_SECRET=secret');
+
+        $config = new Configuration();
+
+        self::assertNull($config->getCallbackCertFile());
+        self::assertNull($config->getCallbackKeyFile());
+    }
+
+    public function testCallbackCertAndKeyAreReadFromEnv(): void
+    {
+        putenv('CA_CLIENT_ID=id');
+        putenv('CA_CLIENT_SECRET=secret');
+        putenv('CA_CALLBACK_CERT=/tmp/cert.pem');
+        putenv('CA_CALLBACK_KEY=/tmp/key.pem');
+
+        $config = new Configuration();
+
+        self::assertSame('/tmp/cert.pem', $config->getCallbackCertFile());
+        self::assertSame('/tmp/key.pem', $config->getCallbackKeyFile());
+    }
+
+    public function testCallbackCertTildeIsExpanded(): void
+    {
+        putenv('CA_CLIENT_ID=id');
+        putenv('CA_CLIENT_SECRET=secret');
+        putenv('CA_CALLBACK_CERT=~/.certs/cert.pem');
+        $home = getenv('HOME') ?: '/tmp';
+
+        $config = new Configuration();
+
+        self::assertSame($home . '/.certs/cert.pem', $config->getCallbackCertFile());
     }
 
     public function testApiBaseUrlTrailingSlashIsStripped(): void

@@ -6,25 +6,36 @@ namespace ContaAzulCli\Config;
 
 final class Configuration
 {
-    private string $clientId;
-    private string $clientSecret;
-    private string $redirectUri;
-    private string $apiBaseUrl;
-    private string $authBaseUrl;
-    private string $tokenPath;
+    private string  $clientId;
+    private string  $clientSecret;
+    private string  $redirectUri;
+    private ?string $scope;
+    private string  $apiBaseUrl;
+    private string  $authBaseUrl;
+    private string  $tokenPath;
     private ?string $bootstrapRefreshToken;
+    private ?string $callbackCertFile;
+    private ?string $callbackKeyFile;
 
     public function __construct()
     {
-        $this->clientId = $this->requireEnv('CA_CLIENT_ID');
+        $this->clientId   = $this->requireEnv('CA_CLIENT_ID');
         $this->clientSecret = $this->requireEnv('CA_CLIENT_SECRET');
-        $this->redirectUri = $this->getEnv('CA_REDIRECT_URI', 'http://localhost:9876/callback');
-        $this->apiBaseUrl = rtrim($this->getEnv('CA_API_BASE_URL', 'https://api-v2.contaazul.com'), '/');
-        $this->authBaseUrl = rtrim($this->getEnv('CA_AUTH_BASE_URL', 'https://auth.contaazul.com'), '/');
-        $rawPath = $this->getEnv('CA_CLI_TOKEN_PATH', '~/.config/conta-azul-cli/tokens.json');
-        $this->tokenPath = $this->expandHome($rawPath);
-        $bootstrap = getenv('CA_BOOTSTRAP_REFRESH_TOKEN');
+        $this->redirectUri  = $this->getEnv('CA_REDIRECT_URI', 'http://localhost:9876/callback');
+        $scope              = getenv('CA_SCOPE');
+        $this->scope        = ($scope !== false && $scope !== '') ? $scope : null;
+        $this->apiBaseUrl   = rtrim($this->getEnv('CA_API_BASE_URL', 'https://api-v2.contaazul.com'), '/');
+        $this->authBaseUrl  = rtrim($this->getEnv('CA_AUTH_BASE_URL', 'https://auth.contaazul.com'), '/');
+        $rawPath            = $this->getEnv('CA_CLI_TOKEN_PATH', '~/.config/conta-azul-cli/tokens.json');
+        $this->tokenPath    = $this->expandHome($rawPath);
+
+        $bootstrap                  = getenv('CA_BOOTSTRAP_REFRESH_TOKEN');
         $this->bootstrapRefreshToken = ($bootstrap !== false && $bootstrap !== '') ? $bootstrap : null;
+
+        $cert                    = getenv('CA_CALLBACK_CERT');
+        $this->callbackCertFile  = ($cert !== false && $cert !== '') ? $this->expandHome($cert) : null;
+        $key                     = getenv('CA_CALLBACK_KEY');
+        $this->callbackKeyFile   = ($key !== false && $key !== '') ? $this->expandHome($key) : null;
     }
 
     public function getClientId(): string
@@ -60,6 +71,21 @@ final class Configuration
     public function getBootstrapRefreshToken(): ?string
     {
         return $this->bootstrapRefreshToken;
+    }
+
+    public function getScope(): ?string
+    {
+        return $this->scope;
+    }
+
+    public function getCallbackCertFile(): ?string
+    {
+        return $this->callbackCertFile;
+    }
+
+    public function getCallbackKeyFile(): ?string
+    {
+        return $this->callbackKeyFile;
     }
 
     private function requireEnv(string $name): string

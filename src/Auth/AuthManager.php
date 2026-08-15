@@ -109,15 +109,15 @@ final class AuthManager
     {
         $this->pendingState = Uuid::uuid4()->toString();
 
-        $params = http_build_query([
+        $params = array_filter([
             'response_type' => 'code',
             'client_id'     => $this->config->getClientId(),
             'redirect_uri'  => $this->config->getRedirectUri(),
-            'scope'         => 'financeiro',
+            'scope'         => $this->config->getScope(),
             'state'         => $this->pendingState,
         ]);
 
-        return $this->config->getAuthBaseUrl() . '/oauth2/authorize?' . $params;
+        return $this->config->getAuthBaseUrl() . '/oauth2/authorize?' . http_build_query($params);
     }
 
     public function getPendingState(): ?string

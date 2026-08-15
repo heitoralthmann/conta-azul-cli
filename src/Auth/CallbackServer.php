@@ -10,19 +10,23 @@ use ContaAzulCli\Error\ErrorKind;
 final class CallbackServer
 {
     public function __construct(
-        private readonly int $port = 9876,
-        private readonly int $timeoutSeconds = 120,
+        private readonly int     $port           = 9876,
+        private readonly int     $timeoutSeconds = 120,
+        private readonly ?string $certFile       = null,
+        private readonly ?string $keyFile        = null,
     ) {
     }
 
     public function waitForCallback(string $expectedState): string
     {
-        $server = @stream_socket_server("tcp://127.0.0.1:{$this->port}", $errno, $errstr);
+        $errno  = null;
+        $errstr = null;
+        $server = $this->openServer($errno, $errstr);
         if ($server === false) {
             throw new CliException(
                 ErrorKind::ClientError,
                 false,
-                "Não foi possível iniciar o servidor local na porta {$this->port}: {$errstr} ({$errno}). Verifique se a porta está livre.",
+                'Não foi possível iniciar o servidor local na porta ' . $this->port . ': ' . ($errstr ?? '') . ' (' . ($errno ?? 0) . '). Verifique se a porta está livre.',
             );
         }
 
@@ -88,5 +92,30 @@ final class CallbackServer
         }
 
         return $code;
+    }
+
+    /** @return resource|false */
+    private function openServer(?int &$errno, ?string &$errstr): mixed
+    {
+        if ($this->certFile !== null && $this->keyFile !== null) {
+            $context = stream_context_create([
+                'ssl' => [
+                    'local_cert'        => $this->certFile,
+                    'local_pk'          => $this->keyFile,
+                    'verify_peer'       => false,
+                    'verify_peer_name'  => false,
+                ],
+            ]);
+
+            return @stream_socket_server(
+                "ssl://127.0.0.1:{$this->port}",
+                $errno,
+                $errstr,
+                STREAM_SERVER_BIND | STREAM_SERVER_LISTEN,
+                $context,
+            );
+        }
+
+        return @stream_socket_server("tcp://127.0.0.1:{$this->port}", $errno, $errstr);
     }
 }
