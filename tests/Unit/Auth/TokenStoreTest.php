@@ -93,6 +93,10 @@ final class TokenStoreTest extends TestCase
 
     public function testSavedFileIsNotReadableByOtherUsers(): void
     {
+        if (DIRECTORY_SEPARATOR === '\\') {
+            self::markTestSkipped('Windows has no POSIX permission bits; chmod only toggles read-only there.');
+        }
+
         $this->store()->save($this->sampleToken());
 
         $mode = fileperms($this->tokenPath) & 0777;

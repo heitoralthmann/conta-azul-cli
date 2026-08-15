@@ -26,6 +26,9 @@ final class TokenStore
             JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR,
         );
         file_put_contents($this->tokenPath, $json, LOCK_EX);
+        // No-op on Windows, where PHP's chmod only toggles the read-only flag:
+        // the file carries credentials, so on that platform it relies on the
+        // user profile directory's own ACLs.
         chmod($this->tokenPath, 0600);
     }
 

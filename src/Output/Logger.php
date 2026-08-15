@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Output;
 
+use ContaAzulCli\Config\HomeDirectory;
+
 final class Logger
 {
     private bool $enabled = false;
@@ -17,7 +19,9 @@ final class Logger
 
     public function enable(): void
     {
-        $home = getenv('HOME') ?: '/tmp';
+        // Logging is best-effort: an unresolvable home must not break the run,
+        // so it degrades to the system temp directory instead of throwing.
+        $home     = HomeDirectory::resolve() ?? sys_get_temp_dir();
         $cacheDir = $home . '/.cache/conta-azul-cli';
         if (!is_dir($cacheDir)) {
             mkdir($cacheDir, 0700, true);

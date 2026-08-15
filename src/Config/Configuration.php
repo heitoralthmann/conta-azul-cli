@@ -111,10 +111,12 @@ final class Configuration
             return $path;
         }
 
-        $home = getenv('HOME');
-        if ($home === false || $home === '') {
-            $entry = posix_getpwuid(posix_getuid());
-            $home = is_array($entry) ? $entry['dir'] : '/root';
+        $home = HomeDirectory::resolve();
+        if ($home === null) {
+            throw new ConfigException(
+                'Não foi possível determinar o diretório home do usuário. '
+                . 'Defina CA_CLI_TOKEN_PATH com um caminho absoluto.',
+            );
         }
 
         return $home . substr($path, 1);
