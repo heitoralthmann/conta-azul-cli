@@ -11,7 +11,9 @@ final class CallbackServer
 {
     public function __construct(
         private readonly int     $port           = 9876,
-        private readonly int     $timeoutSeconds = 120,
+        // Login is interactive: the operator still has to open a browser, sign in
+        // and possibly clear MFA. 120s was routinely too short in practice.
+        private readonly int     $timeoutSeconds = 300,
         private readonly ?string $certFile       = null,
         private readonly ?string $keyFile        = null,
     ) {
@@ -31,12 +33,17 @@ final class CallbackServer
         }
 
         try {
-            $conn = stream_socket_accept($server, (float) $this->timeoutSeconds);
+            // Silenced: a timeout is an expected outcome handled right below, and
+            // the PHP warning would otherwise leak into stdout, which the output
+            // contract reserves for the JSON payload.
+            $conn = @stream_socket_accept($server, (float) $this->timeoutSeconds);
             if ($conn === false) {
                 throw new CliException(
                     ErrorKind::ClientError,
                     false,
-                    'Timeout aguardando callback OAuth. Tente novamente.',
+                    "Timeout aguardando callback OAuth ({$this->timeoutSeconds}s). "
+                    . 'Rode "ca auth login" novamente e tenha o navegador pronto, '
+                    . 'ou aumente a janela com CA_CALLBACK_TIMEOUT.',
                 );
             }
 

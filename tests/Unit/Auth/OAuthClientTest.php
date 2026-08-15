@@ -23,6 +23,7 @@ final class OAuthClientTest extends TestCase
         'CA_CLIENT_SECRET',
         'CA_REDIRECT_URI',
         'CA_AUTH_BASE_URL',
+        'CA_TOKEN_URL',
         'CA_BOOTSTRAP_REFRESH_TOKEN',
     ];
 
@@ -141,6 +142,57 @@ final class OAuthClientTest extends TestCase
         }
     }
 
+    public function testInvalidGrantOnCodeExchangeBlamesTheCodeNotTheRefreshToken(): void
+    {
+        // During login there is no refresh token yet; blaming it would send the
+        // operator to re-run the very command that just failed.
+        $client = new MockHttpClient([
+            new MockResponse(
+                '{"error":"invalid_grant","error_description":"Authorization code expired"}',
+                ['http_code' => 400],
+            ),
+        ]);
+
+        try {
+            (new OAuthClient($client, new Configuration()))->exchangeCode('stale-code');
+            self::fail('Expected CliException');
+        } catch (CliException $e) {
+            self::assertSame(ErrorKind::AuthFailed, $e->kind);
+            self::assertStringContainsString('Código de autorização', $e->getMessage());
+            self::assertStringNotContainsString('Refresh token', $e->getMessage());
+        }
+    }
+
+    public function testProviderErrorDescriptionIsCarriedIntoTheMessage(): void
+    {
+        $client = new MockHttpClient([
+            new MockResponse(
+                '{"error":"invalid_grant","error_description":"redirect_uri mismatch"}',
+                ['http_code' => 400],
+            ),
+        ]);
+
+        try {
+            (new OAuthClient($client, new Configuration()))->exchangeCode('some-code');
+            self::fail('Expected CliException');
+        } catch (CliException $e) {
+            self::assertStringContainsString('redirect_uri mismatch', $e->getMessage());
+            self::assertStringContainsString('invalid_grant', $e->getMessage());
+        }
+    }
+
+    public function testMissingProviderDetailStillReportsTheStatus(): void
+    {
+        $client = new MockHttpClient([new MockResponse('', ['http_code' => 400])]);
+
+        try {
+            (new OAuthClient($client, new Configuration()))->exchangeCode('some-code');
+            self::fail('Expected CliException');
+        } catch (CliException $e) {
+            self::assertStringContainsString('HTTP 400', $e->getMessage());
+        }
+    }
+
     public function testOtherClientErrorsMapToAuthFailedWithStatus(): void
     {
         $client = new MockHttpClient([
@@ -170,6 +222,21 @@ final class OAuthClientTest extends TestCase
             self::assertSame(ErrorKind::Transient, $e->kind);
             self::assertTrue($e->retryable);
         }
+    }
+
+    public function testTokenUrlCanBeOverriddenIndependently(): void
+    {
+        putenv('CA_TOKEN_URL=https://login.contaazul.com/oauth2/token');
+        $capturedUrl = null;
+        $client      = new MockHttpClient(function (string $method, string $url) use (&$capturedUrl) {
+            $capturedUrl = $url;
+
+            return new MockResponse('{"access_token":"a","refresh_token":"r","expires_in":3600}');
+        });
+
+        (new OAuthClient($client, new Configuration()))->exchangeCode('c');
+
+        self::assertSame('https://login.contaazul.com/oauth2/token', $capturedUrl);
     }
 
     public function testAuthBaseUrlIsConfigurable(): void

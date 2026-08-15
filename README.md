@@ -60,6 +60,8 @@ A precedência de configuração é: **flag de CLI → variável de ambiente →
 | `CA_API_BASE_URL` | não | `https://api-v2.contaazul.com` |
 | `CA_AUTH_BASE_URL` | não | `https://auth.contaazul.com` |
 | `CA_AUTHORIZE_URL` | não | `{CA_AUTH_BASE_URL}/oauth2/authorize` |
+| `CA_TOKEN_URL` | não | `{CA_AUTH_BASE_URL}/oauth2/token` |
+| `CA_CALLBACK_TIMEOUT` | não | `300` (segundos) |
 | `CA_CLI_TOKEN_PATH` | não | `~/.config/conta-azul-cli/tokens.json` |
 | `CA_BOOTSTRAP_REFRESH_TOKEN` | não | — |
 
@@ -82,7 +84,9 @@ CA_SCOPE="openid profile aws.cognito.signin.user.admin"
 
 O valor de `CA_SCOPE` **precisa de aspas**: contém espaços, e o Dotenv rejeita valores não citados com espaço.
 
-Note que `CA_AUTHORIZE_URL` é uma rota de fragmento (`/#/`) — o CLI anexa a query depois do hash, preservando o formato que o provedor espera. `CA_AUTH_BASE_URL` continua governando o endpoint de token, que é independente.
+Note que `CA_AUTHORIZE_URL` é uma rota de fragmento (`/#/`) — o CLI anexa a query depois do hash, preservando o formato que o provedor espera.
+
+O endpoint de **token** é independente do de autorização e tem sua própria variável, `CA_TOKEN_URL`. Verificamos que o app de produção troca códigos normalmente em `https://auth.contaazul.com/oauth2/token` (o default), então na prática só é preciso mexer nela se a Conta Azul mudar isso.
 
 ### Callback OAuth com HTTPS
 

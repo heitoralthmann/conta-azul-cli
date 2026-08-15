@@ -72,7 +72,11 @@ final class ContaAzulApplication extends Application
             $tokenStore = new TokenStore($config);
             $oauthClient = new OAuthClient($httpClient, $config);
             $authManager = new AuthManager($tokenStore, $oauthClient, $config);
-            $callbackServer = new CallbackServer(certFile: $config->getCallbackCertFile(), keyFile: $config->getCallbackKeyFile());
+            $callbackServer = new CallbackServer(
+                timeoutSeconds: $config->getCallbackTimeout(),
+                certFile: $config->getCallbackCertFile(),
+                keyFile: $config->getCallbackKeyFile(),
+            );
             $client = new FinanceiroClient($config, $authManager, $logger, $redactor, $httpClient);
 
             $this->addCommands([

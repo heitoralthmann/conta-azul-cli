@@ -13,10 +13,12 @@ final class Configuration
     private string  $apiBaseUrl;
     private string  $authBaseUrl;
     private string  $authorizeUrl;
+    private string  $tokenUrl;
     private string  $tokenPath;
     private ?string $bootstrapRefreshToken;
     private ?string $callbackCertFile;
     private ?string $callbackKeyFile;
+    private int     $callbackTimeout;
 
     public function __construct()
     {
@@ -30,6 +32,7 @@ final class Configuration
         // Apps de produção usam um endpoint de autorização distinto do de token,
         // com host e path próprios — daí ser configurável por inteiro.
         $this->authorizeUrl = $this->getEnv('CA_AUTHORIZE_URL', $this->authBaseUrl . '/oauth2/authorize');
+        $this->tokenUrl     = $this->getEnv('CA_TOKEN_URL', $this->authBaseUrl . '/oauth2/token');
         $rawPath            = $this->getEnv('CA_CLI_TOKEN_PATH', '~/.config/conta-azul-cli/tokens.json');
         $this->tokenPath    = $this->expandHome($rawPath);
 
@@ -40,6 +43,9 @@ final class Configuration
         $this->callbackCertFile  = ($cert !== false && $cert !== '') ? $this->expandHome($cert) : null;
         $key                     = getenv('CA_CALLBACK_KEY');
         $this->callbackKeyFile   = ($key !== false && $key !== '') ? $this->expandHome($key) : null;
+
+        $timeout               = $this->getEnv('CA_CALLBACK_TIMEOUT', '300');
+        $this->callbackTimeout = ctype_digit($timeout) && (int) $timeout > 0 ? (int) $timeout : 300;
     }
 
     public function getClientId(): string
@@ -72,6 +78,11 @@ final class Configuration
         return $this->authorizeUrl;
     }
 
+    public function getTokenUrl(): string
+    {
+        return $this->tokenUrl;
+    }
+
     public function getTokenPath(): string
     {
         return $this->tokenPath;
@@ -95,6 +106,11 @@ final class Configuration
     public function getCallbackKeyFile(): ?string
     {
         return $this->callbackKeyFile;
+    }
+
+    public function getCallbackTimeout(): int
+    {
+        return $this->callbackTimeout;
     }
 
     private function requireEnv(string $name): string
