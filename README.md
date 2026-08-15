@@ -145,6 +145,8 @@ Na primeira invocação o CLI detecta a variável, faz o refresh, persiste o res
 
 ## Comandos
 
+> **A referência completa é [`COMMANDS.md`](COMMANDS.md)** — todos os comandos agrupados por endpoint, com cada parâmetro, os formatos de data, os valores de `kind` e o que a API não oferece. É o arquivo a consultar (e a atualizar) ao mexer na integração. O resumo abaixo existe só para dar o panorama.
+
 Taxonomia: `ca <substantivo> <verbo> [args]`. Substantivos em português espelham a API; verbos seguem o idioma do Symfony Console, exceto quando o verbo é conceito de domínio (`baixar`).
 
 ### Consultas
