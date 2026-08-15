@@ -35,6 +35,7 @@ use ContaAzulCli\Output\JsonRenderer;
 use ContaAzulCli\Output\Logger;
 use ContaAzulCli\Output\Redactor;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpClient\HttpClient;
@@ -98,10 +99,36 @@ final class ContaAzulApplication extends Application
 
     public function run(?InputInterface $input = null, ?OutputInterface $output = null): int
     {
+        if ($input === null) {
+            $rawArgv = $_SERVER['argv'] ?? [];
+            $argv    = array_values(array_filter(is_array($rawArgv) ? $rawArgv : [], 'is_string'));
+            $input   = $this->buildInput($argv);
+        }
+
         try {
             return parent::run($input, $output);
         } catch (\Throwable) {
             return 1;
         }
+    }
+
+    /** @param list<string> $argv */
+    private function buildInput(array $argv): ArgvInput
+    {
+        // Merge two-word command names (e.g. "auth login") that arrive as separate
+        // argv tokens into a single token so Symfony's parser doesn't treat the
+        // second word as a stray positional argument.
+        if (
+            isset($argv[1], $argv[2])
+            && !str_starts_with($argv[1], '-')
+            && !str_starts_with($argv[2], '-')
+        ) {
+            $compound = $argv[1] . ' ' . $argv[2];
+            if ($this->has($compound)) {
+                $argv = [$argv[0], $compound, ...array_slice($argv, 3)];
+            }
+        }
+
+        return new ArgvInput($argv);
     }
 }
