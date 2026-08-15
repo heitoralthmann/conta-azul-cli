@@ -139,10 +139,17 @@ class BaseClient
             try {
                 $data = $this->request('GET', "/v1/protocolo/{$protocolId}");
             } catch (CliException $e) {
+                // Only interruptions worth resuming become poll_drop_known_id.
+                // Reporting a failed refresh or a malformed request as retryable
+                // would send the agent into a loop that cannot succeed.
+                if (in_array($e->kind, [ErrorKind::AuthFailed, ErrorKind::ClientError], true)) {
+                    throw $e;
+                }
+
                 throw new CliException(
                     ErrorKind::PollDropKnownId,
                     true,
-                    "Polling interrompido por erro de transporte. protocol_id: {$protocolId}. Retome com: ca protocolo get {$protocolId}",
+                    "Polling interrompido. protocol_id: {$protocolId}. Retome com: ca protocolo get {$protocolId}",
                     null,
                     $protocolId,
                     $this->correlationId,
