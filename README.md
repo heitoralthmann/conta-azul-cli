@@ -150,19 +150,14 @@ Taxonomia: `ca <substantivo> <verbo> [args]`. Substantivos em português espelha
 ### Consultas
 
 ```bash
-ca lancamento list [--pagina=1] [--tamanho-pagina=50]
-ca lancamento get <id>
-ca conta-a-receber list [--pagina=1] [--tamanho-pagina=50]
-ca conta-a-receber get <id>
-ca conta-a-pagar list [--pagina=1] [--tamanho-pagina=50]
-ca conta-a-pagar get <id>
+ca conta-a-receber list [--data-vencimento-de=YYYY-MM-DD] [--data-vencimento-ate=YYYY-MM-DD] [--pagina=1] [--tamanho-pagina=50]
+ca conta-a-pagar list   [--data-vencimento-de=YYYY-MM-DD] [--data-vencimento-ate=YYYY-MM-DD] [--pagina=1] [--tamanho-pagina=50]
 ca parcela get <id>
-ca cobranca list [--pagina=1] [--tamanho-pagina=50]
-ca conta-financeira list
+ca conta-financeira list [--pagina=1] [--tamanho-pagina=50]
 ca conta-financeira saldo --id=<id>
-ca categoria list
-ca centro-de-custo list
-ca financeiro alteracoes --desde=<ISO8601>
+ca categoria list [--pagina=1] [--tamanho-pagina=50]
+ca centro-de-custo list [--pagina=1] [--tamanho-pagina=50]
+ca financeiro alteracoes [--data-inicio=<ISO8601>] [--data-fim=<ISO8601>]
 ca protocolo get <id>
 ```
 
@@ -171,9 +166,24 @@ ca protocolo get <id>
 ```bash
 ca conta-a-receber create --json='{...}' [--poll-timeout=60] [--no-wait]
 ca conta-a-pagar create   --json='{...}' [--poll-timeout=60] [--no-wait]
-ca transferencia create   --json='{...}' [--poll-timeout=60] [--no-wait]
 ca parcela baixar <id> --valor=100.50 --data=2026-05-27 [--poll-timeout=60] [--no-wait]
 ```
+
+### Intervalos de data obrigatórios
+
+As buscas de contas e o feed de alterações **exigem** intervalo de datas — sem ele a API responde 400. Quando as opções não são informadas, o CLI assume o **mês corrente** e avisa em stderr qual recorte aplicou:
+
+```json
+{"kind":"warning","message":"Intervalo de vencimento não informado por completo; usando 2026-08-01 a 2026-08-31. …"}
+```
+
+O stdout continua contendo só o payload, então o aviso não atrapalha `| jq`. Informar as duas opções silencia o aviso.
+
+Em `financeiro alteracoes` as datas vão em ISO 8601 **sem timezone** (`2026-08-01T00:00:00`); com sufixo `Z` ou offset a API responde 400.
+
+### Recursos sem comando
+
+A API v1 não expõe operação equivalente para **lançamentos**, **cobranças**, busca por id de conta a pagar/receber, update/delete desses eventos, nem criação de transferência. Os comandos correspondentes existiam apontando para paths inexistentes e foram removidos em vez de continuarem anunciando o que não funciona. Dois endpoints reais ficaram sem comando por ora: `GET /v1/financeiro/transferencias` e `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas`.
 
 ### Paginação
 
@@ -223,7 +233,7 @@ Com `--no-wait`, cabe ao agente consultar `ca protocolo get <id>` depois.
 
 O CLI **não** deduplica escritas, **não** retorna respostas em cache e **não** retenta `POST` em erro de transporte. Dedupe automático sobre hash de body seria um footgun em contexto financeiro — dois pagamentos legítimos idênticos seriam silenciosamente colapsados em um.
 
-A contrapartida: em `kind: "ambiguous"`, **a reconciliação é responsabilidade do agente**, comparando entidade + valor + data via `ca financeiro alteracoes --desde=<janela>`.
+A contrapartida: em `kind: "ambiguous"`, **a reconciliação é responsabilidade do agente**, comparando entidade + valor + data via `ca financeiro alteracoes --data-inicio=<...> --data-fim=<...>`.
 
 ### Retries
 

@@ -5,45 +5,64 @@ declare(strict_types=1);
 namespace ContaAzulCli\Command\Financeiro;
 
 use ContaAzulCli\Api\FinanceiroClient;
+use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Error\CliException;
-use ContaAzulCli\Error\ErrorKind;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\WarningEnvelope;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-#[AsCommand(name: 'financeiro alteracoes', description: 'Lista alterações de eventos financeiros desde uma data (útil para reconciliação)')]
+#[AsCommand(name: 'financeiro alteracoes', description: 'Lista alterações de eventos financeiros num intervalo (útil para reconciliação)')]
 final class AlteracoesCommand extends Command
 {
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
+        private readonly WarningEnvelope $warningEnvelope,
+        private readonly PeriodoPadrao $periodoPadrao,
     ) {
         parent::__construct();
     }
 
     protected function configure(): void
     {
-        $this->addOption(
-            'desde',
-            null,
-            InputOption::VALUE_REQUIRED,
-            'Data/hora de início no formato ISO 8601 (ex: 2026-05-26T00:00:00-03:00)',
-        );
+        $this
+            ->addOption(
+                'data-inicio',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Início em ISO 8601 sem timezone (ex: 2026-08-01T00:00:00). Padrão: início do mês corrente',
+            )
+            ->addOption(
+                'data-fim',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Fim em ISO 8601 sem timezone (ex: 2026-08-31T23:59:59). Padrão: fim do mês corrente',
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $desde = $input->getOption('desde');
-            if (!is_string($desde) || $desde === '') {
-                throw new CliException(ErrorKind::ClientError, false, 'A opção --desde é obrigatória. Use formato ISO 8601, ex: 2026-05-26T00:00:00-03:00');
+            $inicioRaw = $input->getOption('data-inicio');
+            $fimRaw    = $input->getOption('data-fim');
+
+            $inicio = is_string($inicioRaw) && $inicioRaw !== '' ? $inicioRaw : $this->periodoPadrao->primeiroInstante();
+            $fim    = is_string($fimRaw) && $fimRaw !== '' ? $fimRaw : $this->periodoPadrao->ultimoInstante();
+
+            if ($inicio !== $inicioRaw || $fim !== $fimRaw) {
+                $this->warningEnvelope->renderToStderr(
+                    "Intervalo não informado por completo; usando {$inicio} a {$fim}. "
+                    . 'Use --data-inicio e --data-fim para definir outro.',
+                );
             }
-            $this->jsonRenderer->render($this->client->getAlteracoes($desde));
+
+            $this->jsonRenderer->render($this->client->getAlteracoes($inicio, $fim));
 
             return Command::SUCCESS;
         } catch (CliException $e) {

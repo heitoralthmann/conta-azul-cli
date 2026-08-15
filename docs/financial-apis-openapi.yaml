@@ -1,21 +1,53 @@
-# Placeholder — populate from official Conta Azul developer documentation.
+# Placeholder — ainda não é a spec oficial, mas os paths abaixo NÃO são chute:
+# foram conferidos um a um contra a API real em 2026-08-15. A versão anterior
+# deste arquivo listava paths deduzidos da documentação e todos respondiam 404.
 #
-# This file is referenced by .github/workflows/api-drift.yml for change detection.
-# When updated, review src/Api/FinanceiroClient.php for new or changed endpoints.
+# Referenciado por .github/workflows/api-drift.yml para detecção de mudança.
+# Ao atualizar, revise src/Api/FinanceiroClient.php.
 #
-# Source: https://developers.contaazul.com (check for OpenAPI/Swagger link)
+# Lista autoritativa de operações (o portal bloqueia curl/WebFetch — abra no navegador):
+# https://developers.contaazul.com/docs/financial-apis-openapi/v1
 openapi: "3.0.0"
 info:
   title: "Conta Azul Financial APIs"
-  version: "placeholder"
+  version: "verified-2026-08-15"
   description: >
-    Placeholder — replace with the official spec from the Conta Azul developer portal.
-    Endpoints covered by this CLI are under the Financeiro family:
-    /v1/financeiro/lancamentos, /v1/financeiro/contas-a-receber,
-    /v1/financeiro/contas-a-pagar, /v1/financeiro/parcelas,
-    /v1/financeiro/cobrancas, /v1/financeiro/contas,
-    /v1/financeiro/categorias, /v1/financeiro/centros-de-custo,
-    /v1/financeiro/transferencias,
-    /v1/financeiro/eventos-financeiros/alteracoes,
-    /v1/protocolo
-paths: {}
+    Cuidado com duas armadilhas confirmadas em produção: o segmento
+    `/financeiro/` só existe em parte dos recursos, e a nomenclatura alterna
+    entre plural (`categorias`) e singular (`centro-de-custo`,
+    `conta-financeira`).
+
+paths:
+  /v1/categorias:
+    get: { summary: "Lista categorias financeiras" }
+  /v1/categorias/configuracao-padrao:
+    get: { summary: "De-para padrão de categorias (sem comando no CLI)" }
+  /v1/centro-de-custo:
+    get: { summary: "Lista centros de custo" }
+  /v1/conta-financeira:
+    get: { summary: "Lista contas financeiras" }
+  /v1/conta-financeira/{id_conta_financeira}/saldo-atual:
+    get: { summary: "Saldo atual da conta financeira" }
+  /v1/financeiro/categorias-dre:
+    get: { summary: "Categorias DRE (sem comando no CLI)" }
+  /v1/financeiro/transferencias:
+    get: { summary: "Lista transferências; exige data_inicio e data_fim (sem comando no CLI)" }
+  /v1/financeiro/eventos-financeiros/contas-a-receber:
+    post: { summary: "Cria conta a receber (assíncrono, retorna protocolo)" }
+  /v1/financeiro/eventos-financeiros/contas-a-receber/buscar:
+    get: { summary: "Busca contas a receber; exige data_vencimento_de e data_vencimento_ate" }
+  /v1/financeiro/eventos-financeiros/contas-a-pagar:
+    post: { summary: "Cria conta a pagar (assíncrono, retorna protocolo)" }
+  /v1/financeiro/eventos-financeiros/contas-a-pagar/buscar:
+    get: { summary: "Busca contas a pagar; exige data_vencimento_de e data_vencimento_ate" }
+  /v1/financeiro/eventos-financeiros/parcelas/{id}:
+    get: { summary: "Detalha a parcela; o id devolvido pelas buscas é o da PARCELA, não do evento" }
+    patch: { summary: "Registra a baixa da parcela — não existe subrecurso /baixar" }
+  /v1/financeiro/eventos-financeiros/{id_evento}/parcelas:
+    get: { summary: "Parcelas de um evento financeiro (sem comando no CLI)" }
+  /v1/financeiro/eventos-financeiros/alteracoes:
+    get: { summary: "Feed de alterações; params data_inicio e data_fim em ISO 8601 SEM timezone" }
+  /v1/financeiro/eventos-financeiros/saldo-inicial:
+    get: { summary: "Saldo inicial no período (sem comando no CLI)" }
+  /v1/protocolo/{id}:
+    get: { summary: "Status de escrita assíncrona — não verificado contra a API real" }
