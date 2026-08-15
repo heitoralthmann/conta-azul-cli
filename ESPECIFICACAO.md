@@ -9,15 +9,15 @@
 
 ## 1. Visão geral
 
-CLI em PHP/Symfony que expõe endpoints da família Financeiro da API Conta Azul (Finanças, Baixas, Cobranças) para invocação por um agente de IA. Cada invocação é de curta duração, retorna JSON compacto em stdout e sinaliza o resultado por código de saída binário acompanhado de envelope JSON estruturado em stderr quando há erro. Toda a complexidade de OAuth2 — fluxo inicial, armazenamento, refresh, rotação, expiração — é encapsulada dentro do CLI.
+CLI em PHP/Symfony que expõe endpoints das famílias Financeiro (Finanças, Baixas, Cobranças) e Pessoas da API Conta Azul para invocação por um agente de IA. Cada invocação é de curta duração, retorna JSON compacto em stdout e sinaliza o resultado por código de saída binário acompanhado de envelope JSON estruturado em stderr quando há erro. Toda a complexidade de OAuth2 — fluxo inicial, armazenamento, refresh, rotação, expiração — é encapsulada dentro do CLI.
 
 ---
 
 ## 2. Escopo
 
-**Decisão.** O CLI cobre exclusivamente a família Financeiro da API Conta Azul (Finanças + Baixas + Cobranças). Demais famílias (Pessoas, Produtos, Vendas, Contratos, Notas Fiscais) ficam fora.
+**Decisão.** O CLI cobre as famílias Financeiro (Finanças + Baixas + Cobranças) e Pessoas da API Conta Azul. Demais famílias (Produtos, Vendas, Contratos, Notas Fiscais) ficam fora.
 
-**Justificativa.** Reduz a superfície de mapeamento para um único arquivo OpenAPI (`financial-apis-openapi.yaml`), elimina dois landmines identificados na pesquisa (gap de status na NF-e e sistema duplo de IDs UUID + `id_legado`), e o único endpoint de delta da API (`/financeiro/eventos-financeiros/alteracoes`) está justamente nessa família — o que beneficia diretamente o caso de uso de reconciliação.
+**Justificativa.** Mantém a superfície de mapeamento pequena, elimina dois landmines identificados na pesquisa (gap de status na NF-e e sistema duplo de IDs UUID + `id_legado`) e cobre também o cadastro de pessoas, necessário para operações que referenciam clientes e fornecedores.
 
 **Trade-off aceito.** O landmine mais grave da API — escritas assíncronas sem `Idempotency-Key` — permanece concentrado neste escopo. A simplificação é de superfície, não de design.
 
@@ -328,7 +328,7 @@ src/
 
 ## 15. Mapeamento da API Conta Azul
 
-**Decisão.** Mapeamento **escrito à mão**, não codegen. Uma classe por grupo de recurso do `financial-apis-openapi.yaml`, com métodos espelhando os operations da spec.
+**Decisão.** Mapeamento **escrito à mão**, não codegen. Uma classe por grupo de recurso (`FinanceiroClient` e `PessoasClient`), com métodos espelhando as operações das respectivas specs.
 
 **Justificativa.** O escopo (~ 30–50 endpoints) é pequeno o suficiente para que codegen seja uma cerimônia desproporcional; código escrito à mão é mais legível, mais testável e mais simples de manter.
 

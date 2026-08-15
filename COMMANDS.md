@@ -31,6 +31,16 @@ Cada endpoint traz uma marca de confiança:
 | `parcela baixar` | `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` | ⚠️ |
 | `financeiro alteracoes` | `GET /v1/financeiro/eventos-financeiros/alteracoes` | ✅ |
 | `protocolo get` | `GET /v1/protocolo/{id}` | ⚠️ |
+| `pessoa list` | `GET /v1/pessoas` | ⚠️ |
+| `pessoa create` | `POST /v1/pessoas` | ⚠️ |
+| `pessoa get` | `GET /v1/pessoas/{id}` | ⚠️ |
+| `pessoa update` | `PUT /v1/pessoas/{id}` | ⚠️ |
+| `pessoa patch` | `PATCH /v1/pessoas/{id}` | ⚠️ |
+| `pessoa legado` | `GET /v1/pessoas/legado/{id}` | ⚠️ |
+| `pessoa ativar` | `POST /v1/pessoas/ativar` | ⚠️ |
+| `pessoa inativar` | `POST /v1/pessoas/inativar` | ⚠️ |
+| `pessoa excluir` | `POST /v1/pessoas/excluir` | ⚠️ |
+| `pessoa conta-conectada` | `GET /v1/pessoas/conta-conectada` | ⚠️ |
 
 ---
 
@@ -303,6 +313,59 @@ Consulta o status de uma escrita assíncrona. Não tem opções próprias. É co
 
 ---
 
+## Pessoas / Fornecedores
+
+Os payloads de criação e atualização seguem o schema da API e são enviados sem transformação. Use `--json` com um objeto JSON.
+
+### `pessoa list` ⚠️
+
+`GET /v1/pessoas`
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `50` | Itens por página |
+| filtros da API | não | — | `--busca`, `--ids`, `--documentos`, `--paises`, `--cidades`, `--ufs`, `--codigos-pessoa`, `--emails`, `--tipos-pessoa`, `--nomes`, `--telefones`, `--data-criacao-inicio`, `--data-criacao-fim`, `--data-alteracao-de`, `--data-alteracao-ate`, `--tipo-perfil`, `--tipo-ordenacao`, `--ordem-ordenacao`, `--com-endereco` |
+
+### `pessoa create` ⚠️
+
+`POST /v1/pessoas`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Objeto JSON da pessoa |
+
+### `pessoa get` ⚠️, `pessoa legado` ⚠️
+
+`GET /v1/pessoas/{id}` e `GET /v1/pessoas/legado/{id}`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | ID atual ou legado da pessoa |
+
+### `pessoa update` ⚠️ e `pessoa patch` ⚠️
+
+`PUT /v1/pessoas/{id}` substitui o cadastro; `PATCH /v1/pessoas/{id}` atualiza apenas os campos enviados.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | ID da pessoa |
+| `--json` | **sim** | Objeto JSON da atualização |
+
+### `pessoa ativar`, `pessoa inativar` e `pessoa excluir` ⚠️
+
+`POST /v1/pessoas/ativar`, `/inativar` e `/excluir`. O payload esperado pela API é `{"uuids":[...]}`.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Objeto JSON com os IDs |
+
+### `pessoa conta-conectada` ⚠️
+
+`GET /v1/pessoas/conta-conectada` — retorna os dados da empresa vinculada ao token.
+
+---
+
 ## Fora do escopo do CLI
 
 Endpoints que **existem e respondem**, mas ainda não têm comando:
@@ -330,7 +393,7 @@ Duas armadilhas de nomenclatura, confirmadas em produção e responsáveis por p
 1. **O segmento `/financeiro/` só existe em parte dos recursos.** Categorias, centros de custo e contas financeiras ficam na raiz da `v1`.
 2. **A nomenclatura alterna plural e singular:** `categorias`, mas `centro-de-custo` e `conta-financeira`.
 
-Nunca deduza um path da documentação sem exercitá-lo. `tests/Unit/Api/FinanceiroClientTest.php` trava cada path, o verbo da baixa e os nomes dos parâmetros de data — estenda-o junto com qualquer endpoint novo.
+Nunca deduza um path da documentação sem exercitá-lo. `tests/Unit/Api/FinanceiroClientTest.php` e `tests/Unit/Api/PessoasClientTest.php` travam os paths e parâmetros dos endpoints — estenda-os junto com qualquer endpoint novo.
 
 Lista autoritativa de operações: https://developers.contaazul.com/docs/financial-apis-openapi/v1 — o portal bloqueia `curl` e fetch automatizado (403), então abra no navegador.
 

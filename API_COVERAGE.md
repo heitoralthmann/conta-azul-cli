@@ -2,9 +2,9 @@
 
 Arquivo de controle: todos os endpoints publicados no [Portal do Desenvolvedor Conta Azul](https://developers.contaazul.com/aboutapis), agrupados por área funcional, com o que o `ca` já implementa marcado.
 
-**Escopo do CLI.** Por decisão registrada em `ESPECIFICACAO.md` (seção 2), o `ca` cobre exclusivamente a família **Financeiro** (Finanças + Baixas + Cobranças) e o recurso de **Protocolos** que ela depende para escritas assíncronas. As demais áreas (Contratos, Pessoas, Produtos, Notas Fiscais, Serviços, Vendas, Orçamentos, Captura) estão listadas por completude — para que fique claro que a ausência é decisão, não esquecimento — mas não há plano de implementá-las aqui.
+**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas e a API de **Pessoas**. As demais áreas (Contratos, Produtos, Notas Fiscais, Serviços, Vendas, Orçamentos, Captura) estão listadas por completude.
 
-Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md` e `src/Api/FinanceiroClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
+Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md`, `src/Api/FinanceiroClient.php` e `src/Api/PessoasClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
 
 ---
 
@@ -69,18 +69,18 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 
 ## 👥 Pessoas / Fornecedores
 
-10 endpoints. Fora do escopo do CLI.
+10 endpoints. `src/Api/PessoasClient.php`.
 
-- [ ] `GET /v1/pessoas` — buscar pessoas por filtro
-- [ ] `POST /v1/pessoas` — criar pessoa
-- [ ] `GET /v1/pessoas/{id}` — buscar pessoa por id
-- [ ] `PUT /v1/pessoas/{id}` — atualizar pessoa (integral)
-- [ ] `PATCH /v1/pessoas/{id}` — atualizar pessoa (parcial)
-- [ ] `GET /v1/pessoas/legado/{id}` — buscar pessoa por id legado
-- [ ] `POST /v1/pessoas/ativar` — ativar pessoas em lote
-- [ ] `POST /v1/pessoas/inativar` — inativar pessoas em lote
-- [ ] `POST /v1/pessoas/excluir` — excluir pessoas em lote
-- [ ] `GET /v1/pessoas/conta-conectada` — empresa da conta conectada
+- [x] `GET /v1/pessoas` — `pessoa list`
+- [x] `POST /v1/pessoas` — `pessoa create`
+- [x] `GET /v1/pessoas/{id}` — `pessoa get`
+- [x] `PUT /v1/pessoas/{id}` — `pessoa update`
+- [x] `PATCH /v1/pessoas/{id}` — `pessoa patch`
+- [x] `GET /v1/pessoas/legado/{id}` — `pessoa legado`
+- [x] `POST /v1/pessoas/ativar` — `pessoa ativar`
+- [x] `POST /v1/pessoas/inativar` — `pessoa inativar`
+- [x] `POST /v1/pessoas/excluir` — `pessoa excluir`
+- [x] `GET /v1/pessoas/conta-conectada` — `pessoa conta-conectada`
 
 ## 📦 Produtos e Serviços — Produtos
 
@@ -160,11 +160,11 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 | Financeiro / Cobranças / Baixas | 10 | 17 |
 | Protocolos | 1 | 1 |
 | Contratos | 0 | 3 |
-| Pessoas / Fornecedores | 0 | 10 |
+| Pessoas / Fornecedores | 10 | 10 |
 | Produtos | 0 | 11 |
 | Serviços | 0 | 5 |
 | Notas Fiscais | 0 | 4 |
 | Vendas | 0 | 9 |
 | Orçamentos | 0 | 4 |
 | Captura | 0 | 5 |
-| **Total** | **14** | **72** |
+| **Total** | **24** | **72** |

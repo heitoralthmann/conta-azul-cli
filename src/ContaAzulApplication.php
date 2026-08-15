@@ -6,6 +6,7 @@ namespace ContaAzulCli;
 
 use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Api\PaginationValidator;
+use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Auth\AuthManager;
 use ContaAzulCli\Auth\CallbackServer;
 use ContaAzulCli\Auth\OAuthClient;
@@ -25,6 +26,14 @@ use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Command\Parcela\BaixarCommand;
 use ContaAzulCli\Command\Parcela\GetCommand as ParcelaGetCommand;
 use ContaAzulCli\Command\Protocolo\GetCommand as ProtocoloGetCommand;
+use ContaAzulCli\Command\Pessoa\BatchCommand as PessoaBatchCommand;
+use ContaAzulCli\Command\Pessoa\ContaConectadaCommand as PessoaContaConectadaCommand;
+use ContaAzulCli\Command\Pessoa\CreateCommand as PessoaCreateCommand;
+use ContaAzulCli\Command\Pessoa\GetCommand as PessoaGetCommand;
+use ContaAzulCli\Command\Pessoa\LegadoCommand as PessoaLegadoCommand;
+use ContaAzulCli\Command\Pessoa\ListCommand as PessoaListCommand;
+use ContaAzulCli\Command\Pessoa\PatchCommand as PessoaPatchCommand;
+use ContaAzulCli\Command\Pessoa\UpdateCommand as PessoaUpdateCommand;
 use ContaAzulCli\Config\Configuration;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\ErrorKind;
@@ -76,6 +85,7 @@ final class ContaAzulApplication extends Application
                 keyFile: $config->getCallbackKeyFile(),
             );
             $client = new FinanceiroClient($config, $authManager, $logger, $redactor, $httpClient);
+            $pessoasClient = new PessoasClient($config, $authManager, $logger, $redactor, $httpClient);
 
             $this->addCommands([
                 new LoginCommand($authManager, $callbackServer, $errorEnvelope),
@@ -92,6 +102,16 @@ final class ContaAzulApplication extends Application
                 new CentroDeCustoListCommand($client, $errorEnvelope, $jsonRenderer, $paginationValidator),
                 new AlteracoesCommand($client, $errorEnvelope, $jsonRenderer, $warningEnvelope, $periodoPadrao),
                 new ProtocoloGetCommand($client, $errorEnvelope, $jsonRenderer),
+                new PessoaListCommand($pessoasClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
+                new PessoaCreateCommand($pessoasClient, $errorEnvelope, $jsonRenderer),
+                new PessoaGetCommand($pessoasClient, $errorEnvelope, $jsonRenderer),
+                new PessoaUpdateCommand($pessoasClient, $errorEnvelope, $jsonRenderer),
+                new PessoaPatchCommand($pessoasClient, $errorEnvelope, $jsonRenderer),
+                new PessoaLegadoCommand($pessoasClient, $errorEnvelope, $jsonRenderer),
+                new PessoaBatchCommand($pessoasClient, $errorEnvelope, $jsonRenderer, 'pessoa ativar', 'activate'),
+                new PessoaBatchCommand($pessoasClient, $errorEnvelope, $jsonRenderer, 'pessoa inativar', 'deactivate'),
+                new PessoaBatchCommand($pessoasClient, $errorEnvelope, $jsonRenderer, 'pessoa excluir', 'delete'),
+                new PessoaContaConectadaCommand($pessoasClient, $errorEnvelope, $jsonRenderer),
             ]);
         } catch (\Throwable $e) {
             // Typically CA_CLIENT_ID / CA_CLIENT_SECRET missing, but anything

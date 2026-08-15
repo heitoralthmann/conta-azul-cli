@@ -1,6 +1,6 @@
 # Conta Azul CLI
 
-CLI em PHP/Symfony que expõe a família **Financeiro** da API Conta Azul (Finanças, Baixas, Cobranças) para consumo por agentes de IA.
+CLI em PHP/Symfony que expõe as famílias **Financeiro** (Finanças, Baixas, Cobranças) e **Pessoas** da API Conta Azul para consumo por agentes de IA.
 
 Cada invocação é de curta duração: faz uma chamada, escreve JSON compacto em `stdout` e sai. Toda a complexidade de OAuth2 — fluxo inicial, persistência, refresh, rotação de token — fica encapsulada dentro do CLI.
 
