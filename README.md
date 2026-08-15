@@ -69,24 +69,28 @@ A precedência de configuração é: **flag de CLI → variável de ambiente →
 
 ### Sobre `CA_SCOPE`
 
-**Deixe esta variável indefinida.** Confirmado em produção: a Conta Azul responde `invalid_scope` para qualquer valor enviado no parâmetro `scope` — inclusive `financeiro`. Quando `CA_SCOPE` não está definida, o parâmetro é **omitido** da requisição de autorização e o provedor aplica os escopos configurados no painel do app, que é o caminho que funciona.
-
-A variável existe apenas como escape hatch caso a Conta Azul passe a exigir scope explícito no futuro. Se você receber `invalid_scope` no login, o primeiro lugar a olhar é se `CA_SCOPE` está definida no `.env`.
-
-### Apps de produção: `CA_AUTHORIZE_URL` e `CA_SCOPE`
-
-Aplicações de produção autorizam num endpoint diferente daquele usado para trocar o código por tokens, e exigem scope explícito — ao contrário do sandbox do portal de desenvolvedores, onde o scope precisa ser omitido. O painel da Conta Azul informa a URL de autorização ao criar a aplicação; configure-a inteira:
+Valores aceitos dependem do app registrado. O scope do app de produção é:
 
 ```bash
-CA_AUTHORIZE_URL=https://login.contaazul.com/#/oauth/authorize
 CA_SCOPE="openid profile aws.cognito.signin.user.admin"
 ```
 
-O valor de `CA_SCOPE` **precisa de aspas**: contém espaços, e o Dotenv rejeita valores não citados com espaço.
+O valor **precisa de aspas**: contém espaços, e o Dotenv rejeita valores não citados com espaço.
 
-Note que `CA_AUTHORIZE_URL` é uma rota de fragmento (`/#/`) — o CLI anexa a query depois do hash, preservando o formato que o provedor espera.
+Nem todo scope serve: `financeiro` é recusado com `invalid_scope`. Se `CA_SCOPE` ficar indefinida, o parâmetro é omitido da requisição e o provedor aplica os escopos configurados no painel do app — também um caminho válido. Ao receber `invalid_scope` no login, o primeiro lugar a olhar é o valor no `.env`.
 
-O endpoint de **token** é independente do de autorização e tem sua própria variável, `CA_TOKEN_URL`. Verificamos que o app de produção troca códigos normalmente em `https://auth.contaazul.com/oauth2/token` (o default), então na prática só é preciso mexer nela se a Conta Azul mudar isso.
+### `CA_AUTHORIZE_URL` e `CA_TOKEN_URL` andam em par
+
+**Um authorization code só pode ser resgatado no servidor que o emitiu.** Os dois endpoints têm que pertencer ao mesmo servidor de autorização. Os defaults já satisfazem isso e servem tanto produção quanto sandbox:
+
+```
+CA_AUTHORIZE_URL = https://auth.contaazul.com/oauth2/authorize
+CA_TOKEN_URL     = https://auth.contaazul.com/oauth2/token
+```
+
+Na prática, só mexa nessas variáveis se a Conta Azul mudar os endpoints — e mexa nas duas.
+
+> **Não aponte `CA_AUTHORIZE_URL` para `https://login.contaazul.com/#/oauth/authorize`.** Aquela tela funciona, exibe o nome do app e devolve um `code` no callback — mas é a SPA de login, e ela emite o code através de `api-v2.contaazul.com/oauth/authorize`, um emissor diferente. O `/oauth2/token` do Cognito não reconhece esse code, e a troca falha com **`invalid_grant`** logo depois de um login aparentemente bem-sucedido. Já caímos nessa: o sintoma não aponta para a causa, porque a parte visível do fluxo se comporta como se estivesse certa.
 
 ### Callback OAuth com HTTPS
 

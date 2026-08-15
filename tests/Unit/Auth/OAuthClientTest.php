@@ -23,6 +23,7 @@ final class OAuthClientTest extends TestCase
         'CA_CLIENT_SECRET',
         'CA_REDIRECT_URI',
         'CA_AUTH_BASE_URL',
+        'CA_AUTHORIZE_URL',
         'CA_TOKEN_URL',
         'CA_BOOTSTRAP_REFRESH_TOKEN',
     ];
@@ -160,6 +161,40 @@ final class OAuthClientTest extends TestCase
             self::assertSame(ErrorKind::AuthFailed, $e->kind);
             self::assertStringContainsString('Código de autorização', $e->getMessage());
             self::assertStringNotContainsString('Refresh token', $e->getMessage());
+        }
+    }
+
+    public function testInvalidGrantPointsAtMismatchedAuthorizeAndTokenHosts(): void
+    {
+        // The failure that cost us an afternoon: the login screen behaves, the
+        // callback carries a code, and the exchange still fails — because the
+        // code was minted by a different authorization server.
+        putenv('CA_AUTHORIZE_URL=https://login.contaazul.com/#/oauth/authorize');
+        $client = new MockHttpClient([
+            new MockResponse('{"error":"invalid_grant"}', ['http_code' => 400]),
+        ]);
+
+        try {
+            (new OAuthClient($client, new Configuration()))->exchangeCode('foreign-code');
+            self::fail('Expected CliException');
+        } catch (CliException $e) {
+            self::assertStringContainsString('login.contaazul.com', $e->getMessage());
+            self::assertStringContainsString('auth.contaazul.com', $e->getMessage());
+            self::assertStringContainsString('CA_AUTHORIZE_URL', $e->getMessage());
+        }
+    }
+
+    public function testInvalidGrantStaysQuietWhenTheEndpointsAgree(): void
+    {
+        $client = new MockHttpClient([
+            new MockResponse('{"error":"invalid_grant"}', ['http_code' => 400]),
+        ]);
+
+        try {
+            (new OAuthClient($client, new Configuration()))->exchangeCode('stale-code');
+            self::fail('Expected CliException');
+        } catch (CliException $e) {
+            self::assertStringNotContainsString('CA_AUTHORIZE_URL', $e->getMessage());
         }
     }
 

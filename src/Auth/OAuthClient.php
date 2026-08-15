@@ -74,6 +74,7 @@ final class OAuthClient
                 $message = $isCodeExchange
                     ? 'Código de autorização inválido, expirado ou já utilizado. '
                         . 'Rode "ca auth login" e conclua o login no navegador sem reaproveitar URLs antigas.'
+                        . $this->endpointMismatchHint()
                     : 'Refresh token inválido ou expirado. Execute: ca auth login';
 
                 throw new CliException(ErrorKind::AuthFailed, false, $message . $suffix, $status, previous: $e);
@@ -97,6 +98,25 @@ final class OAuthClient
 
         /** @var array<string, mixed> $data */
         return TokenData::fromOAuthResponse($data);
+    }
+
+    /**
+     * A code is only redeemable at the server that minted it, and pointing the
+     * two endpoints at different hosts fails exactly like an expired code — the
+     * login itself looks perfectly healthy. That cost us a long debugging
+     * session, so when the hosts disagree the error says so outright.
+     */
+    private function endpointMismatchHint(): string
+    {
+        $authorizeHost = parse_url($this->config->getAuthorizeUrl(), PHP_URL_HOST);
+        $tokenHost     = parse_url($this->config->getTokenUrl(), PHP_URL_HOST);
+
+        if (!is_string($authorizeHost) || !is_string($tokenHost) || $authorizeHost === $tokenHost) {
+            return '';
+        }
+
+        return " Atenção: a autorização acontece em {$authorizeHost} mas a troca do código em {$tokenHost}."
+            . ' Um código só é resgatável em quem o emitiu — confira CA_AUTHORIZE_URL e CA_TOKEN_URL.';
     }
 
     /**

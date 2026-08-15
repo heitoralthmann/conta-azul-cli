@@ -92,8 +92,10 @@ final class AuthManager
             'state'         => $this->pendingState,
         ]);
 
-        // A query é anexada como texto porque o endpoint de produção é uma rota
-        // de fragmento (/#/oauth/authorize), lida pelo cliente e não pelo servidor.
+        // O endpoint de autorização precisa pertencer ao mesmo servidor que
+        // emite os tokens: o code só é resgatável em quem o emitiu. A query é
+        // anexada como texto para preservar qualquer formato de URL que o
+        // provedor exija, inclusive rotas de fragmento.
         $separator = str_contains($this->config->getAuthorizeUrl(), '?') ? '&' : '?';
 
         return $this->config->getAuthorizeUrl() . $separator . http_build_query($params);
