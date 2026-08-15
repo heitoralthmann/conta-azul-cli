@@ -224,7 +224,8 @@ class BaseClient
         return null;
     }
 
-    private function sleep(float $seconds): void
+    /** Protected so tests can capture the backoff schedule without real waiting. */
+    protected function sleep(float $seconds): void
     {
         $jitter = $seconds * 0.2;
         $actual = $seconds + (mt_rand() / mt_getrandmax() * 2.0 - 1.0) * $jitter;
