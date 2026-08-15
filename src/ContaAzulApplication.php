@@ -37,12 +37,16 @@ use ContaAzulCli\Output\Logger;
 use ContaAzulCli\Output\Redactor;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpClient\HttpClient;
 
 final class ContaAzulApplication extends Application
 {
+    private ?Logger $logger = null;
+
     public function __construct()
     {
         parent::__construct('ca', '0.1.0');
@@ -59,6 +63,7 @@ final class ContaAzulApplication extends Application
             $config = new Configuration();
             $redactor = new Redactor();
             $logger = new Logger($redactor);
+            $this->logger = $logger;
             $httpClient = HttpClient::create();
             $tokenStore = new TokenStore($config);
             $oauthClient = new OAuthClient($httpClient, $config);
@@ -107,11 +112,30 @@ final class ContaAzulApplication extends Application
             $input   = $this->buildInput($argv);
         }
 
+        // Structured logging is opt-in and goes to a JSONL file, never to stderr,
+        // which stays reserved for the error envelope.
+        if ($input->hasParameterOption(['--verbose', '-v', '-vv', '-vvv', '--debug'], true)) {
+            $this->logger?->enable();
+        }
+
         try {
             return parent::run($input, $output);
         } catch (\Throwable) {
             return 1;
         }
+    }
+
+    protected function getDefaultInputDefinition(): InputDefinition
+    {
+        $definition = parent::getDefaultInputDefinition();
+        $definition->addOption(new InputOption(
+            'debug',
+            null,
+            InputOption::VALUE_NONE,
+            'Grava log estruturado em ~/.cache/conta-azul-cli/log.jsonl',
+        ));
+
+        return $definition;
     }
 
     /** @param list<string> $argv */
