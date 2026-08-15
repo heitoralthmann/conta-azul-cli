@@ -72,19 +72,21 @@ A variável existe apenas como escape hatch caso a Conta Azul passe a exigir sco
 
 ### Callback OAuth com HTTPS
 
-O provedor da Conta Azul **recusa `redirect_uri` em `http://localhost`**: exige HTTPS e um domínio real. A saída é usar `mkcert` com um domínio de teste que já resolve para `127.0.0.1` via DNS público — `*.localtest.me` — sem mexer em `/etc/hosts`, sem container e sem depender de nenhuma ferramenta de ambiente local.
+O provedor da Conta Azul **recusa `redirect_uri` em `http://localhost`**: exige HTTPS e um domínio real. A saída é usar `mkcert` com um domínio que já resolve para `127.0.0.1` via DNS público — `*.ddev.site` — sem mexer em `/etc/hosts`.
+
+> **Não altere esse domínio.** O nome sugere uma dependência de DDEV que **não existe**: o projeto não usa DDEV, e `*.ddev.site` é apenas um wildcard DNS público apontando para `127.0.0.1`. A escolha é imposta pelo provedor — já tentamos trocar por um nome mais neutro e não funcionou. Ao registrar a aplicação com `conta-azul-cli.localtest.me`, que tem exatamente a mesma propriedade de DNS, o portal da Conta Azul respondeu **erro interno de servidor** e recusou o cadastro; com `ddev.site` aceitou. O critério de validação de domínio deles não é documentado, então vale o valor que funciona.
 
 ```bash
 brew install mkcert
 mkcert -install
 mkdir -p .certs
-mkcert -cert-file .certs/cert.pem -key-file .certs/key.pem conta-azul-cli.localtest.me
+mkcert -cert-file .certs/cert.pem -key-file .certs/key.pem conta-azul-cli.ddev.site
 ```
 
 E no `.env`:
 
 ```bash
-CA_REDIRECT_URI=https://conta-azul-cli.localtest.me:9876/callback
+CA_REDIRECT_URI=https://conta-azul-cli.ddev.site:9876/callback
 CA_CALLBACK_CERT=/caminho/absoluto/.certs/cert.pem
 CA_CALLBACK_KEY=/caminho/absoluto/.certs/key.pem
 ```
