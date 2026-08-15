@@ -22,22 +22,7 @@ final class AuthManager
 
     public function getValidAccessToken(): string
     {
-        $lockFile = $this->tokenStore->getPath() . '.lock';
-        $lockDir = dirname($lockFile);
-        if (!is_dir($lockDir)) {
-            mkdir($lockDir, 0700, true);
-        }
-
-        $lock = fopen($lockFile, 'c');
-        if ($lock === false) {
-            throw new CliException(
-                ErrorKind::AuthFailed,
-                false,
-                'Não foi possível adquirir lock do arquivo de tokens.',
-            );
-        }
-
-        flock($lock, LOCK_EX);
+        $lock = $this->acquireLock();
         try {
             return $this->resolveToken();
         } finally {
@@ -75,17 +60,7 @@ final class AuthManager
 
     public function refreshAfter401(): string
     {
-        $lockFile = $this->tokenStore->getPath() . '.lock';
-        $lock = fopen($lockFile, 'c');
-        if ($lock === false) {
-            throw new CliException(
-                ErrorKind::AuthFailed,
-                false,
-                'Não foi possível adquirir lock do arquivo de tokens.',
-            );
-        }
-
-        flock($lock, LOCK_EX);
+        $lock = $this->acquireLock();
         try {
             $token = $this->tokenStore->load();
             if ($token === null) {
@@ -135,5 +110,33 @@ final class AuthManager
     public function logout(): void
     {
         $this->tokenStore->delete();
+    }
+
+    /**
+     * Serializes refresh across concurrent invocations: whoever loses the race
+     * waits here and then reads the token the winner already rotated.
+     *
+     * @return resource
+     */
+    private function acquireLock(): mixed
+    {
+        $lockFile = $this->tokenStore->getPath() . '.lock';
+        $lockDir  = dirname($lockFile);
+        if (!is_dir($lockDir)) {
+            mkdir($lockDir, 0700, true);
+        }
+
+        $lock = @fopen($lockFile, 'c');
+        if ($lock === false) {
+            throw new CliException(
+                ErrorKind::AuthFailed,
+                false,
+                'Não foi possível adquirir lock do arquivo de tokens.',
+            );
+        }
+
+        flock($lock, LOCK_EX);
+
+        return $lock;
     }
 }
