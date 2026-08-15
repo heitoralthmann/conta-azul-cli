@@ -6,6 +6,7 @@ namespace ContaAzulCli\Tests\Unit\Config;
 
 use ContaAzulCli\Config\ConfigException;
 use ContaAzulCli\Config\Configuration;
+use ContaAzulCli\Config\HomeDirectory;
 use PHPUnit\Framework\TestCase;
 
 final class ConfigurationTest extends TestCase
@@ -80,7 +81,7 @@ final class ConfigurationTest extends TestCase
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_CLI_TOKEN_PATH=~/my-tokens.json');
-        $home = getenv('HOME') ?: '/tmp';
+        $home = HomeDirectory::resolve();
 
         $config = new Configuration();
 
@@ -158,7 +159,7 @@ final class ConfigurationTest extends TestCase
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_CALLBACK_CERT=~/.certs/cert.pem');
-        $home = getenv('HOME') ?: '/tmp';
+        $home = HomeDirectory::resolve();
 
         $config = new Configuration();
 
