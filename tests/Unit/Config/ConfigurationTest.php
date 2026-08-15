@@ -15,7 +15,7 @@ final class ConfigurationTest extends TestCase
     private array $originalEnv = [];
 
     private const REQUIRED_VARS = ['CA_CLIENT_ID', 'CA_CLIENT_SECRET'];
-    private const OPTIONAL_VARS = ['CA_REDIRECT_URI', 'CA_SCOPE', 'CA_API_BASE_URL', 'CA_AUTH_BASE_URL', 'CA_CLI_TOKEN_PATH', 'CA_BOOTSTRAP_REFRESH_TOKEN', 'CA_CALLBACK_CERT', 'CA_CALLBACK_KEY'];
+    private const OPTIONAL_VARS = ['CA_REDIRECT_URI', 'CA_SCOPE', 'CA_API_BASE_URL', 'CA_AUTH_BASE_URL', 'CA_AUTHORIZE_URL', 'CA_CLI_TOKEN_PATH', 'CA_BOOTSTRAP_REFRESH_TOKEN', 'CA_CALLBACK_CERT', 'CA_CALLBACK_KEY'];
 
     protected function setUp(): void
     {
@@ -74,6 +74,41 @@ final class ConfigurationTest extends TestCase
         $config = new Configuration();
 
         self::assertSame('https://auth.contaazul.com', $config->getAuthBaseUrl());
+    }
+
+    public function testAuthorizeUrlDefaultsToTheAuthBaseUrl(): void
+    {
+        putenv('CA_CLIENT_ID=id');
+        putenv('CA_CLIENT_SECRET=secret');
+
+        $config = new Configuration();
+
+        self::assertSame('https://auth.contaazul.com/oauth2/authorize', $config->getAuthorizeUrl());
+    }
+
+    public function testAuthorizeUrlDefaultFollowsACustomAuthBaseUrl(): void
+    {
+        putenv('CA_CLIENT_ID=id');
+        putenv('CA_CLIENT_SECRET=secret');
+        putenv('CA_AUTH_BASE_URL=https://auth.example.test/');
+
+        $config = new Configuration();
+
+        self::assertSame('https://auth.example.test/oauth2/authorize', $config->getAuthorizeUrl());
+    }
+
+    public function testAuthorizeUrlCanBeOverriddenWholesale(): void
+    {
+        // Production apps authorize on a different host and path than they
+        // exchange tokens on, so the whole URL has to be replaceable.
+        putenv('CA_CLIENT_ID=id');
+        putenv('CA_CLIENT_SECRET=secret');
+        putenv('CA_AUTHORIZE_URL=https://login.contaazul.com/#/oauth/authorize');
+
+        $config = new Configuration();
+
+        self::assertSame('https://login.contaazul.com/#/oauth/authorize', $config->getAuthorizeUrl());
+        self::assertSame('https://auth.contaazul.com', $config->getAuthBaseUrl(), 'Token endpoint must stay independent.');
     }
 
     public function testTildeInTokenPathIsExpanded(): void

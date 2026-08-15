@@ -26,6 +26,7 @@ final class AuthManagerTest extends TestCase
         'CA_CLIENT_SECRET',
         'CA_REDIRECT_URI',
         'CA_SCOPE',
+        'CA_AUTHORIZE_URL',
         'CA_CLI_TOKEN_PATH',
         'CA_BOOTSTRAP_REFRESH_TOKEN',
     ];
@@ -226,6 +227,27 @@ final class AuthManagerTest extends TestCase
         $query = [];
         parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
         self::assertSame('sales', $query['scope']);
+    }
+
+    public function testAuthorizationUrlUsesTheConfiguredAuthorizeEndpoint(): void
+    {
+        putenv('CA_AUTHORIZE_URL=https://login.contaazul.com/#/oauth/authorize');
+
+        $url = $this->manager()->startLoginFlow();
+
+        // The production endpoint is a fragment route, so the query has to land
+        // after the hash rather than being parsed as a server-side URL.
+        self::assertStringStartsWith('https://login.contaazul.com/#/oauth/authorize?', $url);
+        self::assertStringContainsString('response_type=code', $url);
+    }
+
+    public function testAuthorizationUrlAppendsToAnExistingQueryString(): void
+    {
+        putenv('CA_AUTHORIZE_URL=https://login.contaazul.com/oauth/authorize?tenant=acme');
+
+        $url = $this->manager()->startLoginFlow();
+
+        self::assertStringContainsString('?tenant=acme&response_type=code', $url);
     }
 
     public function testCompleteLoginFlowPersistsTheExchangedToken(): void

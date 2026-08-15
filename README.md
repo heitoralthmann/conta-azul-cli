@@ -59,6 +59,7 @@ A precedência de configuração é: **flag de CLI → variável de ambiente →
 | `CA_CALLBACK_KEY` | não | — |
 | `CA_API_BASE_URL` | não | `https://api-v2.contaazul.com` |
 | `CA_AUTH_BASE_URL` | não | `https://auth.contaazul.com` |
+| `CA_AUTHORIZE_URL` | não | `{CA_AUTH_BASE_URL}/oauth2/authorize` |
 | `CA_CLI_TOKEN_PATH` | não | `~/.config/conta-azul-cli/tokens.json` |
 | `CA_BOOTSTRAP_REFRESH_TOKEN` | não | — |
 
@@ -69,6 +70,19 @@ A precedência de configuração é: **flag de CLI → variável de ambiente →
 **Deixe esta variável indefinida.** Confirmado em produção: a Conta Azul responde `invalid_scope` para qualquer valor enviado no parâmetro `scope` — inclusive `financeiro`. Quando `CA_SCOPE` não está definida, o parâmetro é **omitido** da requisição de autorização e o provedor aplica os escopos configurados no painel do app, que é o caminho que funciona.
 
 A variável existe apenas como escape hatch caso a Conta Azul passe a exigir scope explícito no futuro. Se você receber `invalid_scope` no login, o primeiro lugar a olhar é se `CA_SCOPE` está definida no `.env`.
+
+### Apps de produção: `CA_AUTHORIZE_URL` e `CA_SCOPE`
+
+Aplicações de produção autorizam num endpoint diferente daquele usado para trocar o código por tokens, e exigem scope explícito — ao contrário do sandbox do portal de desenvolvedores, onde o scope precisa ser omitido. O painel da Conta Azul informa a URL de autorização ao criar a aplicação; configure-a inteira:
+
+```bash
+CA_AUTHORIZE_URL=https://login.contaazul.com/#/oauth/authorize
+CA_SCOPE="openid profile aws.cognito.signin.user.admin"
+```
+
+O valor de `CA_SCOPE` **precisa de aspas**: contém espaços, e o Dotenv rejeita valores não citados com espaço.
+
+Note que `CA_AUTHORIZE_URL` é uma rota de fragmento (`/#/`) — o CLI anexa a query depois do hash, preservando o formato que o provedor espera. `CA_AUTH_BASE_URL` continua governando o endpoint de token, que é independente.
 
 ### Callback OAuth com HTTPS
 

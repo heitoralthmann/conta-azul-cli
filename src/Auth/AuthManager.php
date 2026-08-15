@@ -92,7 +92,11 @@ final class AuthManager
             'state'         => $this->pendingState,
         ]);
 
-        return $this->config->getAuthBaseUrl() . '/oauth2/authorize?' . http_build_query($params);
+        // A query é anexada como texto porque o endpoint de produção é uma rota
+        // de fragmento (/#/oauth/authorize), lida pelo cliente e não pelo servidor.
+        $separator = str_contains($this->config->getAuthorizeUrl(), '?') ? '&' : '?';
+
+        return $this->config->getAuthorizeUrl() . $separator . http_build_query($params);
     }
 
     public function getPendingState(): ?string

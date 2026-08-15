@@ -12,6 +12,7 @@ final class Configuration
     private ?string $scope;
     private string  $apiBaseUrl;
     private string  $authBaseUrl;
+    private string  $authorizeUrl;
     private string  $tokenPath;
     private ?string $bootstrapRefreshToken;
     private ?string $callbackCertFile;
@@ -26,6 +27,9 @@ final class Configuration
         $this->scope        = ($scope !== false && $scope !== '') ? $scope : null;
         $this->apiBaseUrl   = rtrim($this->getEnv('CA_API_BASE_URL', 'https://api-v2.contaazul.com'), '/');
         $this->authBaseUrl  = rtrim($this->getEnv('CA_AUTH_BASE_URL', 'https://auth.contaazul.com'), '/');
+        // Apps de produção usam um endpoint de autorização distinto do de token,
+        // com host e path próprios — daí ser configurável por inteiro.
+        $this->authorizeUrl = $this->getEnv('CA_AUTHORIZE_URL', $this->authBaseUrl . '/oauth2/authorize');
         $rawPath            = $this->getEnv('CA_CLI_TOKEN_PATH', '~/.config/conta-azul-cli/tokens.json');
         $this->tokenPath    = $this->expandHome($rawPath);
 
@@ -61,6 +65,11 @@ final class Configuration
     public function getAuthBaseUrl(): string
     {
         return $this->authBaseUrl;
+    }
+
+    public function getAuthorizeUrl(): string
+    {
+        return $this->authorizeUrl;
     }
 
     public function getTokenPath(): string
