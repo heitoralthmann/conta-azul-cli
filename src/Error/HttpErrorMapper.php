@@ -14,7 +14,7 @@ final class HttpErrorMapper
         $isWriteMethod = in_array(strtoupper($method), ['POST', 'PUT', 'PATCH', 'DELETE'], true);
 
         try {
-            $body = $response->getContent(false);
+            $body = $this->normalizeBody($response->getContent(false));
         } catch (\Throwable) {
             $body = '';
         }
@@ -23,7 +23,7 @@ final class HttpErrorMapper
             $status === 401 => new CliException(
                 ErrorKind::AuthFailed,
                 false,
-                'Autenticação falhou. Execute: ca auth login',
+                $this->authFailedMessage($body),
                 $status,
                 null,
                 $correlationId,
@@ -69,6 +69,31 @@ final class HttpErrorMapper
                 $correlationId,
             ),
         };
+    }
+
+    /**
+     * The API answers 401 with the reason the credentials were rejected — for
+     * instance that the authorization screen needs the ERP user rather than a
+     * personal login. Dropping it costs the operator the one hint that resolves
+     * the failure.
+     */
+    private function authFailedMessage(string $body): string
+    {
+        $base = 'Autenticação falhou. Execute: ca auth login';
+
+        return $body === '' ? $base : "{$base} Resposta da API: {$body}";
+    }
+
+    /**
+     * Conta Azul pretty-prints error bodies, so they arrive wrapped across lines
+     * and deeply indented. The envelope is a single compact JSON object, so the
+     * body is flattened rather than embedded verbatim.
+     */
+    private function normalizeBody(string $body): string
+    {
+        $collapsed = preg_replace('/\s+/', ' ', trim($body));
+
+        return trim($collapsed ?? $body);
     }
 
     public function mapTransportError(\Throwable $e, string $correlationId): CliException

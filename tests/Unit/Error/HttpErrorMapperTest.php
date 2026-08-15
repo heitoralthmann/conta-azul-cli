@@ -32,6 +32,65 @@ final class HttpErrorMapperTest extends TestCase
         self::assertSame(401, $exception->httpStatus);
     }
 
+    public function testUnauthorizedKeepsTheApiExplanation(): void
+    {
+        // The API says *why* the credentials were rejected; that hint is the
+        // whole diagnostic value of the response.
+        $body     = '{"message":"Na tela de autorização utilize o usuário e senha do ERP"}';
+        $client   = new MockHttpClient([new MockResponse($body, ['http_code' => 401])]);
+        $response = $client->request('GET', 'https://example.com/test');
+        $response->getStatusCode();
+
+        $exception = $this->mapper->mapResponse($response, 'GET', 'corr-id');
+
+        self::assertSame(ErrorKind::AuthFailed, $exception->kind);
+        self::assertStringContainsString('ca auth login', $exception->getMessage());
+        self::assertStringContainsString('usuário e senha do ERP', $exception->getMessage());
+    }
+
+    public function testUnauthorizedWithEmptyBodyKeepsTheBaseMessage(): void
+    {
+        $client   = new MockHttpClient([new MockResponse('', ['http_code' => 401])]);
+        $response = $client->request('GET', 'https://example.com/test');
+        $response->getStatusCode();
+
+        $exception = $this->mapper->mapResponse($response, 'GET', 'corr-id');
+
+        self::assertSame('Autenticação falhou. Execute: ca auth login', $exception->getMessage());
+    }
+
+    public function testPrettyPrintedBodyIsFlattenedIntoOneLine(): void
+    {
+        // Conta Azul pretty-prints error bodies; the envelope must stay compact.
+        $body = "\n            {\n                \"descricao_erro\": \"Conta não elegível.\",\n"
+            . "                \"status_conta\": \"END_TRIAL\"\n            }\n            ";
+        $client   = new MockHttpClient([new MockResponse($body, ['http_code' => 403])]);
+        $response = $client->request('GET', 'https://example.com/test');
+        $response->getStatusCode();
+
+        $exception = $this->mapper->mapResponse($response, 'GET', 'corr-id');
+
+        self::assertStringNotContainsString("\n", $exception->getMessage());
+        self::assertStringContainsString('{ "descricao_erro": "Conta não elegível.", "status_conta": "END_TRIAL" }', $exception->getMessage());
+    }
+
+    public function testFlatteningPreservesEveryDiagnosticField(): void
+    {
+        // status_conta was what identified the END_TRIAL block, so extracting a
+        // single "message" key would have thrown away the useful half.
+        $client   = new MockHttpClient([new MockResponse(
+            '{"descricao_erro":"Conta não elegível.","status_conta":"END_TRIAL"}',
+            ['http_code' => 403],
+        )]);
+        $response = $client->request('GET', 'https://example.com/test');
+        $response->getStatusCode();
+
+        $message = $this->mapper->mapResponse($response, 'GET', 'corr-id')->getMessage();
+
+        self::assertStringContainsString('descricao_erro', $message);
+        self::assertStringContainsString('END_TRIAL', $message);
+    }
+
     public function testMaps429ToRateLimited(): void
     {
         $client = new MockHttpClient([new MockResponse('{}', ['http_code' => 429])]);
