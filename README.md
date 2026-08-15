@@ -66,7 +66,9 @@ A precedência de configuração é: **flag de CLI → variável de ambiente →
 
 ### Sobre `CA_SCOPE`
 
-O provedor da Conta Azul rejeita valores de scope que não estejam liberados no painel do app. Quando `CA_SCOPE` não está definida, o parâmetro é **omitido** da requisição de autorização e o provedor aplica os escopos configurados no app — que é o comportamento que funciona na maioria dos casos. Só defina esta variável se você souber exatamente quais escopos seu app tem liberados.
+**Deixe esta variável indefinida.** Confirmado em produção: a Conta Azul responde `invalid_scope` para qualquer valor enviado no parâmetro `scope` — inclusive `financeiro`. Quando `CA_SCOPE` não está definida, o parâmetro é **omitido** da requisição de autorização e o provedor aplica os escopos configurados no painel do app, que é o caminho que funciona.
+
+A variável existe apenas como escape hatch caso a Conta Azul passe a exigir scope explícito no futuro. Se você receber `invalid_scope` no login, o primeiro lugar a olhar é se `CA_SCOPE` está definida no `.env`.
 
 ### Callback OAuth com HTTPS
 
