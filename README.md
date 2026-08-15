@@ -72,19 +72,19 @@ A variável existe apenas como escape hatch caso a Conta Azul passe a exigir sco
 
 ### Callback OAuth com HTTPS
 
-O provedor da Conta Azul **recusa `redirect_uri` em `http://localhost`**: exige HTTPS e um domínio real. A saída mais simples em máquina de desenvolvimento é usar `mkcert` com um domínio `*.ddev.site`, que resolve para `127.0.0.1` via DNS público — sem precisar mexer em `/etc/hosts` nem subir container algum.
+O provedor da Conta Azul **recusa `redirect_uri` em `http://localhost`**: exige HTTPS e um domínio real. A saída é usar `mkcert` com um domínio de teste que já resolve para `127.0.0.1` via DNS público — `*.localtest.me` — sem mexer em `/etc/hosts`, sem container e sem depender de nenhuma ferramenta de ambiente local.
 
 ```bash
 brew install mkcert
 mkcert -install
 mkdir -p .certs
-mkcert -cert-file .certs/cert.pem -key-file .certs/key.pem conta-azul-cli.ddev.site
+mkcert -cert-file .certs/cert.pem -key-file .certs/key.pem conta-azul-cli.localtest.me
 ```
 
 E no `.env`:
 
 ```bash
-CA_REDIRECT_URI=https://conta-azul-cli.ddev.site:9876/callback
+CA_REDIRECT_URI=https://conta-azul-cli.localtest.me:9876/callback
 CA_CALLBACK_CERT=/caminho/absoluto/.certs/cert.pem
 CA_CALLBACK_KEY=/caminho/absoluto/.certs/key.pem
 ```
