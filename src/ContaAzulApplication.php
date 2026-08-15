@@ -11,6 +11,7 @@ use ContaAzulCli\Auth\CallbackServer;
 use ContaAzulCli\Auth\OAuthClient;
 use ContaAzulCli\Auth\TokenStore;
 use ContaAzulCli\Command\Auth\LoginCommand;
+use ContaAzulCli\Command\Auth\LogoutCommand;
 use ContaAzulCli\Command\Categoria\ListCommand as CategoriaListCommand;
 use ContaAzulCli\Command\CentroDeCusto\ListCommand as CentroDeCustoListCommand;
 use ContaAzulCli\Command\Cobranca\ListCommand as CobrancaListCommand;
@@ -67,6 +68,7 @@ final class ContaAzulApplication extends Application
 
             $this->addCommands([
                 new LoginCommand($authManager, $callbackServer, $errorEnvelope),
+                new LogoutCommand($authManager),
                 new LancamentoListCommand($client, $errorEnvelope, $jsonRenderer, $paginationValidator),
                 new LancamentoGetCommand($client, $errorEnvelope, $jsonRenderer),
                 new ContaAReceberListCommand($client, $errorEnvelope, $jsonRenderer, $paginationValidator),
