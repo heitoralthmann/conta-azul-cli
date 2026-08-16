@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Api;
 
+use ContaAzulCli\Auth\AuthManager;
+use ContaAzulCli\Config\Configuration;
+use ContaAzulCli\Output\Logger;
+use ContaAzulCli\Output\Redactor;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+
 /**
  * Paths conferidos contra a API real em 2026-08-15, não deduzidos da
  * documentação. Duas armadilhas que custaram caro e valem o aviso:
@@ -16,8 +22,25 @@ namespace ContaAzulCli\Api;
  * A lista autoritativa de operações está em
  * https://developers.contaazul.com/docs/financial-apis-openapi/v1
  */
-final class FinanceiroClient extends BaseClient
+final class FinanceiroClient
 {
+    private readonly ApiClientSupport $support;
+
+
+    /**
+     * Builds a finance API client using the legacy application dependencies.
+     */
+    public function __construct(
+        Configuration $config,
+        AuthManager $authManager,
+        Logger $logger,
+        Redactor $redactor,
+        HttpClientInterface $httpClient,
+    ) {
+        $this->support = ApiClientSupport::fromLegacy($config, $authManager, $logger, $redactor, $httpClient);
+    }
+
+
     // -------------------------------------------------------------------------
     // Contas a Receber
     // -------------------------------------------------------------------------
@@ -36,7 +59,7 @@ final class FinanceiroClient extends BaseClient
         int $tamanhoPagina=50,
         array $filters=[],
     ): array {
-        return $this->request(
+        return $this->support->request(
           'GET', '/v1/financeiro/eventos-financeiros/contas-a-receber/buscar', [
             'query' => array_merge(
               [
@@ -56,9 +79,9 @@ final class FinanceiroClient extends BaseClient
      * @return array<mixed>
      */
     public function createContaAReceber(array $payload, int $pollTimeout=60, bool $noWait=FALSE): array {
-        $response = $this->request('POST', '/v1/financeiro/eventos-financeiros/contas-a-receber', ['json' => $payload]);
+        $response = $this->support->request('POST', '/v1/financeiro/eventos-financeiros/contas-a-receber', ['json' => $payload]);
 
-        return $this->handleAsyncResponse($response, $pollTimeout, $noWait);
+        return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
     }
 
 
@@ -78,7 +101,7 @@ final class FinanceiroClient extends BaseClient
         int $tamanhoPagina=50,
         array $filters=[],
     ): array {
-        return $this->request(
+        return $this->support->request(
           'GET', '/v1/financeiro/eventos-financeiros/contas-a-pagar/buscar', [
             'query' => array_merge(
               [
@@ -98,9 +121,9 @@ final class FinanceiroClient extends BaseClient
      * @return array<mixed>
      */
     public function createContaAPagar(array $payload, int $pollTimeout=60, bool $noWait=FALSE): array {
-        $response = $this->request('POST', '/v1/financeiro/eventos-financeiros/contas-a-pagar', ['json' => $payload]);
+        $response = $this->support->request('POST', '/v1/financeiro/eventos-financeiros/contas-a-pagar', ['json' => $payload]);
 
-        return $this->handleAsyncResponse($response, $pollTimeout, $noWait);
+        return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
     }
 
 
@@ -111,7 +134,7 @@ final class FinanceiroClient extends BaseClient
 
     /** @return array<mixed> */
     public function getParcela(string $id): array {
-        return $this->request('GET', "/v1/financeiro/eventos-financeiros/parcelas/{$id}");
+        return $this->support->request('GET', "/v1/financeiro/eventos-financeiros/parcelas/{$id}");
     }
 
 
@@ -122,9 +145,9 @@ final class FinanceiroClient extends BaseClient
      * @return array<mixed>
      */
     public function baixarParcela(string $id, array $payload, int $pollTimeout=60, bool $noWait=FALSE): array {
-        $response = $this->request('PATCH', "/v1/financeiro/eventos-financeiros/parcelas/{$id}", ['json' => $payload]);
+        $response = $this->support->request('PATCH', "/v1/financeiro/eventos-financeiros/parcelas/{$id}", ['json' => $payload]);
 
-        return $this->handleAsyncResponse($response, $pollTimeout, $noWait);
+        return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
     }
 
 
@@ -135,7 +158,7 @@ final class FinanceiroClient extends BaseClient
 
     /** @return array<mixed> */
     public function listContasFinanceiras(int $pagina=1, int $tamanhoPagina=50): array {
-        return $this->request(
+        return $this->support->request(
           'GET', '/v1/conta-financeira', [
             'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
           ]
@@ -145,7 +168,7 @@ final class FinanceiroClient extends BaseClient
 
     /** @return array<mixed> */
     public function getSaldoContaFinanceira(string $id): array {
-        return $this->request('GET', "/v1/conta-financeira/{$id}/saldo-atual");
+        return $this->support->request('GET', "/v1/conta-financeira/{$id}/saldo-atual");
     }
 
 
@@ -156,7 +179,7 @@ final class FinanceiroClient extends BaseClient
 
     /** @return array<mixed> */
     public function listCategorias(int $pagina=1, int $tamanhoPagina=50): array {
-        return $this->request(
+        return $this->support->request(
           'GET', '/v1/categorias', [
             'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
           ]
@@ -171,7 +194,7 @@ final class FinanceiroClient extends BaseClient
 
     /** @return array<mixed> */
     public function listCentrosDeCusto(int $pagina=1, int $tamanhoPagina=50): array {
-        return $this->request(
+        return $this->support->request(
           'GET', '/v1/centro-de-custo', [
             'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
           ]
@@ -192,7 +215,7 @@ final class FinanceiroClient extends BaseClient
      * @return array<mixed>
      */
     public function getAlteracoes(string $dataInicio, string $dataFim, array $filters=[]): array {
-        return $this->request(
+        return $this->support->request(
           'GET', '/v1/financeiro/eventos-financeiros/alteracoes', [
             'query' => array_merge(
               [
@@ -212,7 +235,7 @@ final class FinanceiroClient extends BaseClient
 
     /** @return array<mixed> */
     public function getProtocolo(string $id): array {
-        return $this->request('GET', "/v1/protocolo/{$id}");
+        return $this->support->request('GET', "/v1/protocolo/{$id}");
     }
 
 

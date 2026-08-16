@@ -10,9 +10,10 @@ use PHPUnit\Framework\TestCase;
 /** Verifies that retry decisions remain safe for reads and writes. */
 final class RetryPolicyTest extends TestCase
 {
+
+
     /** A GET retries transient gateway failures before the attempt limit. */
-    public function testGetRetriesTransientResponses(): void
-    {
+    public function testGetRetriesTransientResponses(): void {
         $policy = new RetryPolicy();
 
         self::assertTrue($policy->shouldRetryResponse('GET', 503, 1));
@@ -20,9 +21,9 @@ final class RetryPolicyTest extends TestCase
         self::assertTrue($policy->shouldRetryTransport('GET', 2));
     }
 
+
     /** Writes only retry a rate-limit response, never an ambiguous server error. */
-    public function testWritesOnlyRetryRateLimits(): void
-    {
+    public function testWritesOnlyRetryRateLimits(): void {
         $policy = new RetryPolicy();
 
         self::assertTrue($policy->shouldRetryResponse('POST', 429, 1));
@@ -30,12 +31,14 @@ final class RetryPolicyTest extends TestCase
         self::assertFalse($policy->shouldRetryTransport('POST', 1));
     }
 
+
     /** Retry-After takes precedence over the documented exponential schedule. */
-    public function testRetryAfterOverridesBackoff(): void
-    {
+    public function testRetryAfterOverridesBackoff(): void {
         $policy = new RetryPolicy();
 
         self::assertSame(5.0, $policy->delay(1, 5.0));
         self::assertSame(2.0, $policy->delay(2));
     }
+
+
 }

@@ -23,7 +23,13 @@ final class HttpApiTransport implements ApiTransportInterface
 
 
     /**
+     * @param Configuration $config API endpoint configuration.
+     * @param AuthManager $authManager Provider for valid and refreshed tokens.
+     * @param Logger $logger Structured request/response logger.
+     * @param Redactor $redactor Removes sensitive query values from logs.
+     * @param HttpClientInterface $httpClient Symfony HTTP adapter.
      * @param SleeperInterface $sleeper Delay implementation, normally NativeSleeper.
+     * @param RetryPolicy $retryPolicy Safe replay rules for each HTTP method.
      */
     public function __construct(
         private readonly Configuration $config,
