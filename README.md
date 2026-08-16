@@ -30,11 +30,11 @@ composer install
 
 ### PHAR
 
-Baixe o `ca.phar` da página de releases do GitHub:
+Baixe o `conta-azul-cli.phar` da página de releases do GitHub:
 
 ```bash
-chmod +x ca.phar
-mv ca.phar /usr/local/bin/ca
+chmod +x conta-azul-cli.phar
+mv conta-azul-cli.phar /usr/local/bin/ca
 ```
 
 > Distribuição via `composer global require` está prevista, mas o pacote ainda não foi publicado no Packagist.
