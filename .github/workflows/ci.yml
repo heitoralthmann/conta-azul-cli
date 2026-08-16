@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        php: ['8.3']
+        php: ['8.3', '8.4', '8.5']
 
     steps:
       - uses: actions/checkout@v4
@@ -34,20 +34,20 @@ jobs:
       - name: Run tests
         run: vendor/bin/phpunit --no-coverage
 
-      # composer.json/lock and advisory checks are platform-independent, so one runner is enough.
+      # composer.json/lock and advisory checks don't vary by runner, so one is enough.
       - name: Validate composer.json and composer.lock
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.php == '8.3'
         run: composer validate --strict
 
       - name: Audit dependencies for known vulnerabilities
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.php == '8.3'
         run: composer audit
 
-      # Static analysis and style are platform-independent, so one runner is enough.
+      # Static analysis and style don't vary by runner, so one is enough.
       - name: Run PHPStan
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.php == '8.3'
         run: vendor/bin/phpstan analyse src/ --level=max --no-progress
 
       - name: Check code style
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.php == '8.3'
         run: vendor/bin/phpcs --standard=phpcs.xml.dist
