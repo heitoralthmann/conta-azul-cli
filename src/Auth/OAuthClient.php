@@ -9,10 +9,12 @@ use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\ErrorKind;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-final class OAuthClient
+/** Symfony HTTP adapter for Conta Azul's OAuth token endpoint. */
+final class OAuthClient implements OAuthGatewayInterface
 {
 
 
+    /** Creates an OAuth adapter using the shared HTTP client and configuration. */
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly Configuration $config,
@@ -20,6 +22,7 @@ final class OAuthClient
     }
 
 
+    /** Exchanges an authorization code for a token. */
     public function exchangeCode(string $code): TokenData {
         return $this->requestToken(
           [
@@ -31,6 +34,7 @@ final class OAuthClient
     }
 
 
+    /** Exchanges a refresh token for a new (possibly rotated) token. */
     public function refresh(string $refreshToken): TokenData {
         return $this->requestToken(
           [
