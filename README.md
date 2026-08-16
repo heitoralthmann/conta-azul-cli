@@ -313,4 +313,4 @@ Superfície **humana** em pt-BR: README, `--help`, descrições, campo `message`
 
 ## Licença
 
-MIT
+Apache 2.0. Veja [LICENSE](LICENSE).

@@ -2,7 +2,7 @@
     "name": "contaazul-cli/cli",
     "description": "CLI PHP/Symfony para as APIs Financeiro, Pessoas, Produtos e Serviços da Conta Azul",
     "type": "project",
-    "license": "MIT",
+    "license": "Apache-2.0",
     "require": {
         "php": "^8.3",
         "symfony/console": "^7.0",
