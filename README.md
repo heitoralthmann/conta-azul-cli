@@ -1,5 +1,9 @@
 # Conta Azul CLI
 
+[![Tests](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/ci.yml)
+![PHP Version](https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white)
+![License](https://img.shields.io/badge/license-Apache%202.0-blue)
+
 CLI em PHP/Symfony que expõe as famílias **Financeiro** (Finanças, Baixas, Cobranças), **Pessoas**, **Produtos** e **Serviços** da API Conta Azul para consumo por agentes de IA.
 
 Cada invocação é de curta duração: faz uma chamada, escreve JSON compacto em `stdout` e sai. Toda a complexidade de OAuth2 — fluxo inicial, persistência, refresh, rotação de token — fica encapsulada dentro do CLI.
@@ -314,7 +318,7 @@ Superfície **humana** em pt-BR: README, `--help`, descrições, campo `message`
 
 ## Contribuição e segurança
 
-Quer contribuir? Veja [CONTRIBUTING.md](CONTRIBUTING.md). Encontrou uma vulnerabilidade? Veja [SECURITY.md](SECURITY.md) — não abra uma issue pública.
+Quer contribuir? Veja [CONTRIBUTING.md](CONTRIBUTING.md) e o [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Encontrou uma vulnerabilidade? Veja [SECURITY.md](SECURITY.md) — não abra uma issue pública.
 
 ## Licença
 
