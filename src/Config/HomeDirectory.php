@@ -43,6 +43,7 @@ final class HomeDirectory
     }
 
 
+    /** Removes trailing separators while preserving a root path. */
     private static function normalize(string $path): string {
         $trimmed = rtrim($path, '/\\');
 

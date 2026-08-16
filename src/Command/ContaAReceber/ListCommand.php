@@ -6,7 +6,9 @@ namespace ContaAzulCli\Command\ContaAReceber;
 
 use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Api\PaginationValidator;
+use ContaAzulCli\Command\Support\PaginationOptions;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
+use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -17,11 +19,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/** Lists receivables for a due-date interval. */
 #[AsCommand(name: 'conta-a-receber list', description: 'Lista contas a receber por intervalo de vencimento')]
 final class ListCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
+    /** Creates the command and its API/output collaborators. */
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -29,22 +34,26 @@ final class ListCommand extends Command
         private readonly PaginationValidator $paginationValidator,
         private readonly WarningEnvelope $warningEnvelope,
         private readonly PeriodoPadrao $periodoPadrao,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct();
     }
 
 
+    /** Declares due-date and shared pagination options. */
     protected function configure(): void {
         $this
             ->addOption('data-vencimento-de', NULL, InputOption::VALUE_REQUIRED, 'Vencimento inicial (YYYY-MM-DD). Padrão: primeiro dia do mês corrente')
-            ->addOption('data-vencimento-ate', NULL, InputOption::VALUE_REQUIRED, 'Vencimento final (YYYY-MM-DD). Padrão: último dia do mês corrente')
-            ->addOption('pagina', NULL, InputOption::VALUE_REQUIRED, 'Número da página', '1')
-            ->addOption('tamanho-pagina', NULL, InputOption::VALUE_REQUIRED, 'Itens por página', '50');
+            ->addOption('data-vencimento-ate', NULL, InputOption::VALUE_REQUIRED, 'Vencimento final (YYYY-MM-DD). Padrão: último dia do mês corrente');
+        PaginationOptions::configure($this);
     }
 
 
+    /** Resolves dates, lists receivables, and renders output or an error. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $deRaw  = $input->getOption('data-vencimento-de');
             $ateRaw = $input->getOption('data-vencimento-ate');
 
@@ -59,22 +68,13 @@ final class ListCommand extends Command
                 );
             }
 
-            $paginaRaw        = $input->getOption('pagina');
-            $tamanhoPaginaRaw = $input->getOption('tamanho-pagina');
-            $pagina           = is_numeric($paginaRaw) ? (int) $paginaRaw : 1;
-            $tamanhoPagina    = is_numeric($tamanhoPaginaRaw) ? (int) $tamanhoPaginaRaw : 50;
-            $this->paginationValidator->validatePageSize($tamanhoPagina);
+            $pagination = PaginationOptions::fromInput($input, $this->paginationValidator);
 
             $this->jsonRenderer->render(
-              $this->client->listContasAReceber($de, $ate, $pagina, $tamanhoPagina),
+              $this->client->listContasAReceber($de, $ate, $pagination->page(), $pagination->pageSize()),
             );
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 

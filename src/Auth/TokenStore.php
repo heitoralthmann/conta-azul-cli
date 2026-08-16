@@ -6,16 +6,19 @@ namespace ContaAzulCli\Auth;
 
 use ContaAzulCli\Config\Configuration;
 
-final class TokenStore
+/** Stores OAuth credentials in a local JSON file with restrictive permissions. */
+final class TokenStore implements TokenRepositoryInterface
 {
     private string $tokenPath;
 
 
+    /** Creates a store using the configured token file path. */
     public function __construct(Configuration $config) {
         $this->tokenPath = $config->getTokenPath();
     }
 
 
+    /** Persists a token atomically enough for concurrent CLI invocations. */
     public function save(TokenData $token): void {
         $dir = dirname($this->tokenPath);
         if (!is_dir($dir)) {
@@ -33,6 +36,7 @@ final class TokenStore
     }
 
 
+    /** Loads a token, treating missing, empty, and corrupt files as absent. */
     public function load(): ?TokenData {
         if (!file_exists($this->tokenPath)) {
             return NULL;
@@ -56,6 +60,7 @@ final class TokenStore
     }
 
 
+    /** Deletes the token file when it exists. */
     public function delete(): void {
         if (file_exists($this->tokenPath)) {
             unlink($this->tokenPath);
@@ -63,6 +68,7 @@ final class TokenStore
     }
 
 
+    /** Returns the path used by this store, for lock coordination. */
     public function getPath(): string {
         return $this->tokenPath;
     }

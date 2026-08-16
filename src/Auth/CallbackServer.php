@@ -7,6 +7,7 @@ namespace ContaAzulCli\Auth;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\ErrorKind;
 
+/** Receives and validates the local OAuth redirect from a browser. */
 final class CallbackServer
 {
     /**
@@ -23,6 +24,14 @@ final class CallbackServer
     private const MAX_REQUEST_LINE_BYTES = 16384;
 
 
+    /**
+     * Creates a callback listener.
+     *
+     * @param int $port Local TCP/TLS port.
+     * @param int $timeoutSeconds Maximum time to wait for a valid callback.
+     * @param string|null $certFile Optional TLS certificate path.
+     * @param string|null $keyFile Optional TLS private key path.
+     */
     public function __construct(
         private readonly int $port=9876,
         // Login is interactive: the operator still has to open a browser, sign in
@@ -34,6 +43,7 @@ final class CallbackServer
     }
 
 
+    /** Waits until a callback with the expected CSRF state is received. */
     public function waitForCallback(string $expectedState): string {
         $errno  = NULL;
         $errstr = NULL;
@@ -141,6 +151,7 @@ final class CallbackServer
     }
 
 
+    /** Extracts and validates the authorization code from a callback query. */
     private function extractCode(string $query, string $expectedState): string {
         /** @var array<string, mixed> $params */
         $params = [];
@@ -170,7 +181,11 @@ final class CallbackServer
     }
 
 
-    /** @param resource $conn */
+    /**
+     * Writes the minimal HTML response used to close or reject a browser tab.
+     *
+     * @param resource $conn
+     */
     private function respond(mixed $conn, string $status, string $body): void {
         // Silenced: the client may have already dropped the connection (e.g. a
         // speculative preconnect), and a failed write here is not actionable —

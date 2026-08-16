@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Error;
 
+/** Stable machine-readable categories emitted in CLI error envelopes. */
 enum ErrorKind: string
 {
     case ClientError = 'client_error';

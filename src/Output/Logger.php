@@ -6,6 +6,7 @@ namespace ContaAzulCli\Output;
 
 use ContaAzulCli\Config\HomeDirectory;
 
+/** Writes optional structured JSONL diagnostics without affecting command output. */
 final class Logger
 {
     private bool $enabled = FALSE;
@@ -14,10 +15,12 @@ final class Logger
     private const MAX_FILES = 3;
 
 
+    /** Creates a logger that redacts sensitive values before persistence. */
     public function __construct(private readonly Redactor $redactor) {
     }
 
 
+    /** Enables file logging and rotates an oversized existing log. */
     public function enable(): void {
         // Logging is best-effort: an unresolvable home must not break the run,
         // so it degrades to the system temp directory instead of throwing.
@@ -32,12 +35,17 @@ final class Logger
     }
 
 
+    /** Reports whether logging has been enabled for this process. */
     public function isEnabled(): bool {
         return $this->enabled;
     }
 
 
-    /** @param array<mixed> $context */
+    /**
+     * Appends one structured log event when logging is enabled.
+     *
+     * @param array<mixed> $context Values associated with the event.
+     */
     public function log(string $level, string $message, array $context=[], string $correlationId=''): void {
         if (!$this->enabled || $this->logPath === NULL) {
             return;
@@ -57,6 +65,7 @@ final class Logger
     }
 
 
+    /** Moves older log files aside when the active file exceeds its limit. */
     private function rotate(): void {
         if ($this->logPath === NULL || !file_exists($this->logPath)) {
             return;

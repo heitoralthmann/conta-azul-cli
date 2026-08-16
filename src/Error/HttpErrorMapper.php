@@ -6,9 +6,16 @@ namespace ContaAzulCli\Error;
 
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
+/** Maps HTTP responses and transport failures to normalized CLI exceptions. */
 final class HttpErrorMapper
 {
 
+
+    /**
+     * Maps an unsuccessful API response according to status and HTTP method.
+     *
+     * @throws \Throwable Only failures while reading the response are handled internally.
+     */
 
     public function mapResponse(ResponseInterface $response, string $method, string $correlationId): CliException {
         $status = $response->getStatusCode();
@@ -98,6 +105,7 @@ final class HttpErrorMapper
     }
 
 
+    /** Converts a transport exception into a retryable transient CLI error. */
     public function mapTransportError(\Throwable $e, string $correlationId): CliException {
         return new CliException(
           ErrorKind::Transient,

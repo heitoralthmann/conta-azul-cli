@@ -16,9 +16,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 /** Commande reutilizável para atualizar parcialmente um recurso por ID. */
 final class ResourceIdJsonCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
-    /** @param callable(string, array<string, mixed>): array<mixed> $operation */
+    /**
+     * Creates a command that passes an identifier and JSON object to an operation.
+     *
+     * @param callable(string, array<string, mixed>): array<mixed> $operation
+     */
     public function __construct(
         string $name,
         string $description,
@@ -27,7 +32,9 @@ final class ResourceIdJsonCommand extends Command
         private readonly JsonRenderer $jsonRenderer,
         string $argumentDescription,
         string $jsonDescription,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         $this->argumentDescription = $argumentDescription;
         $this->jsonDescription = $jsonDescription;
         parent::__construct($name);
@@ -39,6 +46,7 @@ final class ResourceIdJsonCommand extends Command
     private string $jsonDescription;
 
 
+    /** Declares the identifier argument and JSON payload option. */
     protected function configure(): void {
         $this
             ->addArgument('id', InputArgument::REQUIRED, $this->argumentDescription)
@@ -46,8 +54,10 @@ final class ResourceIdJsonCommand extends Command
     }
 
 
+    /** Parses input, invokes the operation, and renders its result. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $id = $input->getArgument('id');
             $this->jsonRenderer->render(
               ($this->operation)(
@@ -55,13 +65,8 @@ final class ResourceIdJsonCommand extends Command
                 JsonPayload::object($input->getOption('json')),
               )
             );
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 

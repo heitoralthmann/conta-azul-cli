@@ -6,6 +6,8 @@ namespace ContaAzulCli\Command\Pessoa;
 
 use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Api\PessoasClient;
+use ContaAzulCli\Command\Support\PaginationOptions;
+use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -15,25 +17,29 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/** Lists people with pagination and API filter options. */
 #[AsCommand(name: 'pessoa list', description: 'Lista pessoas por filtros')]
 final class ListCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
+    /** Creates the command and its API/output collaborators. */
     public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         private readonly PaginationValidator $paginationValidator,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct();
     }
 
 
+    /** Declares person filters and shared pagination options. */
     protected function configure(): void {
         $this
-            ->addOption('pagina', NULL, InputOption::VALUE_REQUIRED, 'Número da página', '1')
-            ->addOption('tamanho-pagina', NULL, InputOption::VALUE_REQUIRED, 'Itens por página', '50')
             ->addOption('tipo-ordenacao', NULL, InputOption::VALUE_REQUIRED, 'Campo de ordenação')
             ->addOption('ordem-ordenacao', NULL, InputOption::VALUE_REQUIRED, 'Direção da ordenação')
             ->addOption('busca', NULL, InputOption::VALUE_REQUIRED, 'Busca por nome ou documento')
@@ -53,16 +59,15 @@ final class ListCommand extends Command
             ->addOption('data-alteracao-ate', NULL, InputOption::VALUE_REQUIRED, 'Data final de alteração')
             ->addOption('tipo-perfil', NULL, InputOption::VALUE_REQUIRED, 'Perfil da pessoa')
             ->addOption('com-endereco', NULL, InputOption::VALUE_NONE, 'Retorna apenas pessoas com endereço');
+        PaginationOptions::configure($this);
     }
 
 
+    /** Collects filters, lists people, and renders output or an error. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
-            $paginaRaw        = $input->getOption('pagina');
-            $tamanhoPaginaRaw = $input->getOption('tamanho-pagina');
-            $pagina           = is_numeric($paginaRaw) ? (int) $paginaRaw : 1;
-            $tamanhoPagina    = is_numeric($tamanhoPaginaRaw) ? (int) $tamanhoPaginaRaw : 50;
-            $this->paginationValidator->validatePageSize($tamanhoPagina);
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
+            $pagination = PaginationOptions::fromInput($input, $this->paginationValidator);
 
             $optionMap = [
                 'tipo-ordenacao'    => 'tipo_ordenacao',
@@ -95,14 +100,9 @@ final class ListCommand extends Command
                 $filters['com_endereco'] = TRUE;
             }
 
-            $this->jsonRenderer->render($this->client->listPessoas($pagina, $tamanhoPagina, $filters));
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+            $this->jsonRenderer->render($this->client->listPessoas($pagination->page(), $pagination->pageSize(), $filters));
+          }
+        );
     }
 
 

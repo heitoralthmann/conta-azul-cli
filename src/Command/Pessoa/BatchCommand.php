@@ -6,6 +6,7 @@ namespace ContaAzulCli\Command\Pessoa;
 
 use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Command\Support\JsonPayload;
+use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -14,18 +15,26 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/** Executes one supported bulk person operation. */
 final class BatchCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
-    /** @param 'activate'|'deactivate'|'delete' $operation */
+    /**
+     * Creates a command for a fixed bulk operation.
+     *
+     * @param 'activate'|'deactivate'|'delete' $operation
+     */
     public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         string $name,
         private readonly string $operation,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct($name);
         $this->setDescription(
           match ($operation) {
@@ -37,13 +46,16 @@ final class BatchCommand extends Command
     }
 
 
+    /** Declares the JSON payload option for the bulk operation. */
     protected function configure(): void {
         $this->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON com a lista de uuids');
     }
 
 
+    /** Parses the payload, executes the selected operation, and renders output. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $payload = JsonPayload::object($input->getOption('json'));
             $result  = match ($this->operation) {
                 'activate' => $this->client->activatePessoas($payload),
@@ -51,13 +63,8 @@ final class BatchCommand extends Command
                 'delete' => $this->client->deletePessoas($payload),
             };
             $this->jsonRenderer->render($result);
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Auth;
 
+/** Immutable OAuth credentials and their expiry metadata. */
 final class TokenData
 {
 
 
+    /** Creates a normalized token record. */
     public function __construct(
         public readonly string $accessToken,
         public readonly \DateTimeImmutable $accessTokenExpiresAt,
@@ -18,7 +20,11 @@ final class TokenData
     }
 
 
-    /** @param array<string, mixed> $data */
+    /**
+     * Rehydrates a token record from the local persistence representation.
+     *
+     * @param array<string, mixed> $data
+     */
     public static function fromArray(array $data): self {
         return new self(
           accessToken: self::str($data['access_token'] ?? ''),
@@ -30,7 +36,11 @@ final class TokenData
     }
 
 
-    /** @param array<string, mixed> $response */
+    /**
+     * Creates a token record from a provider OAuth response.
+     *
+     * @param array<string, mixed> $response
+     */
     public static function fromOAuthResponse(array $response): self {
         $expiresIn = is_numeric($response['expires_in'] ?? NULL) ? (int) $response['expires_in'] : 3600;
         $now       = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
@@ -46,7 +56,11 @@ final class TokenData
     }
 
 
-    /** @return array<string, string> */
+    /**
+     * Serializes this token to the local persistence representation.
+     *
+     * @return array<string, string>
+     */
     public function toArray(): array {
         return [
             'access_token'              => $this->accessToken,
@@ -58,6 +72,7 @@ final class TokenData
     }
 
 
+    /** Returns whether the access token expires within the safety threshold. */
     public function isExpiringSoon(int $thresholdSeconds=60): bool {
         $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
 
@@ -65,6 +80,7 @@ final class TokenData
     }
 
 
+    /** Converts an untrusted persisted value to a string safely. */
     private static function str(mixed $value): string {
         return is_string($value) ? $value : '';
     }

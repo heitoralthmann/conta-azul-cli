@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace ContaAzulCli\Command\ContaAReceber;
 
 use ContaAzulCli\Api\FinanceiroClient;
+use ContaAzulCli\Command\Support\AsyncOptions;
+use ContaAzulCli\Command\Support\CommandExecutor;
+use ContaAzulCli\Command\Support\JsonPayload;
 use ContaAzulCli\Error\CliException;
-use ContaAzulCli\Error\ErrorKind;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -15,57 +17,45 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/** Creates a receivable from JSON and optionally waits for completion. */
 #[AsCommand(name: 'conta-a-receber create', description: 'Cria uma conta a receber')]
 final class CreateCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
+    /** Creates the command and its API/output collaborators. */
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct();
     }
 
 
+    /** Declares the JSON payload and asynchronous options. */
     protected function configure(): void {
         $this
-            ->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da conta a receber')
-            ->addOption('poll-timeout', NULL, InputOption::VALUE_REQUIRED, 'Timeout de polling em segundos', '60')
-            ->addOption('no-wait', NULL, InputOption::VALUE_NONE, 'Retorna imediatamente sem aguardar confirmação assíncrona');
+            ->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da conta a receber');
+        AsyncOptions::configure($this);
     }
 
 
+    /** Creates the receivable and renders output or a normalized error. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
-            $jsonOption = $input->getOption('json');
-            if (!is_string($jsonOption) || $jsonOption === '') {
-                throw new CliException(ErrorKind::ClientError, FALSE, 'A opção --json é obrigatória.');
-            }
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
+            $payload = JsonPayload::object($input->getOption('json'));
+            $asyncOptions = AsyncOptions::fromInput($input);
 
-            try {
-                $decoded = json_decode($jsonOption, TRUE, 512, JSON_THROW_ON_ERROR);
-            } catch (\JsonException $e) {
-                throw new CliException(ErrorKind::ClientError, FALSE, 'JSON inválido: ' . $e->getMessage(), previous: $e);
-            }
-            if (!is_array($decoded)) {
-                throw new CliException(ErrorKind::ClientError, FALSE, 'JSON deve ser um objeto.');
-            }
-            /** @var array<string, mixed> $decoded */
-
-            $pollTimeoutRaw = $input->getOption('poll-timeout');
-            $pollTimeout    = is_numeric($pollTimeoutRaw) ? (int) $pollTimeoutRaw : 60;
-            $noWait         = (bool) $input->getOption('no-wait');
-
-            $this->jsonRenderer->render($this->client->createContaAReceber($decoded, $pollTimeout, $noWait));
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+            $this->jsonRenderer->render(
+              $this->client->createContaAReceber($payload, $asyncOptions->pollTimeout(), $asyncOptions->noWait()),
+            );
+          }
+        );
     }
 
 

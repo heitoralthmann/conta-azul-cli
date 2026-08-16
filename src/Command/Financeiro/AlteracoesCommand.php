@@ -6,6 +6,7 @@ namespace ContaAzulCli\Command\Financeiro;
 
 use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
+use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -16,22 +17,28 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/** Lists financial event changes for reconciliation. */
 #[AsCommand(name: 'financeiro alteracoes', description: 'Lista alterações de eventos financeiros num intervalo (útil para reconciliação)')]
 final class AlteracoesCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
+    /** Creates the command and its API/output collaborators. */
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         private readonly WarningEnvelope $warningEnvelope,
         private readonly PeriodoPadrao $periodoPadrao,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct();
     }
 
 
+    /** Declares optional ISO-8601 interval boundaries. */
     protected function configure(): void {
         $this
             ->addOption(
@@ -49,8 +56,10 @@ final class AlteracoesCommand extends Command
     }
 
 
+    /** Resolves the interval, warns about defaults, and fetches changes. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $inicioRaw = $input->getOption('data-inicio');
             $fimRaw    = $input->getOption('data-fim');
 
@@ -64,13 +73,8 @@ final class AlteracoesCommand extends Command
             }
 
             $this->jsonRenderer->render($this->client->getAlteracoes($inicio, $fim));
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 

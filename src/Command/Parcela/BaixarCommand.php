@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ContaAzulCli\Command\Parcela;
 
 use ContaAzulCli\Api\FinanceiroClient;
+use ContaAzulCli\Command\Support\AsyncOptions;
+use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -16,31 +18,38 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(name: 'parcela baixar', description: 'Registra a baixa (pagamento) de uma parcela')]
+/** Registers payment for one financial installment. */
 final class BaixarCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
+    /** Creates the command and its API/output collaborators. */
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct();
     }
 
 
+    /** Declares payment fields and asynchronous completion options. */
     protected function configure(): void {
         $this
             ->addArgument('id', InputArgument::REQUIRED, 'ID da parcela')
             ->addOption('valor', NULL, InputOption::VALUE_REQUIRED, 'Valor da baixa (ex: 100.50)')
-            ->addOption('data', NULL, InputOption::VALUE_REQUIRED, 'Data da baixa no formato YYYY-MM-DD')
-            ->addOption('poll-timeout', NULL, InputOption::VALUE_REQUIRED, 'Timeout de polling em segundos', '60')
-            ->addOption('no-wait', NULL, InputOption::VALUE_NONE, 'Retorna imediatamente sem aguardar confirmação assíncrona');
+            ->addOption('data', NULL, InputOption::VALUE_REQUIRED, 'Data da baixa no formato YYYY-MM-DD');
+        AsyncOptions::configure($this);
     }
 
 
+    /** Validates payment input, invokes the API, and renders its result. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $rawId = $input->getArgument('id');
             $id    = is_string($rawId) ? $rawId : '';
 
@@ -67,18 +76,13 @@ final class BaixarCommand extends Command
                 'data'  => $dataOption,
             ];
 
-            $pollTimeoutRaw = $input->getOption('poll-timeout');
-            $pollTimeout    = is_numeric($pollTimeoutRaw) ? (int) $pollTimeoutRaw : 60;
-            $noWait         = (bool) $input->getOption('no-wait');
+            $asyncOptions = AsyncOptions::fromInput($input);
 
-            $this->jsonRenderer->render($this->client->baixarParcela($id, $payload, $pollTimeout, $noWait));
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+            $this->jsonRenderer->render(
+              $this->client->baixarParcela($id, $payload, $asyncOptions->pollTimeout(), $asyncOptions->noWait()),
+            );
+          }
+        );
     }
 
 
