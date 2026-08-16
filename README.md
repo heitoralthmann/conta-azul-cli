@@ -4,6 +4,8 @@
 ![PHP Version](https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 
+> **English:** unofficial PHP CLI wrapping the Conta Azul API (Financeiro, Pessoas, Produtos, Serviços) for consumption by AI agents. The Conta Azul API is Brazil-only, so the rest of this documentation is in Portuguese.
+
 CLI em PHP/Symfony que expõe as famílias **Financeiro** (Finanças, Baixas, Cobranças), **Pessoas**, **Produtos** e **Serviços** da API Conta Azul para consumo por agentes de IA.
 
 Cada invocação é de curta duração: faz uma chamada, escreve JSON compacto em `stdout` e sai. Toda a complexidade de OAuth2 — fluxo inicial, persistência, refresh, rotação de token — fica encapsulada dentro do CLI.
