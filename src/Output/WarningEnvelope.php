@@ -14,27 +14,27 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 final class WarningEnvelope
 {
-    private readonly JsonConsoleOutput $output;
+  private readonly JsonConsoleOutput $output;
 
 
-    /**
-     * Creates a warning-envelope renderer.
-     *
-     * @param OutputInterface|null $output Symfony output used for stderr.
-     */
-    public function __construct(?OutputInterface $output=NULL) {
-        $this->output = new JsonConsoleOutput($output);
-    }
+  /**
+   * Creates a warning-envelope renderer.
+   *
+   * @param OutputInterface|null $output Symfony output used for stderr.
+   */
+  public function __construct(?OutputInterface $output=NULL) {
+    $this->output = new JsonConsoleOutput($output);
+  }
 
 
-    /**
-     * Renders a warning as one compact JSON line on stderr.
-     *
-     * @throws \JsonException If the warning cannot be encoded as JSON.
-     */
-    public function renderToStderr(string $message): void {
-        $this->output->renderWarning($message);
-    }
+  /**
+   * Renders a warning as one compact JSON line on stderr.
+   *
+   * @throws \JsonException If the warning cannot be encoded as JSON.
+   */
+  public function renderToStderr(string $message): void {
+    $this->output->renderWarning($message);
+  }
 
 
 }

@@ -16,12 +16,12 @@ interface CommandModuleInterface
 {
 
 
-    /**
-     * Returns the commands that this feature contributes to the CLI.
-     *
-     * @return list<Command>
-     */
-    public function commands(): array;
+  /**
+   * Returns the commands that this feature contributes to the CLI.
+   *
+   * @return list<Command>
+   */
+  public function commands(): array;
 
 
 }

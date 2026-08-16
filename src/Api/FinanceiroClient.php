@@ -24,219 +24,219 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class FinanceiroClient
 {
-    use ApiClientOperations;
+  use ApiClientOperations;
 
 
-    /**
-     * Builds a finance API client using the legacy application dependencies.
-     */
-    public function __construct(
+  /**
+   * Builds a finance API client using the legacy application dependencies.
+   */
+  public function __construct(
         Configuration $config,
         AuthManager $authManager,
         Logger $logger,
         Redactor $redactor,
         HttpClientInterface $httpClient,
     ) {
-        $this->support = ApiClientSupport::fromLegacy($config, $authManager, $logger, $redactor, $httpClient);
-    }
+    $this->support = ApiClientSupport::fromLegacy($config, $authManager, $logger, $redactor, $httpClient);
+  }
 
 
-    // -------------------------------------------------------------------------
-    // Contas a Receber
-    // -------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Contas a Receber
+  // -------------------------------------------------------------------------
 
 
-    /**
-     * O intervalo de vencimento é exigido pela API: sem ele a resposta é 400.
-     *
-     * @param array<string, mixed> $filters
-     * @return array<mixed>
-     */
-    public function listContasAReceber(
+  /**
+   * O intervalo de vencimento é exigido pela API: sem ele a resposta é 400.
+   *
+   * @param array<string, mixed> $filters
+   * @return array<mixed>
+   */
+  public function listContasAReceber(
         string $dataVencimentoDe,
         string $dataVencimentoAte,
         int $pagina=1,
         int $tamanhoPagina=50,
         array $filters=[],
     ): array {
-        return $this->support->request(
-          'GET', '/v1/financeiro/eventos-financeiros/contas-a-receber/buscar', [
-            'query' => array_merge(
-              [
-                'data_vencimento_de'  => $dataVencimentoDe,
-                'data_vencimento_ate' => $dataVencimentoAte,
-                'pagina'              => $pagina,
-                'tamanho_pagina'      => $tamanhoPagina,
-              ], $filters
-            ),
-          ]
-        );
-    }
+    return $this->support->request(
+      'GET', '/v1/financeiro/eventos-financeiros/contas-a-receber/buscar', [
+        'query' => array_merge(
+          [
+            'data_vencimento_de'  => $dataVencimentoDe,
+            'data_vencimento_ate' => $dataVencimentoAte,
+            'pagina'              => $pagina,
+            'tamanho_pagina'      => $tamanhoPagina,
+          ], $filters
+        ),
+      ]
+    );
+  }
 
 
-    /**
-     * @param array<string, mixed> $payload
-     * @return array<mixed>
-     */
-    public function createContaAReceber(array $payload, int $pollTimeout=60, bool $noWait=FALSE): array {
-        $response = $this->support->request('POST', '/v1/financeiro/eventos-financeiros/contas-a-receber', ['json' => $payload]);
+  /**
+   * @param array<string, mixed> $payload
+   * @return array<mixed>
+   */
+  public function createContaAReceber(array $payload, int $pollTimeout=60, bool $noWait=FALSE): array {
+    $response = $this->support->request('POST', '/v1/financeiro/eventos-financeiros/contas-a-receber', ['json' => $payload]);
 
-        return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
-    }
-
-
-    // -------------------------------------------------------------------------
-    // Contas a Pagar
-    // -------------------------------------------------------------------------
+    return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
+  }
 
 
-    /**
-     * @param array<string, mixed> $filters
-     * @return array<mixed>
-     */
-    public function listContasAPagar(
+  // -------------------------------------------------------------------------
+  // Contas a Pagar
+  // -------------------------------------------------------------------------
+
+
+  /**
+   * @param array<string, mixed> $filters
+   * @return array<mixed>
+   */
+  public function listContasAPagar(
         string $dataVencimentoDe,
         string $dataVencimentoAte,
         int $pagina=1,
         int $tamanhoPagina=50,
         array $filters=[],
     ): array {
-        return $this->support->request(
-          'GET', '/v1/financeiro/eventos-financeiros/contas-a-pagar/buscar', [
-            'query' => array_merge(
-              [
-                'data_vencimento_de'  => $dataVencimentoDe,
-                'data_vencimento_ate' => $dataVencimentoAte,
-                'pagina'              => $pagina,
-                'tamanho_pagina'      => $tamanhoPagina,
-              ], $filters
-            ),
-          ]
-        );
-    }
+    return $this->support->request(
+      'GET', '/v1/financeiro/eventos-financeiros/contas-a-pagar/buscar', [
+        'query' => array_merge(
+          [
+            'data_vencimento_de'  => $dataVencimentoDe,
+            'data_vencimento_ate' => $dataVencimentoAte,
+            'pagina'              => $pagina,
+            'tamanho_pagina'      => $tamanhoPagina,
+          ], $filters
+        ),
+      ]
+    );
+  }
 
 
-    /**
-     * @param array<string, mixed> $payload
-     * @return array<mixed>
-     */
-    public function createContaAPagar(array $payload, int $pollTimeout=60, bool $noWait=FALSE): array {
-        $response = $this->support->request('POST', '/v1/financeiro/eventos-financeiros/contas-a-pagar', ['json' => $payload]);
+  /**
+   * @param array<string, mixed> $payload
+   * @return array<mixed>
+   */
+  public function createContaAPagar(array $payload, int $pollTimeout=60, bool $noWait=FALSE): array {
+    $response = $this->support->request('POST', '/v1/financeiro/eventos-financeiros/contas-a-pagar', ['json' => $payload]);
 
-        return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
-    }
-
-
-    // -------------------------------------------------------------------------
-    // Parcelas
-    // -------------------------------------------------------------------------
+    return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
+  }
 
 
-    /** @return array<mixed> */
-    public function getParcela(string $id): array {
-        return $this->support->request('GET', "/v1/financeiro/eventos-financeiros/parcelas/{$id}");
-    }
+  // -------------------------------------------------------------------------
+  // Parcelas
+  // -------------------------------------------------------------------------
 
 
-    /**
-     * A baixa é um PATCH na própria parcela — não existe subrecurso `/baixar`.
-     *
-     * @param array<string, mixed> $payload
-     * @return array<mixed>
-     */
-    public function baixarParcela(string $id, array $payload, int $pollTimeout=60, bool $noWait=FALSE): array {
-        $response = $this->support->request('PATCH', "/v1/financeiro/eventos-financeiros/parcelas/{$id}", ['json' => $payload]);
-
-        return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
-    }
+  /** @return array<mixed> */
+  public function getParcela(string $id): array {
+    return $this->support->request('GET', "/v1/financeiro/eventos-financeiros/parcelas/{$id}");
+  }
 
 
-    // -------------------------------------------------------------------------
-    // Contas Financeiras
-    // -------------------------------------------------------------------------
+  /**
+   * A baixa é um PATCH na própria parcela — não existe subrecurso `/baixar`.
+   *
+   * @param array<string, mixed> $payload
+   * @return array<mixed>
+   */
+  public function baixarParcela(string $id, array $payload, int $pollTimeout=60, bool $noWait=FALSE): array {
+    $response = $this->support->request('PATCH', "/v1/financeiro/eventos-financeiros/parcelas/{$id}", ['json' => $payload]);
+
+    return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
+  }
 
 
-    /** @return array<mixed> */
-    public function listContasFinanceiras(int $pagina=1, int $tamanhoPagina=50): array {
-        return $this->support->request(
-          'GET', '/v1/conta-financeira', [
-            'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
-          ]
-        );
-    }
+  // -------------------------------------------------------------------------
+  // Contas Financeiras
+  // -------------------------------------------------------------------------
 
 
-    /** @return array<mixed> */
-    public function getSaldoContaFinanceira(string $id): array {
-        return $this->support->request('GET', "/v1/conta-financeira/{$id}/saldo-atual");
-    }
+  /** @return array<mixed> */
+  public function listContasFinanceiras(int $pagina=1, int $tamanhoPagina=50): array {
+    return $this->support->request(
+      'GET', '/v1/conta-financeira', [
+        'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
+      ]
+    );
+  }
 
 
-    // -------------------------------------------------------------------------
-    // Categorias
-    // -------------------------------------------------------------------------
+  /** @return array<mixed> */
+  public function getSaldoContaFinanceira(string $id): array {
+    return $this->support->request('GET', "/v1/conta-financeira/{$id}/saldo-atual");
+  }
 
 
-    /** @return array<mixed> */
-    public function listCategorias(int $pagina=1, int $tamanhoPagina=50): array {
-        return $this->support->request(
-          'GET', '/v1/categorias', [
-            'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
-          ]
-        );
-    }
+  // -------------------------------------------------------------------------
+  // Categorias
+  // -------------------------------------------------------------------------
 
 
-    // -------------------------------------------------------------------------
-    // Centros de Custo
-    // -------------------------------------------------------------------------
+  /** @return array<mixed> */
+  public function listCategorias(int $pagina=1, int $tamanhoPagina=50): array {
+    return $this->support->request(
+      'GET', '/v1/categorias', [
+        'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
+      ]
+    );
+  }
 
 
-    /** @return array<mixed> */
-    public function listCentrosDeCusto(int $pagina=1, int $tamanhoPagina=50): array {
-        return $this->support->request(
-          'GET', '/v1/centro-de-custo', [
-            'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
-          ]
-        );
-    }
+  // -------------------------------------------------------------------------
+  // Centros de Custo
+  // -------------------------------------------------------------------------
 
 
-    // -------------------------------------------------------------------------
-    // Eventos Financeiros / Alterações
-    // -------------------------------------------------------------------------
+  /** @return array<mixed> */
+  public function listCentrosDeCusto(int $pagina=1, int $tamanhoPagina=50): array {
+    return $this->support->request(
+      'GET', '/v1/centro-de-custo', [
+        'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
+      ]
+    );
+  }
 
 
-    /**
-     * As datas vão em ISO 8601 **sem timezone** (`2026-08-01T00:00:00`). Com
-     * sufixo `Z` ou offset a API responde 400.
-     *
-     * @param array<string, mixed> $filters
-     * @return array<mixed>
-     */
-    public function getAlteracoes(string $dataInicio, string $dataFim, array $filters=[]): array {
-        return $this->support->request(
-          'GET', '/v1/financeiro/eventos-financeiros/alteracoes', [
-            'query' => array_merge(
-              [
-                'data_inicio' => $dataInicio,
-                'data_fim'    => $dataFim,
-              ], $filters
-            ),
-          ]
-        );
-    }
+  // -------------------------------------------------------------------------
+  // Eventos Financeiros / Alterações
+  // -------------------------------------------------------------------------
 
 
-    // -------------------------------------------------------------------------
-    // Protocolo
-    // -------------------------------------------------------------------------
+  /**
+   * As datas vão em ISO 8601 **sem timezone** (`2026-08-01T00:00:00`). Com
+   * sufixo `Z` ou offset a API responde 400.
+   *
+   * @param array<string, mixed> $filters
+   * @return array<mixed>
+   */
+  public function getAlteracoes(string $dataInicio, string $dataFim, array $filters=[]): array {
+    return $this->support->request(
+      'GET', '/v1/financeiro/eventos-financeiros/alteracoes', [
+        'query' => array_merge(
+          [
+            'data_inicio' => $dataInicio,
+            'data_fim'    => $dataFim,
+          ], $filters
+        ),
+      ]
+    );
+  }
 
 
-    /** @return array<mixed> */
-    public function getProtocolo(string $id): array {
-        return $this->support->request('GET', "/v1/protocolo/{$id}");
-    }
+  // -------------------------------------------------------------------------
+  // Protocolo
+  // -------------------------------------------------------------------------
+
+
+  /** @return array<mixed> */
+  public function getProtocolo(string $id): array {
+    return $this->support->request('GET', "/v1/protocolo/{$id}");
+  }
 
 
 }

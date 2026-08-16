@@ -20,39 +20,39 @@ use Symfony\Component\Console\Output\OutputInterface;
 /** Fetches the current balance for one financial account. */
 final class SaldoCommand extends Command
 {
-    private readonly CommandExecutor $commandExecutor;
+  private readonly CommandExecutor $commandExecutor;
 
 
-    /** Creates the command and its API/output collaborators. */
-    public function __construct(
+  /** Creates the command and its API/output collaborators. */
+  public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         ?CommandExecutor $commandExecutor=NULL,
     ) {
-        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
-        parent::__construct();
-    }
+    $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
+    parent::__construct();
+  }
 
 
-    /** Declares the required account identifier option. */
-    protected function configure(): void {
-        $this->addOption('id', NULL, InputOption::VALUE_REQUIRED, 'ID da conta financeira');
-    }
+  /** Declares the required account identifier option. */
+  protected function configure(): void {
+    $this->addOption('id', NULL, InputOption::VALUE_REQUIRED, 'ID da conta financeira');
+  }
 
 
-    /** Validates the identifier, fetches the balance, and renders the result. */
-    protected function execute(InputInterface $input, OutputInterface $output): int {
-        return $this->commandExecutor->execute(
-          function () use ($input): void {
-            $id = $input->getOption('id');
-            if (!is_string($id) || $id === '') {
-                throw new CliException(ErrorKind::ClientError, FALSE, 'A opção --id é obrigatória.');
-            }
-            $this->jsonRenderer->render($this->client->getSaldoContaFinanceira($id));
-          }
-        );
-    }
+  /** Validates the identifier, fetches the balance, and renders the result. */
+  protected function execute(InputInterface $input, OutputInterface $output): int {
+    return $this->commandExecutor->execute(
+      function () use ($input): void {
+        $id = $input->getOption('id');
+        if (!is_string($id) || $id === '') {
+            throw new CliException(ErrorKind::ClientError, FALSE, 'A opção --id é obrigatória.');
+        }
+        $this->jsonRenderer->render($this->client->getSaldoContaFinanceira($id));
+      }
+    );
+  }
 
 
 }

@@ -12,33 +12,33 @@ final class RetryPolicyTest extends TestCase
 {
 
 
-    /** A GET retries transient gateway failures before the attempt limit. */
-    public function testGetRetriesTransientResponses(): void {
-        $policy = new RetryPolicy();
+  /** A GET retries transient gateway failures before the attempt limit. */
+  public function testGetRetriesTransientResponses(): void {
+    $policy = new RetryPolicy();
 
-        self::assertTrue($policy->shouldRetryResponse('GET', 503, 1));
-        self::assertFalse($policy->shouldRetryResponse('GET', 503, 3));
-        self::assertTrue($policy->shouldRetryTransport('GET', 2));
-    }
-
-
-    /** Writes only retry a rate-limit response, never an ambiguous server error. */
-    public function testWritesOnlyRetryRateLimits(): void {
-        $policy = new RetryPolicy();
-
-        self::assertTrue($policy->shouldRetryResponse('POST', 429, 1));
-        self::assertFalse($policy->shouldRetryResponse('POST', 500, 1));
-        self::assertFalse($policy->shouldRetryTransport('POST', 1));
-    }
+    self::assertTrue($policy->shouldRetryResponse('GET', 503, 1));
+    self::assertFalse($policy->shouldRetryResponse('GET', 503, 3));
+    self::assertTrue($policy->shouldRetryTransport('GET', 2));
+  }
 
 
-    /** Retry-After takes precedence over the documented exponential schedule. */
-    public function testRetryAfterOverridesBackoff(): void {
-        $policy = new RetryPolicy();
+  /** Writes only retry a rate-limit response, never an ambiguous server error. */
+  public function testWritesOnlyRetryRateLimits(): void {
+    $policy = new RetryPolicy();
 
-        self::assertSame(5.0, $policy->delay(1, 5.0));
-        self::assertSame(2.0, $policy->delay(2));
-    }
+    self::assertTrue($policy->shouldRetryResponse('POST', 429, 1));
+    self::assertFalse($policy->shouldRetryResponse('POST', 500, 1));
+    self::assertFalse($policy->shouldRetryTransport('POST', 1));
+  }
+
+
+  /** Retry-After takes precedence over the documented exponential schedule. */
+  public function testRetryAfterOverridesBackoff(): void {
+    $policy = new RetryPolicy();
+
+    self::assertSame(5.0, $policy->delay(1, 5.0));
+    self::assertSame(2.0, $policy->delay(2));
+  }
 
 
 }

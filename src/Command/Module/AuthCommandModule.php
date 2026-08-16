@@ -17,22 +17,22 @@ final class AuthCommandModule implements CommandModuleInterface
 {
 
 
-    /** Connects authentication services used by login and logout commands. */
-    public function __construct(
+  /** Connects authentication services used by login and logout commands. */
+  public function __construct(
         private readonly AuthManager $authManager,
         private readonly CallbackServer $callbackServer,
         private readonly ErrorEnvelope $errorEnvelope,
     ) {
-    }
+  }
 
 
-    /** @return list<Command> */
-    public function commands(): array {
-        return [
-            new LoginCommand($this->authManager, $this->callbackServer, $this->errorEnvelope),
-            new LogoutCommand($this->authManager),
-        ];
-    }
+  /** @return list<Command> */
+  public function commands(): array {
+    return [
+      new LoginCommand($this->authManager, $this->callbackServer, $this->errorEnvelope),
+      new LogoutCommand($this->authManager),
+    ];
+  }
 
 
 }

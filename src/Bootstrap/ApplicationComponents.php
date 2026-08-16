@@ -13,39 +13,39 @@ final class ApplicationComponents
 {
 
 
-    /**
-     * Creates an immutable collection of feature modules and shared logging.
-     *
-     * @param list<CommandModuleInterface> $modules
-     */
-    public function __construct(
+  /**
+   * Creates an immutable collection of feature modules and shared logging.
+   *
+   * @param list<CommandModuleInterface> $modules
+   */
+  public function __construct(
         private readonly Logger $logger,
         private readonly array $modules,
     ) {
+  }
+
+
+  /** Returns the logger used by API clients and the application shell. */
+  public function logger(): Logger {
+    return $this->logger;
+  }
+
+
+  /**
+   * Flattens feature modules into the list expected by Symfony Console.
+   *
+   * @return list<Command>
+   */
+  public function commands(): array {
+    $commands = [];
+    foreach ($this->modules as $module) {
+      foreach ($module->commands() as $command) {
+        $commands[] = $command;
+      }
     }
 
-
-    /** Returns the logger used by API clients and the application shell. */
-    public function logger(): Logger {
-        return $this->logger;
-    }
-
-
-    /**
-     * Flattens feature modules into the list expected by Symfony Console.
-     *
-     * @return list<Command>
-     */
-    public function commands(): array {
-        $commands = [];
-        foreach ($this->modules as $module) {
-            foreach ($module->commands() as $command) {
-                $commands[] = $command;
-            }
-        }
-
-        return $commands;
-    }
+    return $commands;
+  }
 
 
 }

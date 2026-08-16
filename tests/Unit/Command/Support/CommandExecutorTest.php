@@ -17,36 +17,36 @@ final class CommandExecutorTest extends TestCase
 {
 
 
-    /** Successful operations return zero and are invoked exactly once. */
-    public function testReturnsSuccessWhenOperationCompletes(): void {
-        $invocations = 0;
-        $executor = new CommandExecutor(new ErrorEnvelope(new BufferedOutput()));
+  /** Successful operations return zero and are invoked exactly once. */
+  public function testReturnsSuccessWhenOperationCompletes(): void {
+    $invocations = 0;
+    $executor = new CommandExecutor(new ErrorEnvelope(new BufferedOutput()));
 
-        $status = $executor->execute(
-          static function () use (&$invocations): void {
-            $invocations++;
-          }
-        );
+    $status = $executor->execute(
+      static function () use (&$invocations): void {
+          $invocations++;
+      }
+    );
 
-        self::assertSame(Command::SUCCESS, $status);
-        self::assertSame(1, $invocations);
-    }
+    self::assertSame(Command::SUCCESS, $status);
+    self::assertSame(1, $invocations);
+  }
 
 
-    /** Known CLI failures are rendered and return the failure status. */
-    public function testRendersCliExceptionAndReturnsFailure(): void {
-        $output = new BufferedOutput();
-        $executor = new CommandExecutor(new ErrorEnvelope($output));
+  /** Known CLI failures are rendered and return the failure status. */
+  public function testRendersCliExceptionAndReturnsFailure(): void {
+    $output = new BufferedOutput();
+    $executor = new CommandExecutor(new ErrorEnvelope($output));
 
-        $status = $executor->execute(
-          static function (): void {
-            throw new CliException(ErrorKind::ClientError, FALSE, 'Entrada inválida.');
-          }
-        );
+    $status = $executor->execute(
+      static function (): void {
+          throw new CliException(ErrorKind::ClientError, FALSE, 'Entrada inválida.');
+      }
+    );
 
-        self::assertSame(Command::FAILURE, $status);
-        self::assertStringContainsString('Entrada inválida.', $output->fetch());
-    }
+    self::assertSame(Command::FAILURE, $status);
+    self::assertStringContainsString('Entrada inválida.', $output->fetch());
+  }
 
 
 }

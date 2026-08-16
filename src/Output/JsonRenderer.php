@@ -14,27 +14,27 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 final class JsonRenderer
 {
-    private readonly JsonConsoleOutput $output;
+  private readonly JsonConsoleOutput $output;
 
 
-    /**
-     * Creates a success renderer.
-     *
-     * @param OutputInterface|null $output Symfony output used for stdout.
-     */
-    public function __construct(?OutputInterface $output=NULL) {
-        $this->output = new JsonConsoleOutput($output);
-    }
+  /**
+   * Creates a success renderer.
+   *
+   * @param OutputInterface|null $output Symfony output used for stdout.
+   */
+  public function __construct(?OutputInterface $output=NULL) {
+    $this->output = new JsonConsoleOutput($output);
+  }
 
 
-    /**
-     * Renders a successful command result as one compact JSON line.
-     *
-     * @throws \JsonException If the result cannot be encoded as JSON.
-     */
-    public function render(mixed $data): void {
-        $this->output->renderSuccess($data);
-    }
+  /**
+   * Renders a successful command result as one compact JSON line.
+   *
+   * @throws \JsonException If the result cannot be encoded as JSON.
+   */
+  public function render(mixed $data): void {
+    $this->output->renderSuccess($data);
+  }
 
 
 }

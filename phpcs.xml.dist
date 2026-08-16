@@ -3,9 +3,13 @@
   <description>Coding standard for the Conta Azul CLI, adapted from Interactive Strategies' is_drupal_boilerplate ruleset with the Drupal-specific sniffs removed.</description>
 
   <arg name="extensions" value="php"/>
+  <!-- Project indentation uses spaces, with a tab expanded to two columns. -->
+  <arg name="tab-width" value="2"/>
 
   <file>./src</file>
   <file>./tests</file>
+  <file>./bin</file>
+  <file>./phpcs-sniffs</file>
 
   <exclude-pattern>*/vendor/*</exclude-pattern>
   <exclude-pattern>*/node_modules/*</exclude-pattern>
@@ -68,8 +72,39 @@
     <type>warning</type>
   </rule>
 
-  <rule ref="Generic.WhiteSpace.DisallowTabIndent.TabsUsed">
-    <type>warning</type>
+  <!-- Indentation is spaces only: tabs anywhere in leading whitespace are an error. -->
+  <rule ref="Generic.WhiteSpace.DisallowTabIndent"/>
+
+  <!--
+    exact="true" is what actually enforces the two-space rule. With the default
+    exact="false" the sniff only reports lines indented *less* than expected, so
+    over-indented lines pass silently and the report looks clean while the files
+    are not.
+  -->
+  <rule ref="Generic.WhiteSpace.ScopeIndent">
+    <properties>
+      <property name="indent" value="2" />
+      <property name="tabIndent" value="false" />
+      <property name="exact" value="true" />
+    </properties>
+  </rule>
+
+  <!-- Closing braces line up with the statement that opened the scope. -->
+  <rule ref="PEAR.WhiteSpace.ScopeClosingBrace">
+    <properties>
+      <property name="indent" value="2" />
+    </properties>
+  </rule>
+
+  <!--
+    ScopeIndent only governs indentation of scopes (classes, functions, control
+    structures); it says nothing about elements inside a multi-line array, which
+    is why array literals stayed at four spaces. This covers that gap.
+  -->
+  <rule ref="Generic.Arrays.ArrayIndent">
+    <properties>
+      <property name="indent" value="2" />
+    </properties>
   </rule>
 
   <!-- Local reimplementation of ISDrupal.Functions.DebuggingFunctions. -->

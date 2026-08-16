@@ -18,38 +18,38 @@ use Symfony\Component\Console\Output\OutputInterface;
 /** Runs the browser-based OAuth login flow. */
 final class LoginCommand extends Command
 {
-    private readonly CommandExecutor $commandExecutor;
+  private readonly CommandExecutor $commandExecutor;
 
 
-    /** Creates the command and its authentication collaborators. */
-    public function __construct(
+  /** Creates the command and its authentication collaborators. */
+  public function __construct(
         private readonly AuthManager $authManager,
         private readonly CallbackServer $callbackServer,
         private readonly ErrorEnvelope $errorEnvelope,
         ?CommandExecutor $commandExecutor=NULL,
     ) {
-        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
-        parent::__construct();
-    }
+    $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
+    parent::__construct();
+  }
 
 
-    /** Starts OAuth, waits for the local callback, and stores the token. */
-    protected function execute(InputInterface $input, OutputInterface $output): int {
-        return $this->commandExecutor->execute(
-          function () use ($output): void {
-            $authUrl = $this->authManager->startLoginFlow();
-            $output->writeln("Abra este URL no seu navegador:\n");
-            $output->writeln($authUrl);
-            $output->writeln("\nAguardando callback OAuth na porta 9876...");
+  /** Starts OAuth, waits for the local callback, and stores the token. */
+  protected function execute(InputInterface $input, OutputInterface $output): int {
+    return $this->commandExecutor->execute(
+      function () use ($output): void {
+        $authUrl = $this->authManager->startLoginFlow();
+        $output->writeln("Abra este URL no seu navegador:\n");
+        $output->writeln($authUrl);
+        $output->writeln("\nAguardando callback OAuth na porta 9876...");
 
-            $state = $this->authManager->getPendingState() ?? '';
-            $code = $this->callbackServer->waitForCallback($state);
+        $state = $this->authManager->getPendingState() ?? '';
+        $code = $this->callbackServer->waitForCallback($state);
 
-            $this->authManager->completeLoginFlow($code);
-            $output->writeln("\nAutenticado com sucesso!");
-          }
-        );
-    }
+        $this->authManager->completeLoginFlow($code);
+        $output->writeln("\nAutenticado com sucesso!");
+      }
+    );
+  }
 
 
 }

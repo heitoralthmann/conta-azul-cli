@@ -20,35 +20,35 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'pessoa create', description: 'Cria uma pessoa')]
 final class CreateCommand extends Command
 {
-    private readonly CommandExecutor $commandExecutor;
+  private readonly CommandExecutor $commandExecutor;
 
 
-    /** Creates the command and its API/output collaborators. */
-    public function __construct(
+  /** Creates the command and its API/output collaborators. */
+  public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         ?CommandExecutor $commandExecutor=NULL,
     ) {
-        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
-        parent::__construct();
-    }
+    $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
+    parent::__construct();
+  }
 
 
-    /** Declares the JSON payload option. */
-    protected function configure(): void {
-        $this->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
-    }
+  /** Declares the JSON payload option. */
+  protected function configure(): void {
+    $this->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
+  }
 
 
-    /** Parses the payload, creates the person, and renders output or an error. */
-    protected function execute(InputInterface $input, OutputInterface $output): int {
-        return $this->commandExecutor->execute(
-          function () use ($input): void {
-            $this->jsonRenderer->render($this->client->createPessoa(JsonPayload::object($input->getOption('json'))));
-          }
-        );
-    }
+  /** Parses the payload, creates the person, and renders output or an error. */
+  protected function execute(InputInterface $input, OutputInterface $output): int {
+    return $this->commandExecutor->execute(
+      function () use ($input): void {
+        $this->jsonRenderer->render($this->client->createPessoa(JsonPayload::object($input->getOption('json'))));
+      }
+    );
+  }
 
 
 }

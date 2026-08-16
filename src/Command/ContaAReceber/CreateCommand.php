@@ -21,42 +21,42 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'conta-a-receber create', description: 'Cria uma conta a receber')]
 final class CreateCommand extends Command
 {
-    private readonly CommandExecutor $commandExecutor;
+  private readonly CommandExecutor $commandExecutor;
 
 
-    /** Creates the command and its API/output collaborators. */
-    public function __construct(
+  /** Creates the command and its API/output collaborators. */
+  public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         ?CommandExecutor $commandExecutor=NULL,
     ) {
-        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
-        parent::__construct();
-    }
+    $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
+    parent::__construct();
+  }
 
 
-    /** Declares the JSON payload and asynchronous options. */
-    protected function configure(): void {
-        $this
-            ->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da conta a receber');
-        AsyncOptions::configure($this);
-    }
+  /** Declares the JSON payload and asynchronous options. */
+  protected function configure(): void {
+    $this
+          ->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da conta a receber');
+    AsyncOptions::configure($this);
+  }
 
 
-    /** Creates the receivable and renders output or a normalized error. */
-    protected function execute(InputInterface $input, OutputInterface $output): int {
-        return $this->commandExecutor->execute(
-          function () use ($input): void {
-            $payload = JsonPayload::object($input->getOption('json'));
-            $asyncOptions = AsyncOptions::fromInput($input);
+  /** Creates the receivable and renders output or a normalized error. */
+  protected function execute(InputInterface $input, OutputInterface $output): int {
+    return $this->commandExecutor->execute(
+      function () use ($input): void {
+        $payload = JsonPayload::object($input->getOption('json'));
+        $asyncOptions = AsyncOptions::fromInput($input);
 
-            $this->jsonRenderer->render(
-              $this->client->createContaAReceber($payload, $asyncOptions->pollTimeout(), $asyncOptions->noWait()),
-            );
-          }
+        $this->jsonRenderer->render(
+          $this->client->createContaAReceber($payload, $asyncOptions->pollTimeout(), $asyncOptions->noWait()),
         );
-    }
+      }
+    );
+  }
 
 
 }

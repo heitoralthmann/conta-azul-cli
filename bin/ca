@@ -7,37 +7,41 @@ use ContaAzulCli\ContaAzulApplication;
 use Symfony\Component\Dotenv\Dotenv;
 
 $autoloadPaths = [
-    __DIR__ . '/../vendor/autoload.php',
-    __DIR__ . '/../../../autoload.php',
+  __DIR__ . '/../vendor/autoload.php',
+  __DIR__ . '/../../../autoload.php',
 ];
 
-$autoloadFile = null;
+$autoloadFile = NULL;
 foreach ($autoloadPaths as $path) {
-    if (file_exists($path)) {
-        $autoloadFile = $path;
-        break;
-    }
+  if (file_exists($path)) {
+    $autoloadFile = $path;
+    break;
+  }
 }
 
-if ($autoloadFile === null) {
-    fwrite(STDERR, json_encode([
+if ($autoloadFile === NULL) {
+  fwrite(
+    STDERR, json_encode(
+      [
         'kind' => 'client_error',
-        'retryable' => false,
-        'http_status' => null,
-        'protocol_id' => null,
-        'correlation_id' => null,
+        'retryable' => FALSE,
+        'http_status' => NULL,
+        'protocol_id' => NULL,
+        'correlation_id' => NULL,
         'message' => 'Dependências não encontradas. Execute "composer install".',
-    ]) . PHP_EOL);
-    exit(1);
+      ]
+    ) . PHP_EOL
+  );
+  exit(1);
 }
 
 require $autoloadFile;
 
 $envFile = __DIR__ . '/../.env';
 if (file_exists($envFile)) {
-    $dotenv = new Dotenv();
-    $dotenv->usePutenv(true);
-    $dotenv->load($envFile);
+  $dotenv = new Dotenv();
+  $dotenv->usePutenv(TRUE);
+  $dotenv->load($envFile);
 }
 
 $application = new ContaAzulApplication();

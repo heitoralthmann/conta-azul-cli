@@ -9,12 +9,12 @@ interface SleeperInterface
 {
 
 
-    /**
-     * Waits for the requested number of seconds.
-     *
-     * Implementations may add bounded jitter to avoid synchronized retries.
-     */
-    public function sleep(float $seconds): void;
+  /**
+   * Waits for the requested number of seconds.
+   *
+   * Implementations may add bounded jitter to avoid synchronized retries.
+   */
+  public function sleep(float $seconds): void;
 
 
 }

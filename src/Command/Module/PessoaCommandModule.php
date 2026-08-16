@@ -24,31 +24,31 @@ final class PessoaCommandModule implements CommandModuleInterface
 {
 
 
-    /** Connects the people API client and shared command collaborators. */
-    public function __construct(
+  /** Connects the people API client and shared command collaborators. */
+  public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         private readonly PaginationValidator $paginationValidator,
     ) {
-    }
+  }
 
 
-    /** @return list<Command> */
-    public function commands(): array {
-        return [
-            new PessoaListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
-            new PessoaCreateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-            new PessoaGetCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-            new PessoaUpdateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-            new PessoaPatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-            new PessoaLegadoCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-            new PessoaBatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, 'pessoa ativar', 'activate'),
-            new PessoaBatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, 'pessoa inativar', 'deactivate'),
-            new PessoaBatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, 'pessoa excluir', 'delete'),
-            new PessoaContaConectadaCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-        ];
-    }
+  /** @return list<Command> */
+  public function commands(): array {
+    return [
+      new PessoaListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
+      new PessoaCreateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new PessoaGetCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new PessoaUpdateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new PessoaPatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new PessoaLegadoCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new PessoaBatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, 'pessoa ativar', 'activate'),
+      new PessoaBatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, 'pessoa inativar', 'deactivate'),
+      new PessoaBatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, 'pessoa excluir', 'delete'),
+      new PessoaContaConectadaCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+    ];
+  }
 
 
 }

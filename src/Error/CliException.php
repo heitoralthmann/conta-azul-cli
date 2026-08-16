@@ -4,24 +4,32 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Error;
 
-/** Represents a normalized, machine-readable failure exposed by the CLI. */
+/**
+ * Represents a normalized, machine-readable failure exposed by the CLI.
+ *
+ * @property-read ErrorKind $kind Stable envelope classification.
+ * @property-read bool $retryable Whether callers may safely retry.
+ * @property-read int|null $httpStatus HTTP status, when available.
+ * @property-read string|null $protocolId Asynchronous protocol identifier.
+ * @property-read string $correlationId Identifier shared by related requests.
+ */
 final class CliException extends \RuntimeException
 {
 
 
-    /**
-     * Creates an error with retry, HTTP, protocol, and correlation metadata.
-     *
-     * @param ErrorKind $kind Stable envelope classification.
-     * @param bool $retryable Whether callers may safely retry the operation.
-     * @param string $message Operator-facing diagnostic message.
-     * @param int|null $httpStatus HTTP status when the failure came from an API response.
-     * @param string|null $protocolId Asynchronous protocol identifier, if available.
-     * @param string $correlationId Identifier shared by related API requests.
-     * @param \Throwable|null $previous Underlying exception, when one exists.
-     */
+  /**
+   * Creates an error with retry, HTTP, protocol, and correlation metadata.
+   *
+   * @param ErrorKind $kind Stable envelope classification.
+   * @param bool $retryable Whether callers may safely retry the operation.
+   * @param string $message Operator-facing diagnostic message.
+   * @param int|null $httpStatus HTTP status when the failure came from an API response.
+   * @param string|null $protocolId Asynchronous protocol identifier, if available.
+   * @param string $correlationId Identifier shared by related API requests.
+   * @param \Throwable|null $previous Underlying exception, when one exists.
+   */
 
-    public function __construct(
+  public function __construct(
         public readonly ErrorKind $kind,
         public readonly bool $retryable,
         string $message,
@@ -30,8 +38,8 @@ final class CliException extends \RuntimeException
         public readonly string $correlationId='',
         ?\Throwable $previous=NULL,
     ) {
-        parent::__construct($message, 0, $previous);
-    }
+    parent::__construct($message, 0, $previous);
+  }
 
 
 }

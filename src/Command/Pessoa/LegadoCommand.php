@@ -19,36 +19,36 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'pessoa legado', description: 'Busca uma pessoa por ID legado')]
 final class LegadoCommand extends Command
 {
-    private readonly CommandExecutor $commandExecutor;
+  private readonly CommandExecutor $commandExecutor;
 
 
-    /** Creates the command and its API/output collaborators. */
-    public function __construct(
+  /** Creates the command and its API/output collaborators. */
+  public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         ?CommandExecutor $commandExecutor=NULL,
     ) {
-        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
-        parent::__construct();
-    }
+    $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
+    parent::__construct();
+  }
 
 
-    /** Declares the required legacy identifier argument. */
-    protected function configure(): void {
-        $this->addArgument('id', InputArgument::REQUIRED, 'ID legado da pessoa');
-    }
+  /** Declares the required legacy identifier argument. */
+  protected function configure(): void {
+    $this->addArgument('id', InputArgument::REQUIRED, 'ID legado da pessoa');
+  }
 
 
-    /** Fetches the legacy person and renders output or an error. */
-    protected function execute(InputInterface $input, OutputInterface $output): int {
-        return $this->commandExecutor->execute(
-          function () use ($input): void {
-            $id = $input->getArgument('id');
-            $this->jsonRenderer->render($this->client->getPessoaLegado(is_string($id) ? $id : ''));
-          }
-        );
-    }
+  /** Fetches the legacy person and renders output or an error. */
+  protected function execute(InputInterface $input, OutputInterface $output): int {
+    return $this->commandExecutor->execute(
+      function () use ($input): void {
+        $id = $input->getArgument('id');
+        $this->jsonRenderer->render($this->client->getPessoaLegado(is_string($id) ? $id : ''));
+      }
+    );
+  }
 
 
 }

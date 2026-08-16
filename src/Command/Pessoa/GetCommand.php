@@ -19,36 +19,36 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'pessoa get', description: 'Busca uma pessoa por ID')]
 final class GetCommand extends Command
 {
-    private readonly CommandExecutor $commandExecutor;
+  private readonly CommandExecutor $commandExecutor;
 
 
-    /** Creates the command and its API/output collaborators. */
-    public function __construct(
+  /** Creates the command and its API/output collaborators. */
+  public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         ?CommandExecutor $commandExecutor=NULL,
     ) {
-        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
-        parent::__construct();
-    }
+    $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
+    parent::__construct();
+  }
 
 
-    /** Declares the required person identifier argument. */
-    protected function configure(): void {
-        $this->addArgument('id', InputArgument::REQUIRED, 'ID da pessoa');
-    }
+  /** Declares the required person identifier argument. */
+  protected function configure(): void {
+    $this->addArgument('id', InputArgument::REQUIRED, 'ID da pessoa');
+  }
 
 
-    /** Fetches the person and renders its payload or a normalized error. */
-    protected function execute(InputInterface $input, OutputInterface $output): int {
-        return $this->commandExecutor->execute(
-          function () use ($input): void {
-            $id = $input->getArgument('id');
-            $this->jsonRenderer->render($this->client->getPessoa(is_string($id) ? $id : ''));
-          }
-        );
-    }
+  /** Fetches the person and renders its payload or a normalized error. */
+  protected function execute(InputInterface $input, OutputInterface $output): int {
+    return $this->commandExecutor->execute(
+      function () use ($input): void {
+        $id = $input->getArgument('id');
+        $this->jsonRenderer->render($this->client->getPessoa(is_string($id) ? $id : ''));
+      }
+    );
+  }
 
 
 }

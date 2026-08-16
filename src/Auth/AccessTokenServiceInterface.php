@@ -9,16 +9,16 @@ interface AccessTokenServiceInterface
 {
 
 
-    /** Returns a usable token, refreshing and persisting it when necessary. */
-    public function getValidAccessToken(): string;
+  /** Returns a usable token, refreshing and persisting it when necessary. */
+  public function getValidAccessToken(): string;
 
 
-    /** Refreshes the cached token after an API request receives HTTP 401. */
-    public function refreshAfter401(): string;
+  /** Refreshes the cached token after an API request receives HTTP 401. */
+  public function refreshAfter401(): string;
 
 
-    /** Deletes the locally cached credentials. */
-    public function logout(): void;
+  /** Deletes the locally cached credentials. */
+  public function logout(): void;
 
 
 }

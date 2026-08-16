@@ -21,43 +21,43 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'pessoa patch', description: 'Atualiza parcialmente uma pessoa')]
 final class PatchCommand extends Command
 {
-    private readonly CommandExecutor $commandExecutor;
+  private readonly CommandExecutor $commandExecutor;
 
 
-    /** Creates the command and its API/output collaborators. */
-    public function __construct(
+  /** Creates the command and its API/output collaborators. */
+  public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         ?CommandExecutor $commandExecutor=NULL,
     ) {
-        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
-        parent::__construct();
-    }
+    $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
+    parent::__construct();
+  }
 
 
-    /** Declares the person identifier and JSON payload options. */
-    protected function configure(): void {
-        $this
-            ->addArgument('id', InputArgument::REQUIRED, 'ID da pessoa')
-            ->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
-    }
+  /** Declares the person identifier and JSON payload options. */
+  protected function configure(): void {
+    $this
+          ->addArgument('id', InputArgument::REQUIRED, 'ID da pessoa')
+          ->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
+  }
 
 
-    /** Parses input, patches the person, and renders output or an error. */
-    protected function execute(InputInterface $input, OutputInterface $output): int {
-        return $this->commandExecutor->execute(
-          function () use ($input): void {
-            $id = $input->getArgument('id');
-            $this->jsonRenderer->render(
-              $this->client->patchPessoa(
-                is_string($id) ? $id : '',
-                JsonPayload::object($input->getOption('json')),
-              )
-            );
-          }
+  /** Parses input, patches the person, and renders output or an error. */
+  protected function execute(InputInterface $input, OutputInterface $output): int {
+    return $this->commandExecutor->execute(
+      function () use ($input): void {
+        $id = $input->getArgument('id');
+        $this->jsonRenderer->render(
+          $this->client->patchPessoa(
+            is_string($id) ? $id : '',
+            JsonPayload::object($input->getOption('json')),
+          )
         );
-    }
+      }
+    );
+  }
 
 
 }

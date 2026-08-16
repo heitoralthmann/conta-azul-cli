@@ -13,27 +13,27 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\ForbiddenFunctionsSniff;
  */
 class DebuggingFunctionsSniff extends ForbiddenFunctionsSniff
 {
-    /**
-     * A list of forbidden functions with their alternatives.
-     *
-     * The value is null if no alternative exists, i.e., the function should
-     * just not be used.
-     *
-     * @var array<string, string|null>
-     */
-    public $forbiddenFunctions = [
-        'dump' => null,
-        'error_log' => null,
-        'phpinfo' => null,
-        'print_r' => null,
-        'var_dump' => null,
-        'var_export' => null,
-    ];
+  /**
+   * A list of forbidden functions with their alternatives.
+   *
+   * The value is null if no alternative exists, i.e., the function should
+   * just not be used.
+   *
+   * @var array<string, string|null>
+   */
+  public $forbiddenFunctions = [
+    'dump' => NULL,
+    'error_log' => NULL,
+    'phpinfo' => NULL,
+    'print_r' => NULL,
+    'var_dump' => NULL,
+    'var_export' => NULL,
+  ];
 
-    /**
-     * If true, an error will be thrown; otherwise a warning.
-     *
-     * @var boolean
-     */
-    public $error = false;
+  /**
+   * If true, an error will be thrown; otherwise a warning.
+   *
+   * @var boolean
+   */
+  public $error = FALSE;
 }

@@ -30,8 +30,8 @@ final class FinanceiroCommandModule implements CommandModuleInterface
 {
 
 
-    /** Connects financial API services and shared command collaborators. */
-    public function __construct(
+  /** Connects financial API services and shared command collaborators. */
+  public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
@@ -39,26 +39,26 @@ final class FinanceiroCommandModule implements CommandModuleInterface
         private readonly WarningEnvelope $warningEnvelope,
         private readonly PeriodoPadrao $periodoPadrao,
     ) {
-    }
+  }
 
 
-    /** @return list<Command> */
-    public function commands(): array {
-        return [
-            new ContaAReceberListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator, $this->warningEnvelope, $this->periodoPadrao),
-            new ContaAReceberCreateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-            new ContaAPagarListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator, $this->warningEnvelope, $this->periodoPadrao),
-            new ContaAPagarCreateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-            new ParcelaGetCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-            new BaixarCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-            new ContaFinanceiraListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
-            new ContaFinanceiraSaldoCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-            new CategoriaListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
-            new CentroDeCustoListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
-            new AlteracoesCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->warningEnvelope, $this->periodoPadrao),
-            new ProtocoloGetCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-        ];
-    }
+  /** @return list<Command> */
+  public function commands(): array {
+    return [
+      new ContaAReceberListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator, $this->warningEnvelope, $this->periodoPadrao),
+      new ContaAReceberCreateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new ContaAPagarListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator, $this->warningEnvelope, $this->periodoPadrao),
+      new ContaAPagarCreateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new ParcelaGetCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new BaixarCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new ContaFinanceiraListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
+      new ContaFinanceiraSaldoCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new CategoriaListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
+      new CentroDeCustoListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
+      new AlteracoesCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->warningEnvelope, $this->periodoPadrao),
+      new ProtocoloGetCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+    ];
+  }
 
 
 }

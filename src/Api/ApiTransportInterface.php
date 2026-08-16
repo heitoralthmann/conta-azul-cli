@@ -14,20 +14,20 @@ interface ApiTransportInterface
 {
 
 
-    /**
-     * Sends a request and returns its decoded JSON payload.
-     *
-     * @param array<string, mixed> $options Symfony HttpClient request options.
-     * @return array<mixed>
-     * @throws \ContaAzulCli\Error\CliException when the request cannot succeed.
-     */
-    public function request(string $method, string $path, array $options=[]): array;
+  /**
+   * Sends a request and returns its decoded JSON payload.
+   *
+   * @param array<string, mixed> $options Symfony HttpClient request options.
+   * @return array<mixed>
+   * @throws \ContaAzulCli\Error\CliException when the request cannot succeed.
+   */
+  public function request(string $method, string $path, array $options=[]): array;
 
 
-    /**
-     * Returns the identifier attached to every request in this transport.
-     */
-    public function getCorrelationId(): string;
+  /**
+   * Returns the identifier attached to every request in this transport.
+   */
+  public function getCorrelationId(): string;
 
 
 }

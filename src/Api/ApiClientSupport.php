@@ -21,87 +21,87 @@ final class ApiClientSupport
 {
 
 
-    /**
-     * @param ApiTransportInterface $transport Authenticated API transport.
-     * @param ProtocolPoller $poller Asynchronous protocol resolver.
-     */
-    public function __construct(
+  /**
+   * @param ApiTransportInterface $transport Authenticated API transport.
+   * @param ProtocolPoller $poller Asynchronous protocol resolver.
+   */
+  public function __construct(
         private readonly ApiTransportInterface $transport,
         private readonly ProtocolPoller $poller,
     ) {
-    }
+  }
 
 
-    /**
-     * Builds the default support services from the existing application wiring.
-     */
-    public static function fromLegacy(
+  /**
+   * Builds the default support services from the existing application wiring.
+   */
+  public static function fromLegacy(
         Configuration $config,
         AuthManager $authManager,
         Logger $logger,
         Redactor $redactor,
         HttpClientInterface $httpClient,
     ): self {
-        $sleeper = new NativeSleeper();
-        $transport = new HttpApiTransport(
-          $config,
-          $authManager,
-          $logger,
-          $redactor,
-          $httpClient,
-          $sleeper,
-          new RetryPolicy(),
-        );
+    $sleeper = new NativeSleeper();
+    $transport = new HttpApiTransport(
+      $config,
+      $authManager,
+      $logger,
+      $redactor,
+      $httpClient,
+      $sleeper,
+      new RetryPolicy(),
+    );
 
-        return new self($transport, new ProtocolPoller($transport, $sleeper));
+    return new self($transport, new ProtocolPoller($transport, $sleeper));
+  }
+
+
+  /**
+   * Sends an authenticated request through the composed transport.
+   *
+   * @param array<string, mixed> $options
+   * @return array<mixed>
+   */
+  public function request(string $method, string $path, array $options=[]): array {
+    return $this->transport->request($method, $path, $options);
+  }
+
+
+  /**
+   * Returns the correlation identifier attached to transport requests.
+   */
+  public function getCorrelationId(): string {
+    return $this->transport->getCorrelationId();
+  }
+
+
+  /**
+   * Polls an asynchronous protocol identifier until it reaches a terminal state.
+   *
+   * @return array<mixed>
+   */
+  public function pollProtocol(string $protocolId, int $timeoutSeconds=60): array {
+    return $this->poller->poll($protocolId, $timeoutSeconds);
+  }
+
+
+  /**
+   * Returns an accepted response immediately or waits for its protocol.
+   *
+   * @param array<mixed> $response
+   * @return array<mixed>
+   */
+  public function handleAsyncResponse(array $response, int $pollTimeout=60, bool $noWait=FALSE): array {
+    $rawProtocolId = $response['protocolId'] ?? '';
+    $protocolId    = is_string($rawProtocolId) ? $rawProtocolId : '';
+
+    if ($protocolId === '' || $noWait) {
+      return $response;
     }
 
-
-    /**
-     * Sends an authenticated request through the composed transport.
-     *
-     * @param array<string, mixed> $options
-     * @return array<mixed>
-     */
-    public function request(string $method, string $path, array $options=[]): array {
-        return $this->transport->request($method, $path, $options);
-    }
-
-
-    /**
-     * Returns the correlation identifier attached to transport requests.
-     */
-    public function getCorrelationId(): string {
-        return $this->transport->getCorrelationId();
-    }
-
-
-    /**
-     * Polls an asynchronous protocol identifier until it reaches a terminal state.
-     *
-     * @return array<mixed>
-     */
-    public function pollProtocol(string $protocolId, int $timeoutSeconds=60): array {
-        return $this->poller->poll($protocolId, $timeoutSeconds);
-    }
-
-
-    /**
-     * Returns an accepted response immediately or waits for its protocol.
-     *
-     * @param array<mixed> $response
-     * @return array<mixed>
-     */
-    public function handleAsyncResponse(array $response, int $pollTimeout=60, bool $noWait=FALSE): array {
-        $rawProtocolId = $response['protocolId'] ?? '';
-        $protocolId    = is_string($rawProtocolId) ? $rawProtocolId : '';
-
-        if ($protocolId === '' || $noWait) {
-            return $response;
-        }
-
-        return $this->poller->poll($protocolId, $pollTimeout);
-    }
+    return $this->poller->poll($protocolId, $pollTimeout);
+  }
 
 
 }
