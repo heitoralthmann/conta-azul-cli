@@ -11,11 +11,16 @@ namespace ContaAzulCli\Output;
  */
 final class WarningEnvelope
 {
-    public function renderToStderr(string $message): void
-    {
-        fwrite(STDERR, json_encode(
+
+
+    public function renderToStderr(string $message): void {
+        fwrite(
+          STDERR, json_encode(
             ['kind' => 'warning', 'message' => $message],
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
-        ) . "\n");
+          )."\n"
+        );
     }
+
+
 }

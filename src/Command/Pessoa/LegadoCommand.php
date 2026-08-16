@@ -17,6 +17,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'pessoa legado', description: 'Busca uma pessoa por ID legado')]
 final class LegadoCommand extends Command
 {
+
+
     public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -25,13 +27,13 @@ final class LegadoCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
+
+    protected function configure(): void {
         $this->addArgument('id', InputArgument::REQUIRED, 'ID legado da pessoa');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $id = $input->getArgument('id');
             $this->jsonRenderer->render($this->client->getPessoaLegado(is_string($id) ? $id : ''));
@@ -43,4 +45,6 @@ final class LegadoCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }

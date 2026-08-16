@@ -11,14 +11,16 @@ final class PaginationValidator
 {
     private const VALID_SIZES = [10, 20, 50, 100, 200, 500, 1000];
 
-    public function validatePageSize(int $size): void
-    {
-        if (!in_array($size, self::VALID_SIZES, true)) {
+
+    public function validatePageSize(int $size): void {
+        if (!in_array($size, self::VALID_SIZES, TRUE)) {
             throw new CliException(
-                ErrorKind::ClientError,
-                false,
-                'Tamanho de página inválido: ' . $size . '. Valores aceitos: ' . implode(', ', self::VALID_SIZES),
+              ErrorKind::ClientError,
+              FALSE,
+              'Tamanho de página inválido: '.$size.'. Valores aceitos: '.implode(', ', self::VALID_SIZES),
             );
         }
     }
+
+
 }

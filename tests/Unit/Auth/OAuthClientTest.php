@@ -28,8 +28,8 @@ final class OAuthClientTest extends TestCase
         'CA_BOOTSTRAP_REFRESH_TOKEN',
     ];
 
-    protected function setUp(): void
-    {
+
+    protected function setUp(): void {
         foreach (self::ENV_VARS as $var) {
             $this->originalEnv[$var] = getenv($var);
             putenv($var);
@@ -40,10 +40,10 @@ final class OAuthClientTest extends TestCase
         putenv('CA_REDIRECT_URI=https://conta-azul-cli.ddev.site:9876/callback');
     }
 
-    protected function tearDown(): void
-    {
+
+    protected function tearDown(): void {
         foreach ($this->originalEnv as $var => $value) {
-            if ($value === false) {
+            if ($value === FALSE) {
                 putenv($var);
             } else {
                 putenv("{$var}={$value}");
@@ -51,19 +51,25 @@ final class OAuthClientTest extends TestCase
         }
     }
 
-    public function testExchangeCodeSendsAuthorizationCodeGrant(): void
-    {
-        $captured = null;
-        $client   = new MockHttpClient(function (string $method, string $url, array $options) use (&$captured) {
+
+    public function testExchangeCodeSendsAuthorizationCodeGrant(): void {
+        $captured = NULL;
+        $client   = new MockHttpClient(
+          function (string $method, string $url, array $options) use (&$captured) {
             $captured = ['method' => $method, 'url' => $url, 'options' => $options];
 
-            return new MockResponse(json_encode([
+            return new MockResponse(
+              json_encode(
+                [
                 'access_token'  => 'access-1',
                 'refresh_token' => 'refresh-1',
                 'expires_in'    => 3600,
                 'token_type'    => 'Bearer',
-            ], JSON_THROW_ON_ERROR));
-        });
+                ], JSON_THROW_ON_ERROR
+              )
+            );
+          }
+        );
 
         $token = (new OAuthClient($client, new Configuration()))->exchangeCode('the-code');
 
@@ -79,30 +85,34 @@ final class OAuthClientTest extends TestCase
         self::assertSame('https://conta-azul-cli.ddev.site:9876/callback', $body['redirect_uri']);
     }
 
-    public function testClientCredentialsAreSentAsBasicAuthHeader(): void
-    {
-        $captured = null;
-        $client   = new MockHttpClient(function (string $method, string $url, array $options) use (&$captured) {
+
+    public function testClientCredentialsAreSentAsBasicAuthHeader(): void {
+        $captured = NULL;
+        $client   = new MockHttpClient(
+          function (string $method, string $url, array $options) use (&$captured) {
             $captured = $options;
 
             return new MockResponse('{"access_token":"a","refresh_token":"r","expires_in":3600}');
-        });
+          }
+        );
 
         (new OAuthClient($client, new Configuration()))->refresh('some-refresh');
 
         self::assertIsArray($captured);
-        $expected = 'Authorization: Basic ' . base64_encode('my-client:my-secret');
+        $expected = 'Authorization: Basic '.base64_encode('my-client:my-secret');
         self::assertContains($expected, $captured['headers']);
     }
 
-    public function testRefreshSendsRefreshTokenGrant(): void
-    {
-        $captured = null;
-        $client   = new MockHttpClient(function (string $method, string $url, array $options) use (&$captured) {
+
+    public function testRefreshSendsRefreshTokenGrant(): void {
+        $captured = NULL;
+        $client   = new MockHttpClient(
+          function (string $method, string $url, array $options) use (&$captured) {
             $captured = $options;
 
             return new MockResponse('{"access_token":"a","refresh_token":"r","expires_in":3600}');
-        });
+          }
+        );
 
         (new OAuthClient($client, new Configuration()))->refresh('old-refresh');
 
@@ -112,14 +122,21 @@ final class OAuthClientTest extends TestCase
         self::assertSame('old-refresh', $body['refresh_token']);
     }
 
-    public function testRefreshReturnsTheRotatedRefreshToken(): void
-    {
+
+    public function testRefreshReturnsTheRotatedRefreshToken(): void {
         // Cognito rotates the refresh token on every use; the new value must win.
-        $client = new MockHttpClient([new MockResponse(json_encode([
-            'access_token'  => 'access-2',
-            'refresh_token' => 'refresh-2-rotated',
-            'expires_in'    => 3600,
-        ], JSON_THROW_ON_ERROR))]);
+        $client = new MockHttpClient(
+          [new MockResponse(
+            json_encode(
+              [
+              'access_token'  => 'access-2',
+              'refresh_token' => 'refresh-2-rotated',
+              'expires_in'    => 3600,
+              ], JSON_THROW_ON_ERROR
+            )
+          )
+          ]
+        );
 
         $token = (new OAuthClient($client, new Configuration()))->refresh('refresh-1-old');
 
@@ -127,11 +144,13 @@ final class OAuthClientTest extends TestCase
         self::assertNotSame('refresh-1-old', $token->refreshToken);
     }
 
-    public function testInvalidGrantMapsToAuthFailed(): void
-    {
-        $client = new MockHttpClient([
+
+    public function testInvalidGrantMapsToAuthFailed(): void {
+        $client = new MockHttpClient(
+          [
             new MockResponse('{"error":"invalid_grant"}', ['http_code' => 400]),
-        ]);
+          ]
+        );
 
         try {
             (new OAuthClient($client, new Configuration()))->refresh('consumed-token');
@@ -143,16 +162,18 @@ final class OAuthClientTest extends TestCase
         }
     }
 
-    public function testInvalidGrantOnCodeExchangeBlamesTheCodeNotTheRefreshToken(): void
-    {
+
+    public function testInvalidGrantOnCodeExchangeBlamesTheCodeNotTheRefreshToken(): void {
         // During login there is no refresh token yet; blaming it would send the
         // operator to re-run the very command that just failed.
-        $client = new MockHttpClient([
+        $client = new MockHttpClient(
+          [
             new MockResponse(
-                '{"error":"invalid_grant","error_description":"Authorization code expired"}',
-                ['http_code' => 400],
+              '{"error":"invalid_grant","error_description":"Authorization code expired"}',
+              ['http_code' => 400],
             ),
-        ]);
+          ]
+        );
 
         try {
             (new OAuthClient($client, new Configuration()))->exchangeCode('stale-code');
@@ -164,15 +185,17 @@ final class OAuthClientTest extends TestCase
         }
     }
 
-    public function testInvalidGrantPointsAtMismatchedAuthorizeAndTokenHosts(): void
-    {
+
+    public function testInvalidGrantPointsAtMismatchedAuthorizeAndTokenHosts(): void {
         // The failure that cost us an afternoon: the login screen behaves, the
         // callback carries a code, and the exchange still fails — because the
         // code was minted by a different authorization server.
         putenv('CA_AUTHORIZE_URL=https://login.contaazul.com/#/oauth/authorize');
-        $client = new MockHttpClient([
+        $client = new MockHttpClient(
+          [
             new MockResponse('{"error":"invalid_grant"}', ['http_code' => 400]),
-        ]);
+          ]
+        );
 
         try {
             (new OAuthClient($client, new Configuration()))->exchangeCode('foreign-code');
@@ -184,11 +207,13 @@ final class OAuthClientTest extends TestCase
         }
     }
 
-    public function testInvalidGrantStaysQuietWhenTheEndpointsAgree(): void
-    {
-        $client = new MockHttpClient([
+
+    public function testInvalidGrantStaysQuietWhenTheEndpointsAgree(): void {
+        $client = new MockHttpClient(
+          [
             new MockResponse('{"error":"invalid_grant"}', ['http_code' => 400]),
-        ]);
+          ]
+        );
 
         try {
             (new OAuthClient($client, new Configuration()))->exchangeCode('stale-code');
@@ -198,14 +223,16 @@ final class OAuthClientTest extends TestCase
         }
     }
 
-    public function testProviderErrorDescriptionIsCarriedIntoTheMessage(): void
-    {
-        $client = new MockHttpClient([
+
+    public function testProviderErrorDescriptionIsCarriedIntoTheMessage(): void {
+        $client = new MockHttpClient(
+          [
             new MockResponse(
-                '{"error":"invalid_grant","error_description":"redirect_uri mismatch"}',
-                ['http_code' => 400],
+              '{"error":"invalid_grant","error_description":"redirect_uri mismatch"}',
+              ['http_code' => 400],
             ),
-        ]);
+          ]
+        );
 
         try {
             (new OAuthClient($client, new Configuration()))->exchangeCode('some-code');
@@ -216,8 +243,8 @@ final class OAuthClientTest extends TestCase
         }
     }
 
-    public function testMissingProviderDetailStillReportsTheStatus(): void
-    {
+
+    public function testMissingProviderDetailStillReportsTheStatus(): void {
         $client = new MockHttpClient([new MockResponse('', ['http_code' => 400])]);
 
         try {
@@ -228,11 +255,13 @@ final class OAuthClientTest extends TestCase
         }
     }
 
-    public function testOtherClientErrorsMapToAuthFailedWithStatus(): void
-    {
-        $client = new MockHttpClient([
+
+    public function testOtherClientErrorsMapToAuthFailedWithStatus(): void {
+        $client = new MockHttpClient(
+          [
             new MockResponse('{"error":"invalid_client"}', ['http_code' => 401]),
-        ]);
+          ]
+        );
 
         try {
             (new OAuthClient($client, new Configuration()))->refresh('some-token');
@@ -243,12 +272,14 @@ final class OAuthClientTest extends TestCase
         }
     }
 
-    public function testNetworkErrorMapsToTransient(): void
-    {
+
+    public function testNetworkErrorMapsToTransient(): void {
         // Refresh is idempotent server-side, so a dropped connection is safe to retry.
-        $client = new MockHttpClient(function (): never {
+        $client = new MockHttpClient(
+          function (): never {
             throw new class ('connection refused') extends \RuntimeException implements TransportExceptionInterface {};
-        });
+          }
+        );
 
         try {
             (new OAuthClient($client, new Configuration()))->refresh('some-token');
@@ -259,33 +290,39 @@ final class OAuthClientTest extends TestCase
         }
     }
 
-    public function testTokenUrlCanBeOverriddenIndependently(): void
-    {
+
+    public function testTokenUrlCanBeOverriddenIndependently(): void {
         putenv('CA_TOKEN_URL=https://login.contaazul.com/oauth2/token');
-        $capturedUrl = null;
-        $client      = new MockHttpClient(function (string $method, string $url) use (&$capturedUrl) {
+        $capturedUrl = NULL;
+        $client      = new MockHttpClient(
+          function (string $method, string $url) use (&$capturedUrl) {
             $capturedUrl = $url;
 
             return new MockResponse('{"access_token":"a","refresh_token":"r","expires_in":3600}');
-        });
+          }
+        );
 
         (new OAuthClient($client, new Configuration()))->exchangeCode('c');
 
         self::assertSame('https://login.contaazul.com/oauth2/token', $capturedUrl);
     }
 
-    public function testAuthBaseUrlIsConfigurable(): void
-    {
+
+    public function testAuthBaseUrlIsConfigurable(): void {
         putenv('CA_AUTH_BASE_URL=https://auth.example.test');
-        $capturedUrl = null;
-        $client      = new MockHttpClient(function (string $method, string $url) use (&$capturedUrl) {
+        $capturedUrl = NULL;
+        $client      = new MockHttpClient(
+          function (string $method, string $url) use (&$capturedUrl) {
             $capturedUrl = $url;
 
             return new MockResponse('{"access_token":"a","refresh_token":"r","expires_in":3600}');
-        });
+          }
+        );
 
         (new OAuthClient($client, new Configuration()))->refresh('t');
 
         self::assertSame('https://auth.example.test/oauth2/token', $capturedUrl);
     }
+
+
 }

@@ -18,6 +18,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'categoria list', description: 'Lista categorias financeiras')]
 final class ListCommand extends Command
 {
+
+
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -27,15 +29,15 @@ final class ListCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
+
+    protected function configure(): void {
         $this
-            ->addOption('pagina', null, InputOption::VALUE_REQUIRED, 'Número da página', '1')
-            ->addOption('tamanho-pagina', null, InputOption::VALUE_REQUIRED, 'Itens por página', '50');
+            ->addOption('pagina', NULL, InputOption::VALUE_REQUIRED, 'Número da página', '1')
+            ->addOption('tamanho-pagina', NULL, InputOption::VALUE_REQUIRED, 'Itens por página', '50');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $paginaRaw        = $input->getOption('pagina');
             $tamanhoPaginaRaw = $input->getOption('tamanho-pagina');
@@ -52,4 +54,6 @@ final class ListCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }

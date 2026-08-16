@@ -9,24 +9,27 @@ use ContaAzulCli\Error\ErrorKind;
 
 final class JsonPayload
 {
+
+
     /** @return array<string, mixed> */
-    public static function object(mixed $value): array
-    {
+    public static function object(mixed $value): array {
         if (!is_string($value) || $value === '') {
-            throw new CliException(ErrorKind::ClientError, false, 'A opção --json é obrigatória.');
+            throw new CliException(ErrorKind::ClientError, FALSE, 'A opção --json é obrigatória.');
         }
 
         try {
-            $decoded = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+            $decoded = json_decode($value, TRUE, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
-            throw new CliException(ErrorKind::ClientError, false, 'JSON inválido: ' . $e->getMessage(), previous: $e);
+            throw new CliException(ErrorKind::ClientError, FALSE, 'JSON inválido: '.$e->getMessage(), previous: $e);
         }
 
         if (!is_array($decoded) || array_is_list($decoded)) {
-            throw new CliException(ErrorKind::ClientError, false, 'JSON deve ser um objeto.');
+            throw new CliException(ErrorKind::ClientError, FALSE, 'JSON deve ser um objeto.');
         }
 
         /** @var array<string, mixed> $decoded */
         return $decoded;
     }
+
+
 }

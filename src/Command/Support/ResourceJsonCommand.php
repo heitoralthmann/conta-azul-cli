@@ -15,6 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 /** Commande reutilizável para operações que recebem um objeto JSON. */
 final class ResourceJsonCommand extends Command
 {
+
+
     /** @param callable(array<string, mixed>): array<mixed> $operation */
     public function __construct(
         string $name,
@@ -29,15 +31,16 @@ final class ResourceJsonCommand extends Command
         $this->setDescription($description);
     }
 
+
     private string $jsonDescription;
 
-    protected function configure(): void
-    {
-        $this->addOption('json', null, InputOption::VALUE_REQUIRED, $this->jsonDescription);
+
+    protected function configure(): void {
+        $this->addOption('json', NULL, InputOption::VALUE_REQUIRED, $this->jsonDescription);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $this->jsonRenderer->render(($this->operation)(JsonPayload::object($input->getOption('json'))));
 
@@ -48,4 +51,6 @@ final class ResourceJsonCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }

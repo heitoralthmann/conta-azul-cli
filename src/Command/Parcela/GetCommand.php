@@ -17,6 +17,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'parcela get', description: 'Obtém uma parcela pelo ID')]
 final class GetCommand extends Command
 {
+
+
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -25,13 +27,13 @@ final class GetCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
+
+    protected function configure(): void {
         $this->addArgument('id', InputArgument::REQUIRED, 'ID da parcela');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $id = $input->getArgument('id');
             $this->jsonRenderer->render($this->client->getParcela(is_string($id) ? $id : ''));
@@ -43,4 +45,6 @@ final class GetCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }

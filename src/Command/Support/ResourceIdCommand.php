@@ -15,6 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 /** Commande reutilizável para buscar ou excluir um recurso por ID. */
 final class ResourceIdCommand extends Command
 {
+
+
     /** @param callable(string): array<mixed> $operation */
     public function __construct(
         string $name,
@@ -29,15 +31,16 @@ final class ResourceIdCommand extends Command
         $this->setDescription($description);
     }
 
+
     private string $argumentDescription;
 
-    protected function configure(): void
-    {
+
+    protected function configure(): void {
         $this->addArgument('id', InputArgument::REQUIRED, $this->argumentDescription);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $id = $input->getArgument('id');
             $this->jsonRenderer->render(($this->operation)(is_string($id) ? $id : ''));
@@ -49,4 +52,6 @@ final class ResourceIdCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }

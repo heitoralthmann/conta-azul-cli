@@ -17,18 +17,18 @@ final class ConfigurationTest extends TestCase
     private const REQUIRED_VARS = ['CA_CLIENT_ID', 'CA_CLIENT_SECRET'];
     private const OPTIONAL_VARS = ['CA_REDIRECT_URI', 'CA_SCOPE', 'CA_API_BASE_URL', 'CA_AUTH_BASE_URL', 'CA_AUTHORIZE_URL', 'CA_TOKEN_URL', 'CA_CLI_TOKEN_PATH', 'CA_BOOTSTRAP_REFRESH_TOKEN', 'CA_CALLBACK_CERT', 'CA_CALLBACK_KEY', 'CA_CALLBACK_TIMEOUT'];
 
-    protected function setUp(): void
-    {
+
+    protected function setUp(): void {
         foreach (array_merge(self::REQUIRED_VARS, self::OPTIONAL_VARS) as $var) {
             $this->originalEnv[$var] = getenv($var);
             putenv($var); // unset
         }
     }
 
-    protected function tearDown(): void
-    {
+
+    protected function tearDown(): void {
         foreach ($this->originalEnv as $var => $value) {
-            if ($value === false) {
+            if ($value === FALSE) {
                 putenv($var);
             } else {
                 putenv("{$var}={$value}");
@@ -36,8 +36,8 @@ final class ConfigurationTest extends TestCase
         }
     }
 
-    public function testMissingClientIdThrowsConfigException(): void
-    {
+
+    public function testMissingClientIdThrowsConfigException(): void {
         putenv('CA_CLIENT_SECRET=secret');
 
         $this->expectException(ConfigException::class);
@@ -46,8 +46,8 @@ final class ConfigurationTest extends TestCase
         new Configuration();
     }
 
-    public function testMissingClientSecretThrowsConfigException(): void
-    {
+
+    public function testMissingClientSecretThrowsConfigException(): void {
         putenv('CA_CLIENT_ID=id');
 
         $this->expectException(ConfigException::class);
@@ -56,8 +56,8 @@ final class ConfigurationTest extends TestCase
         new Configuration();
     }
 
-    public function testDefaultApiBaseUrl(): void
-    {
+
+    public function testDefaultApiBaseUrl(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
 
@@ -66,8 +66,8 @@ final class ConfigurationTest extends TestCase
         self::assertSame('https://api-v2.contaazul.com', $config->getApiBaseUrl());
     }
 
-    public function testDefaultAuthBaseUrl(): void
-    {
+
+    public function testDefaultAuthBaseUrl(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
 
@@ -76,16 +76,16 @@ final class ConfigurationTest extends TestCase
         self::assertSame('https://auth.contaazul.com', $config->getAuthBaseUrl());
     }
 
-    public function testCallbackTimeoutDefaultsToFiveMinutes(): void
-    {
+
+    public function testCallbackTimeoutDefaultsToFiveMinutes(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
 
         self::assertSame(300, (new Configuration())->getCallbackTimeout());
     }
 
-    public function testCallbackTimeoutIsReadFromEnv(): void
-    {
+
+    public function testCallbackTimeoutIsReadFromEnv(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_CALLBACK_TIMEOUT=600');
@@ -93,8 +93,8 @@ final class ConfigurationTest extends TestCase
         self::assertSame(600, (new Configuration())->getCallbackTimeout());
     }
 
-    public function testInvalidCallbackTimeoutFallsBackToTheDefault(): void
-    {
+
+    public function testInvalidCallbackTimeoutFallsBackToTheDefault(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_CALLBACK_TIMEOUT=zero');
@@ -102,8 +102,8 @@ final class ConfigurationTest extends TestCase
         self::assertSame(300, (new Configuration())->getCallbackTimeout());
     }
 
-    public function testZeroCallbackTimeoutFallsBackToTheDefault(): void
-    {
+
+    public function testZeroCallbackTimeoutFallsBackToTheDefault(): void {
         // A zero-second window would make login impossible to complete.
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
@@ -112,8 +112,8 @@ final class ConfigurationTest extends TestCase
         self::assertSame(300, (new Configuration())->getCallbackTimeout());
     }
 
-    public function testAuthorizeUrlDefaultsToTheAuthBaseUrl(): void
-    {
+
+    public function testAuthorizeUrlDefaultsToTheAuthBaseUrl(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
 
@@ -122,8 +122,8 @@ final class ConfigurationTest extends TestCase
         self::assertSame('https://auth.contaazul.com/oauth2/authorize', $config->getAuthorizeUrl());
     }
 
-    public function testAuthorizeUrlDefaultFollowsACustomAuthBaseUrl(): void
-    {
+
+    public function testAuthorizeUrlDefaultFollowsACustomAuthBaseUrl(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_AUTH_BASE_URL=https://auth.example.test/');
@@ -133,8 +133,8 @@ final class ConfigurationTest extends TestCase
         self::assertSame('https://auth.example.test/oauth2/authorize', $config->getAuthorizeUrl());
     }
 
-    public function testAuthorizeUrlCanBeOverriddenWholesale(): void
-    {
+
+    public function testAuthorizeUrlCanBeOverriddenWholesale(): void {
         // Production apps authorize on a different host and path than they
         // exchange tokens on, so the whole URL has to be replaceable.
         putenv('CA_CLIENT_ID=id');
@@ -147,8 +147,8 @@ final class ConfigurationTest extends TestCase
         self::assertSame('https://auth.contaazul.com', $config->getAuthBaseUrl(), 'Token endpoint must stay independent.');
     }
 
-    public function testTildeInTokenPathIsExpanded(): void
-    {
+
+    public function testTildeInTokenPathIsExpanded(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_CLI_TOKEN_PATH=~/my-tokens.json');
@@ -156,11 +156,11 @@ final class ConfigurationTest extends TestCase
 
         $config = new Configuration();
 
-        self::assertSame($home . '/my-tokens.json', $config->getTokenPath());
+        self::assertSame($home.'/my-tokens.json', $config->getTokenPath());
     }
 
-    public function testBootstrapRefreshTokenIsNullWhenNotSet(): void
-    {
+
+    public function testBootstrapRefreshTokenIsNullWhenNotSet(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
 
@@ -169,8 +169,8 @@ final class ConfigurationTest extends TestCase
         self::assertNull($config->getBootstrapRefreshToken());
     }
 
-    public function testBootstrapRefreshTokenIsReadFromEnv(): void
-    {
+
+    public function testBootstrapRefreshTokenIsReadFromEnv(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_BOOTSTRAP_REFRESH_TOKEN=my-refresh-token');
@@ -180,8 +180,8 @@ final class ConfigurationTest extends TestCase
         self::assertSame('my-refresh-token', $config->getBootstrapRefreshToken());
     }
 
-    public function testScopeIsNullWhenNotSet(): void
-    {
+
+    public function testScopeIsNullWhenNotSet(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
 
@@ -190,8 +190,8 @@ final class ConfigurationTest extends TestCase
         self::assertNull($config->getScope());
     }
 
-    public function testScopeIsReadFromEnv(): void
-    {
+
+    public function testScopeIsReadFromEnv(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_SCOPE=sales');
@@ -201,8 +201,8 @@ final class ConfigurationTest extends TestCase
         self::assertSame('sales', $config->getScope());
     }
 
-    public function testCallbackCertAndKeyAreNullWhenNotSet(): void
-    {
+
+    public function testCallbackCertAndKeyAreNullWhenNotSet(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
 
@@ -212,8 +212,8 @@ final class ConfigurationTest extends TestCase
         self::assertNull($config->getCallbackKeyFile());
     }
 
-    public function testCallbackCertAndKeyAreReadFromEnv(): void
-    {
+
+    public function testCallbackCertAndKeyAreReadFromEnv(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_CALLBACK_CERT=/tmp/cert.pem');
@@ -225,8 +225,8 @@ final class ConfigurationTest extends TestCase
         self::assertSame('/tmp/key.pem', $config->getCallbackKeyFile());
     }
 
-    public function testCallbackCertTildeIsExpanded(): void
-    {
+
+    public function testCallbackCertTildeIsExpanded(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_CALLBACK_CERT=~/.certs/cert.pem');
@@ -234,11 +234,11 @@ final class ConfigurationTest extends TestCase
 
         $config = new Configuration();
 
-        self::assertSame($home . '/.certs/cert.pem', $config->getCallbackCertFile());
+        self::assertSame($home.'/.certs/cert.pem', $config->getCallbackCertFile());
     }
 
-    public function testApiBaseUrlTrailingSlashIsStripped(): void
-    {
+
+    public function testApiBaseUrlTrailingSlashIsStripped(): void {
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_API_BASE_URL=https://api.example.com/');
@@ -247,4 +247,6 @@ final class ConfigurationTest extends TestCase
 
         self::assertSame('https://api.example.com', $config->getApiBaseUrl());
     }
+
+
 }

@@ -11,7 +11,8 @@ use Ramsey\Uuid\Uuid;
 
 final class AuthManager
 {
-    private ?string $pendingState = null;
+    private ?string $pendingState = NULL;
+
 
     public function __construct(
         private readonly TokenStore $tokenStore,
@@ -20,8 +21,8 @@ final class AuthManager
     ) {
     }
 
-    public function getValidAccessToken(): string
-    {
+
+    public function getValidAccessToken(): string {
         $lock = $this->acquireLock();
         try {
             return $this->resolveToken();
@@ -31,10 +32,10 @@ final class AuthManager
         }
     }
 
-    private function resolveToken(): string
-    {
+
+    private function resolveToken(): string {
         $bootstrap = $this->config->getBootstrapRefreshToken();
-        if ($bootstrap !== null) {
+        if ($bootstrap !== NULL) {
             $token = $this->oauthClient->refresh($bootstrap);
             $this->tokenStore->save($token);
 
@@ -42,11 +43,11 @@ final class AuthManager
         }
 
         $token = $this->tokenStore->load();
-        if ($token === null) {
+        if ($token === NULL) {
             throw new CliException(
-                ErrorKind::AuthFailed,
-                false,
-                'Não autenticado. Execute: ca auth login',
+              ErrorKind::AuthFailed,
+              FALSE,
+              'Não autenticado. Execute: ca auth login',
             );
         }
 
@@ -58,16 +59,16 @@ final class AuthManager
         return $token->accessToken;
     }
 
-    public function refreshAfter401(): string
-    {
+
+    public function refreshAfter401(): string {
         $lock = $this->acquireLock();
         try {
             $token = $this->tokenStore->load();
-            if ($token === null) {
+            if ($token === NULL) {
                 throw new CliException(
-                    ErrorKind::AuthFailed,
-                    false,
-                    'Não autenticado. Execute: ca auth login',
+                  ErrorKind::AuthFailed,
+                  FALSE,
+                  'Não autenticado. Execute: ca auth login',
                 );
             }
             $newToken = $this->oauthClient->refresh($token->refreshToken);
@@ -80,17 +81,19 @@ final class AuthManager
         }
     }
 
-    public function startLoginFlow(): string
-    {
+
+    public function startLoginFlow(): string {
         $this->pendingState = Uuid::uuid4()->toString();
 
-        $params = array_filter([
+        $params = array_filter(
+          [
             'response_type' => 'code',
             'client_id'     => $this->config->getClientId(),
             'redirect_uri'  => $this->config->getRedirectUri(),
             'scope'         => $this->config->getScope(),
             'state'         => $this->pendingState,
-        ]);
+          ]
+        );
 
         // O endpoint de autorização precisa pertencer ao mesmo servidor que
         // emite os tokens: o code só é resgatável em quem o emitiu. A query é
@@ -98,25 +101,26 @@ final class AuthManager
         // provedor exija, inclusive rotas de fragmento.
         $separator = str_contains($this->config->getAuthorizeUrl(), '?') ? '&' : '?';
 
-        return $this->config->getAuthorizeUrl() . $separator . http_build_query($params);
+        return $this->config->getAuthorizeUrl().$separator.http_build_query($params);
     }
 
-    public function getPendingState(): ?string
-    {
+
+    public function getPendingState(): ?string {
         return $this->pendingState;
     }
 
-    public function completeLoginFlow(string $code): void
-    {
+
+    public function completeLoginFlow(string $code): void {
         $token = $this->oauthClient->exchangeCode($code);
         $this->tokenStore->save($token);
-        $this->pendingState = null;
+        $this->pendingState = NULL;
     }
 
-    public function logout(): void
-    {
+
+    public function logout(): void {
         $this->tokenStore->delete();
     }
+
 
     /**
      * Serializes refresh across concurrent invocations: whoever loses the race
@@ -124,20 +128,22 @@ final class AuthManager
      *
      * @return resource
      */
-    private function acquireLock(): mixed
-    {
-        $lockFile = $this->tokenStore->getPath() . '.lock';
+    private function acquireLock(): mixed {
+        $lockFile = $this->tokenStore->getPath().'.lock';
         $lockDir  = dirname($lockFile);
         if (!is_dir($lockDir)) {
-            mkdir($lockDir, 0700, true);
+            mkdir($lockDir, 0700, TRUE);
         }
 
+        // Silenced: a missing/unreadable lock file is handled explicitly below
+        // via the FALSE check, so the PHP warning would only be noise.
+        // phpcs:ignore Generic.PHP.NoSilencedErrors
         $lock = @fopen($lockFile, 'c');
-        if ($lock === false) {
+        if ($lock === FALSE) {
             throw new CliException(
-                ErrorKind::AuthFailed,
-                false,
-                'Não foi possível adquirir lock do arquivo de tokens.',
+              ErrorKind::AuthFailed,
+              FALSE,
+              'Não foi possível adquirir lock do arquivo de tokens.',
             );
         }
 
@@ -145,4 +151,6 @@ final class AuthManager
 
         return $lock;
     }
+
+
 }

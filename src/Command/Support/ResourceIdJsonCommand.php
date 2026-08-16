@@ -16,6 +16,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 /** Commande reutilizável para atualizar parcialmente um recurso por ID. */
 final class ResourceIdJsonCommand extends Command
 {
+
+
     /** @param callable(string, array<string, mixed>): array<mixed> $operation */
     public function __construct(
         string $name,
@@ -32,24 +34,27 @@ final class ResourceIdJsonCommand extends Command
         $this->setDescription($description);
     }
 
+
     private string $argumentDescription;
     private string $jsonDescription;
 
-    protected function configure(): void
-    {
+
+    protected function configure(): void {
         $this
             ->addArgument('id', InputArgument::REQUIRED, $this->argumentDescription)
-            ->addOption('json', null, InputOption::VALUE_REQUIRED, $this->jsonDescription);
+            ->addOption('json', NULL, InputOption::VALUE_REQUIRED, $this->jsonDescription);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $id = $input->getArgument('id');
-            $this->jsonRenderer->render(($this->operation)(
+            $this->jsonRenderer->render(
+              ($this->operation)(
                 is_string($id) ? $id : '',
                 JsonPayload::object($input->getOption('json')),
-            ));
+              )
+            );
 
             return Command::SUCCESS;
         } catch (CliException $e) {
@@ -58,4 +63,6 @@ final class ResourceIdJsonCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }

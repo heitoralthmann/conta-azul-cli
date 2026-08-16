@@ -16,6 +16,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'pessoa conta-conectada', description: 'Busca a empresa da conta conectada')]
 final class ContaConectadaCommand extends Command
 {
+
+
     public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -24,8 +26,8 @@ final class ContaConectadaCommand extends Command
         parent::__construct();
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $this->jsonRenderer->render($this->client->getContaConectada());
 
@@ -36,4 +38,6 @@ final class ContaConectadaCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }

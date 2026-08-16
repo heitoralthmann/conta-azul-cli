@@ -14,13 +14,13 @@ final class HttpErrorMapperTest extends TestCase
 {
     private HttpErrorMapper $mapper;
 
-    protected function setUp(): void
-    {
+
+    protected function setUp(): void {
         $this->mapper = new HttpErrorMapper();
     }
 
-    public function testMaps401ToAuthFailed(): void
-    {
+
+    public function testMaps401ToAuthFailed(): void {
         $client = new MockHttpClient([new MockResponse('{"error":"unauthorized"}', ['http_code' => 401])]);
         $response = $client->request('GET', 'https://example.com/test');
         $response->getStatusCode(); // trigger response
@@ -32,8 +32,8 @@ final class HttpErrorMapperTest extends TestCase
         self::assertSame(401, $exception->httpStatus);
     }
 
-    public function testUnauthorizedKeepsTheApiExplanation(): void
-    {
+
+    public function testUnauthorizedKeepsTheApiExplanation(): void {
         // The API says *why* the credentials were rejected; that hint is the
         // whole diagnostic value of the response.
         $body     = '{"message":"Na tela de autorização utilize o usuário e senha do ERP"}';
@@ -48,8 +48,8 @@ final class HttpErrorMapperTest extends TestCase
         self::assertStringContainsString('usuário e senha do ERP', $exception->getMessage());
     }
 
-    public function testUnauthorizedWithEmptyBodyKeepsTheBaseMessage(): void
-    {
+
+    public function testUnauthorizedWithEmptyBodyKeepsTheBaseMessage(): void {
         $client   = new MockHttpClient([new MockResponse('', ['http_code' => 401])]);
         $response = $client->request('GET', 'https://example.com/test');
         $response->getStatusCode();
@@ -59,11 +59,10 @@ final class HttpErrorMapperTest extends TestCase
         self::assertSame('Autenticação falhou. Execute: ca auth login', $exception->getMessage());
     }
 
-    public function testPrettyPrintedBodyIsFlattenedIntoOneLine(): void
-    {
+
+    public function testPrettyPrintedBodyIsFlattenedIntoOneLine(): void {
         // Conta Azul pretty-prints error bodies; the envelope must stay compact.
-        $body = "\n            {\n                \"descricao_erro\": \"Conta não elegível.\",\n"
-            . "                \"status_conta\": \"END_TRIAL\"\n            }\n            ";
+        $body = "\n            {\n                \"descricao_erro\": \"Conta não elegível.\",\n"."                \"status_conta\": \"END_TRIAL\"\n            }\n            ";
         $client   = new MockHttpClient([new MockResponse($body, ['http_code' => 403])]);
         $response = $client->request('GET', 'https://example.com/test');
         $response->getStatusCode();
@@ -74,14 +73,17 @@ final class HttpErrorMapperTest extends TestCase
         self::assertStringContainsString('{ "descricao_erro": "Conta não elegível.", "status_conta": "END_TRIAL" }', $exception->getMessage());
     }
 
-    public function testFlatteningPreservesEveryDiagnosticField(): void
-    {
+
+    public function testFlatteningPreservesEveryDiagnosticField(): void {
         // status_conta was what identified the END_TRIAL block, so extracting a
         // single "message" key would have thrown away the useful half.
-        $client   = new MockHttpClient([new MockResponse(
+        $client   = new MockHttpClient(
+          [new MockResponse(
             '{"descricao_erro":"Conta não elegível.","status_conta":"END_TRIAL"}',
             ['http_code' => 403],
-        )]);
+          )
+          ]
+        );
         $response = $client->request('GET', 'https://example.com/test');
         $response->getStatusCode();
 
@@ -91,8 +93,8 @@ final class HttpErrorMapperTest extends TestCase
         self::assertStringContainsString('END_TRIAL', $message);
     }
 
-    public function testMaps429ToRateLimited(): void
-    {
+
+    public function testMaps429ToRateLimited(): void {
         $client = new MockHttpClient([new MockResponse('{}', ['http_code' => 429])]);
         $response = $client->request('GET', 'https://example.com/test');
         $response->getStatusCode();
@@ -103,8 +105,8 @@ final class HttpErrorMapperTest extends TestCase
         self::assertTrue($exception->retryable);
     }
 
-    public function testMaps422ToClientError(): void
-    {
+
+    public function testMaps422ToClientError(): void {
         $client = new MockHttpClient([new MockResponse('{"error":"validation"}', ['http_code' => 422])]);
         $response = $client->request('GET', 'https://example.com/test');
         $response->getStatusCode();
@@ -115,8 +117,8 @@ final class HttpErrorMapperTest extends TestCase
         self::assertFalse($exception->retryable);
     }
 
-    public function testMaps500OnGetToServerError(): void
-    {
+
+    public function testMaps500OnGetToServerError(): void {
         $client = new MockHttpClient([new MockResponse('internal error', ['http_code' => 500])]);
         $response = $client->request('GET', 'https://example.com/test');
         $response->getStatusCode();
@@ -127,8 +129,8 @@ final class HttpErrorMapperTest extends TestCase
         self::assertTrue($exception->retryable);
     }
 
-    public function testMaps500OnPostToAmbiguous(): void
-    {
+
+    public function testMaps500OnPostToAmbiguous(): void {
         $client = new MockHttpClient([new MockResponse('internal error', ['http_code' => 500])]);
         $response = $client->request('POST', 'https://example.com/test');
         $response->getStatusCode();
@@ -139,8 +141,8 @@ final class HttpErrorMapperTest extends TestCase
         self::assertFalse($exception->retryable);
     }
 
-    public function testMapsTransportErrorToTransient(): void
-    {
+
+    public function testMapsTransportErrorToTransient(): void {
         $transportError = new \RuntimeException('connection refused');
 
         $exception = $this->mapper->mapTransportError($transportError, 'corr-id');
@@ -149,4 +151,6 @@ final class HttpErrorMapperTest extends TestCase
         self::assertTrue($exception->retryable);
         self::assertSame($transportError, $exception->getPrevious());
     }
+
+
 }

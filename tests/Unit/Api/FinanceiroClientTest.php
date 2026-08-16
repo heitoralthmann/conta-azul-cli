@@ -32,43 +32,45 @@ final class FinanceiroClientTest extends TestCase
 
     private string $tokenPath = '';
 
-    protected function setUp(): void
-    {
+
+    protected function setUp(): void {
         foreach (self::ENV_VARS as $var) {
             $this->originalEnv[$var] = getenv($var);
             putenv($var);
         }
-        $this->tokenPath = sys_get_temp_dir() . '/ca-cli-fin-' . uniqid() . '/tokens.json';
+        $this->tokenPath = sys_get_temp_dir().'/ca-cli-fin-'.uniqid().'/tokens.json';
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_API_BASE_URL=https://api-v2.contaazul.com');
         putenv("CA_CLI_TOKEN_PATH={$this->tokenPath}");
 
-        (new TokenStore(new Configuration()))->save(new TokenData(
+        (new TokenStore(new Configuration()))->save(
+          new TokenData(
             accessToken: 'token',
             accessTokenExpiresAt: new \DateTimeImmutable('+30 minutes'),
             refreshToken: 'refresh-1',
             refreshTokenObtainedAt: new \DateTimeImmutable('-1 hour'),
-        ));
+          )
+        );
     }
 
-    protected function tearDown(): void
-    {
+
+    protected function tearDown(): void {
         $dir = dirname($this->tokenPath);
         if (is_dir($dir)) {
-            array_map('unlink', glob($dir . '/*') ?: []);
+            array_map('unlink', glob($dir.'/*') ?: []);
             rmdir($dir);
         }
         foreach ($this->originalEnv as $var => $value) {
-            $value === false ? putenv($var) : putenv("{$var}={$value}");
+            $value === FALSE ? putenv($var) : putenv("{$var}={$value}");
         }
     }
+
 
     /**
      * @return array<string, array{callable(FinanceiroClient): mixed, string, string}>
      */
-    public static function endpointProvider(): array
-    {
+    public static function endpointProvider(): array {
         return [
             'categorias fica na raiz da v1, no plural' => [
                 fn (FinanceiroClient $c) => $c->listCategorias(),
@@ -113,13 +115,13 @@ final class FinanceiroClientTest extends TestCase
         ];
     }
 
+
     /**
      * @param callable(FinanceiroClient): mixed $call
      */
     #[\PHPUnit\Framework\Attributes\DataProvider('endpointProvider')]
-    public function testEndpointPathsMatchTheRealApi(callable $call, string $method, string $expectedUrl): void
-    {
-        $captured = null;
+    public function testEndpointPathsMatchTheRealApi(callable $call, string $method, string $expectedUrl): void {
+        $captured = NULL;
         $client   = $this->clientRecording($captured);
 
         $call($client);
@@ -129,67 +131,71 @@ final class FinanceiroClientTest extends TestCase
         self::assertSame($expectedUrl, strtok($captured['url'], '?'));
     }
 
+
     /** A baixa é um PATCH na parcela; o subrecurso /baixar nunca existiu. */
-    public function testBaixaIsAPatchOnTheInstallmentItself(): void
-    {
-        $captured = null;
+    public function testBaixaIsAPatchOnTheInstallmentItself(): void {
+        $captured = NULL;
         $client   = $this->clientRecording($captured);
 
-        $client->baixarParcela('p9', ['valor' => 10.0], noWait: true);
+        $client->baixarParcela('p9', ['valor' => 10.0], noWait: TRUE);
 
         self::assertNotNull($captured);
         self::assertSame('PATCH', $captured['method']);
         self::assertSame(
-            'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/parcelas/p9',
-            $captured['url'],
+          'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/parcelas/p9',
+          $captured['url'],
         );
     }
 
-    public function testSearchSendsTheRequiredDueDateRange(): void
-    {
-        $captured = null;
+
+    public function testSearchSendsTheRequiredDueDateRange(): void {
+        $captured = NULL;
         $client   = $this->clientRecording($captured);
 
         $client->listContasAReceber('2026-03-01', '2026-03-31');
 
         self::assertNotNull($captured);
         parse_str((string) parse_url($captured['url'], PHP_URL_QUERY), $query);
-        self::assertSame('2026-03-01', $query['data_vencimento_de'] ?? null);
-        self::assertSame('2026-03-31', $query['data_vencimento_ate'] ?? null);
+        self::assertSame('2026-03-01', $query['data_vencimento_de'] ?? NULL);
+        self::assertSame('2026-03-31', $query['data_vencimento_ate'] ?? NULL);
     }
 
+
     /** A API recusa `desde`; os parâmetros são data_inicio e data_fim. */
-    public function testAlteracoesSendsDataInicioAndDataFim(): void
-    {
-        $captured = null;
+    public function testAlteracoesSendsDataInicioAndDataFim(): void {
+        $captured = NULL;
         $client   = $this->clientRecording($captured);
 
         $client->getAlteracoes('2026-08-01T00:00:00', '2026-08-31T23:59:59');
 
         self::assertNotNull($captured);
         parse_str((string) parse_url($captured['url'], PHP_URL_QUERY), $query);
-        self::assertSame('2026-08-01T00:00:00', $query['data_inicio'] ?? null);
-        self::assertSame('2026-08-31T23:59:59', $query['data_fim'] ?? null);
+        self::assertSame('2026-08-01T00:00:00', $query['data_inicio'] ?? NULL);
+        self::assertSame('2026-08-31T23:59:59', $query['data_fim'] ?? NULL);
         self::assertArrayNotHasKey('desde', $query);
     }
 
+
     /** @param array{method: string, url: string}|null $captured */
-    private function clientRecording(?array &$captured): FinanceiroClient
-    {
-        $http = new MockHttpClient(function (string $method, string $url) use (&$captured) {
+    private function clientRecording(?array &$captured): FinanceiroClient {
+        $http = new MockHttpClient(
+          function (string $method, string $url) use (&$captured) {
             $captured = ['method' => $method, 'url' => $url];
 
             return new MockResponse('{}', ['http_code' => 200]);
-        });
+          }
+        );
 
         $config   = new Configuration();
         $redactor = new Redactor();
         $auth     = new AuthManager(
-            new TokenStore($config),
-            new OAuthClient(new MockHttpClient([]), $config),
-            $config,
+          new TokenStore($config),
+          new OAuthClient(new MockHttpClient([]), $config),
+          $config,
         );
 
         return new FinanceiroClient($config, $auth, new Logger($redactor), $redactor, $http);
     }
+
+
 }

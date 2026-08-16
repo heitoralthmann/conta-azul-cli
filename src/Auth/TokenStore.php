@@ -10,20 +10,20 @@ final class TokenStore
 {
     private string $tokenPath;
 
-    public function __construct(Configuration $config)
-    {
+
+    public function __construct(Configuration $config) {
         $this->tokenPath = $config->getTokenPath();
     }
 
-    public function save(TokenData $token): void
-    {
+
+    public function save(TokenData $token): void {
         $dir = dirname($this->tokenPath);
         if (!is_dir($dir)) {
-            mkdir($dir, 0700, true);
+            mkdir($dir, 0700, TRUE);
         }
         $json = json_encode(
-            $token->toArray(),
-            JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR,
+          $token->toArray(),
+          JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR,
         );
         file_put_contents($this->tokenPath, $json, LOCK_EX);
         // No-op on Windows, where PHP's chmod only toggles the read-only flag:
@@ -32,38 +32,40 @@ final class TokenStore
         chmod($this->tokenPath, 0600);
     }
 
-    public function load(): ?TokenData
-    {
+
+    public function load(): ?TokenData {
         if (!file_exists($this->tokenPath)) {
-            return null;
+            return NULL;
         }
 
         try {
             $content = file_get_contents($this->tokenPath);
-            if ($content === false || $content === '') {
-                return null;
+            if ($content === FALSE || $content === '') {
+                return NULL;
             }
 
-            $decoded = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+            $decoded = json_decode($content, TRUE, 512, JSON_THROW_ON_ERROR);
             if (!is_array($decoded)) {
-                return null;
+                return NULL;
             }
             /** @var array<string, mixed> $decoded */
             return TokenData::fromArray($decoded);
         } catch (\Throwable) {
-            return null;
+            return NULL;
         }
     }
 
-    public function delete(): void
-    {
+
+    public function delete(): void {
         if (file_exists($this->tokenPath)) {
             unlink($this->tokenPath);
         }
     }
 
-    public function getPath(): string
-    {
+
+    public function getPath(): string {
         return $this->tokenPath;
     }
+
+
 }

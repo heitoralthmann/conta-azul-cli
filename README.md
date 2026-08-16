@@ -283,9 +283,9 @@ Não é um erro do CLI: a autenticação funcionou e a chamada chegou à API. A 
 ```bash
 composer install
 vendor/bin/phpunit                                              # testes
-vendor/bin/pint                                                 # estilo
 vendor/bin/phpstan analyse src/ --level=max --memory-limit=1G   # análise estática
-vendor/bin/phpcs                                                # padrões (phpcs.xml.dist)
+vendor/bin/phpcs                                                # padrões de código (phpcs.xml.dist)
+vendor/bin/phpcbf                                               # corrige o que for auto-fixável
 ```
 
 > O PHPStan estoura o limite default de 128 MB do PHP; passe `--memory-limit=1G`.

@@ -18,6 +18,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'pessoa create', description: 'Cria uma pessoa')]
 final class CreateCommand extends Command
 {
+
+
     public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -26,13 +28,13 @@ final class CreateCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
-        $this->addOption('json', null, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
+
+    protected function configure(): void {
+        $this->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $this->jsonRenderer->render($this->client->createPessoa(JsonPayload::object($input->getOption('json'))));
 
@@ -43,4 +45,6 @@ final class CreateCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }

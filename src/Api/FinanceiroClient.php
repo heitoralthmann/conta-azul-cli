@@ -22,6 +22,7 @@ final class FinanceiroClient extends BaseClient
     // Contas a Receber
     // -------------------------------------------------------------------------
 
+
     /**
      * O intervalo de vencimento é exigido pela API: sem ele a resposta é 400.
      *
@@ -31,34 +32,40 @@ final class FinanceiroClient extends BaseClient
     public function listContasAReceber(
         string $dataVencimentoDe,
         string $dataVencimentoAte,
-        int $pagina = 1,
-        int $tamanhoPagina = 50,
-        array $filters = [],
+        int $pagina=1,
+        int $tamanhoPagina=50,
+        array $filters=[],
     ): array {
-        return $this->request('GET', '/v1/financeiro/eventos-financeiros/contas-a-receber/buscar', [
-            'query' => array_merge([
+        return $this->request(
+          'GET', '/v1/financeiro/eventos-financeiros/contas-a-receber/buscar', [
+            'query' => array_merge(
+              [
                 'data_vencimento_de'  => $dataVencimentoDe,
                 'data_vencimento_ate' => $dataVencimentoAte,
                 'pagina'              => $pagina,
                 'tamanho_pagina'      => $tamanhoPagina,
-            ], $filters),
-        ]);
+              ], $filters
+            ),
+          ]
+        );
     }
+
 
     /**
      * @param array<string, mixed> $payload
      * @return array<mixed>
      */
-    public function createContaAReceber(array $payload, int $pollTimeout = 60, bool $noWait = false): array
-    {
+    public function createContaAReceber(array $payload, int $pollTimeout=60, bool $noWait=FALSE): array {
         $response = $this->request('POST', '/v1/financeiro/eventos-financeiros/contas-a-receber', ['json' => $payload]);
 
         return $this->handleAsyncResponse($response, $pollTimeout, $noWait);
     }
 
+
     // -------------------------------------------------------------------------
     // Contas a Pagar
     // -------------------------------------------------------------------------
+
 
     /**
      * @param array<string, mixed> $filters
@@ -67,40 +74,46 @@ final class FinanceiroClient extends BaseClient
     public function listContasAPagar(
         string $dataVencimentoDe,
         string $dataVencimentoAte,
-        int $pagina = 1,
-        int $tamanhoPagina = 50,
-        array $filters = [],
+        int $pagina=1,
+        int $tamanhoPagina=50,
+        array $filters=[],
     ): array {
-        return $this->request('GET', '/v1/financeiro/eventos-financeiros/contas-a-pagar/buscar', [
-            'query' => array_merge([
+        return $this->request(
+          'GET', '/v1/financeiro/eventos-financeiros/contas-a-pagar/buscar', [
+            'query' => array_merge(
+              [
                 'data_vencimento_de'  => $dataVencimentoDe,
                 'data_vencimento_ate' => $dataVencimentoAte,
                 'pagina'              => $pagina,
                 'tamanho_pagina'      => $tamanhoPagina,
-            ], $filters),
-        ]);
+              ], $filters
+            ),
+          ]
+        );
     }
+
 
     /**
      * @param array<string, mixed> $payload
      * @return array<mixed>
      */
-    public function createContaAPagar(array $payload, int $pollTimeout = 60, bool $noWait = false): array
-    {
+    public function createContaAPagar(array $payload, int $pollTimeout=60, bool $noWait=FALSE): array {
         $response = $this->request('POST', '/v1/financeiro/eventos-financeiros/contas-a-pagar', ['json' => $payload]);
 
         return $this->handleAsyncResponse($response, $pollTimeout, $noWait);
     }
 
+
     // -------------------------------------------------------------------------
     // Parcelas
     // -------------------------------------------------------------------------
 
+
     /** @return array<mixed> */
-    public function getParcela(string $id): array
-    {
+    public function getParcela(string $id): array {
         return $this->request('GET', "/v1/financeiro/eventos-financeiros/parcelas/{$id}");
     }
+
 
     /**
      * A baixa é um PATCH na própria parcela — não existe subrecurso `/baixar`.
@@ -108,58 +121,68 @@ final class FinanceiroClient extends BaseClient
      * @param array<string, mixed> $payload
      * @return array<mixed>
      */
-    public function baixarParcela(string $id, array $payload, int $pollTimeout = 60, bool $noWait = false): array
-    {
+    public function baixarParcela(string $id, array $payload, int $pollTimeout=60, bool $noWait=FALSE): array {
         $response = $this->request('PATCH', "/v1/financeiro/eventos-financeiros/parcelas/{$id}", ['json' => $payload]);
 
         return $this->handleAsyncResponse($response, $pollTimeout, $noWait);
     }
 
+
     // -------------------------------------------------------------------------
     // Contas Financeiras
     // -------------------------------------------------------------------------
 
-    /** @return array<mixed> */
-    public function listContasFinanceiras(int $pagina = 1, int $tamanhoPagina = 50): array
-    {
-        return $this->request('GET', '/v1/conta-financeira', [
-            'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
-        ]);
-    }
 
     /** @return array<mixed> */
-    public function getSaldoContaFinanceira(string $id): array
-    {
+    public function listContasFinanceiras(int $pagina=1, int $tamanhoPagina=50): array {
+        return $this->request(
+          'GET', '/v1/conta-financeira', [
+            'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
+          ]
+        );
+    }
+
+
+    /** @return array<mixed> */
+    public function getSaldoContaFinanceira(string $id): array {
         return $this->request('GET', "/v1/conta-financeira/{$id}/saldo-atual");
     }
+
 
     // -------------------------------------------------------------------------
     // Categorias
     // -------------------------------------------------------------------------
 
+
     /** @return array<mixed> */
-    public function listCategorias(int $pagina = 1, int $tamanhoPagina = 50): array
-    {
-        return $this->request('GET', '/v1/categorias', [
+    public function listCategorias(int $pagina=1, int $tamanhoPagina=50): array {
+        return $this->request(
+          'GET', '/v1/categorias', [
             'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
-        ]);
+          ]
+        );
     }
+
 
     // -------------------------------------------------------------------------
     // Centros de Custo
     // -------------------------------------------------------------------------
 
+
     /** @return array<mixed> */
-    public function listCentrosDeCusto(int $pagina = 1, int $tamanhoPagina = 50): array
-    {
-        return $this->request('GET', '/v1/centro-de-custo', [
+    public function listCentrosDeCusto(int $pagina=1, int $tamanhoPagina=50): array {
+        return $this->request(
+          'GET', '/v1/centro-de-custo', [
             'query' => ['pagina' => $pagina, 'tamanho_pagina' => $tamanhoPagina],
-        ]);
+          ]
+        );
     }
+
 
     // -------------------------------------------------------------------------
     // Eventos Financeiros / Alterações
     // -------------------------------------------------------------------------
+
 
     /**
      * As datas vão em ISO 8601 **sem timezone** (`2026-08-01T00:00:00`). Com
@@ -168,23 +191,29 @@ final class FinanceiroClient extends BaseClient
      * @param array<string, mixed> $filters
      * @return array<mixed>
      */
-    public function getAlteracoes(string $dataInicio, string $dataFim, array $filters = []): array
-    {
-        return $this->request('GET', '/v1/financeiro/eventos-financeiros/alteracoes', [
-            'query' => array_merge([
+    public function getAlteracoes(string $dataInicio, string $dataFim, array $filters=[]): array {
+        return $this->request(
+          'GET', '/v1/financeiro/eventos-financeiros/alteracoes', [
+            'query' => array_merge(
+              [
                 'data_inicio' => $dataInicio,
                 'data_fim'    => $dataFim,
-            ], $filters),
-        ]);
+              ], $filters
+            ),
+          ]
+        );
     }
+
 
     // -------------------------------------------------------------------------
     // Protocolo
     // -------------------------------------------------------------------------
 
+
     /** @return array<mixed> */
-    public function getProtocolo(string $id): array
-    {
+    public function getProtocolo(string $id): array {
         return $this->request('GET', "/v1/protocolo/{$id}");
     }
+
+
 }

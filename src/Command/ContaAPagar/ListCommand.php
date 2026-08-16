@@ -20,6 +20,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'conta-a-pagar list', description: 'Lista contas a pagar por intervalo de vencimento')]
 final class ListCommand extends Command
 {
+
+
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -31,17 +33,17 @@ final class ListCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
+
+    protected function configure(): void {
         $this
-            ->addOption('data-vencimento-de', null, InputOption::VALUE_REQUIRED, 'Vencimento inicial (YYYY-MM-DD). Padrão: primeiro dia do mês corrente')
-            ->addOption('data-vencimento-ate', null, InputOption::VALUE_REQUIRED, 'Vencimento final (YYYY-MM-DD). Padrão: último dia do mês corrente')
-            ->addOption('pagina', null, InputOption::VALUE_REQUIRED, 'Número da página', '1')
-            ->addOption('tamanho-pagina', null, InputOption::VALUE_REQUIRED, 'Itens por página', '50');
+            ->addOption('data-vencimento-de', NULL, InputOption::VALUE_REQUIRED, 'Vencimento inicial (YYYY-MM-DD). Padrão: primeiro dia do mês corrente')
+            ->addOption('data-vencimento-ate', NULL, InputOption::VALUE_REQUIRED, 'Vencimento final (YYYY-MM-DD). Padrão: último dia do mês corrente')
+            ->addOption('pagina', NULL, InputOption::VALUE_REQUIRED, 'Número da página', '1')
+            ->addOption('tamanho-pagina', NULL, InputOption::VALUE_REQUIRED, 'Itens por página', '50');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $deRaw  = $input->getOption('data-vencimento-de');
             $ateRaw = $input->getOption('data-vencimento-ate');
@@ -53,8 +55,7 @@ final class ListCommand extends Command
             // recorte de quem lê só o stdout.
             if ($de !== $deRaw || $ate !== $ateRaw) {
                 $this->warningEnvelope->renderToStderr(
-                    "Intervalo de vencimento não informado por completo; usando {$de} a {$ate}. "
-                    . 'Use --data-vencimento-de e --data-vencimento-ate para definir outro.',
+                  "Intervalo de vencimento não informado por completo; usando {$de} a {$ate}. ".'Use --data-vencimento-de e --data-vencimento-ate para definir outro.',
                 );
             }
 
@@ -65,7 +66,7 @@ final class ListCommand extends Command
             $this->paginationValidator->validatePageSize($tamanhoPagina);
 
             $this->jsonRenderer->render(
-                $this->client->listContasAPagar($de, $ate, $pagina, $tamanhoPagina),
+              $this->client->listContasAPagar($de, $ate, $pagina, $tamanhoPagina),
             );
 
             return Command::SUCCESS;
@@ -75,4 +76,6 @@ final class ListCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }

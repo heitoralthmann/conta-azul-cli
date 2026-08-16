@@ -16,6 +16,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'auth login', description: 'Autentica com a Conta Azul via OAuth2 (abre navegador)')]
 final class LoginCommand extends Command
 {
+
+
     public function __construct(
         private readonly AuthManager $authManager,
         private readonly CallbackServer $callbackServer,
@@ -24,8 +26,8 @@ final class LoginCommand extends Command
         parent::__construct();
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $authUrl = $this->authManager->startLoginFlow();
             $output->writeln("Abra este URL no seu navegador:\n");
@@ -45,4 +47,6 @@ final class LoginCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }

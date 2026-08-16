@@ -25,6 +25,7 @@ class BaseClient
     private const POLL_INITIAL_SLEEP = 1.0;
     private const POLL_MAX_SLEEP     = 8.0;
 
+
     public function __construct(
         private readonly Configuration $config,
         private readonly AuthManager $authManager,
@@ -36,19 +37,19 @@ class BaseClient
         $this->errorMapper   = new HttpErrorMapper();
     }
 
-    public function getCorrelationId(): string
-    {
+
+    public function getCorrelationId(): string {
         return $this->correlationId;
     }
+
 
     /**
      * @param array<string, mixed> $options
      * @return array<mixed>
      */
-    public function request(string $method, string $path, array $options = []): array
-    {
-        $url     = $this->config->getApiBaseUrl() . $path;
-        $isWrite = in_array(strtoupper($method), ['POST', 'PUT', 'PATCH', 'DELETE'], true);
+    public function request(string $method, string $path, array $options=[]): array {
+        $url     = $this->config->getApiBaseUrl().$path;
+        $isWrite = in_array(strtoupper($method), ['POST', 'PUT', 'PATCH', 'DELETE'], TRUE);
 
         $retryable429 = [429];
         $retryableGet = [429, 502, 503, 504];
@@ -56,15 +57,15 @@ class BaseClient
         $maxAttempts = 3;
         $attempt     = 0;
 
-        while (true) {
+        while (TRUE) {
             $attempt++;
             $accessToken = $this->authManager->getValidAccessToken();
 
             /** @var array<string, string> $existingHeaders */
-            $existingHeaders = is_array($options['headers'] ?? null) ? $options['headers'] : [];
+            $existingHeaders = is_array($options['headers'] ?? NULL) ? $options['headers'] : [];
             $headers         = array_merge(
-                $existingHeaders,
-                [
+              $existingHeaders,
+              [
                     'Authorization'    => "Bearer {$accessToken}",
                     'X-Correlation-Id' => $this->correlationId,
                     'Accept'           => 'application/json',
@@ -79,12 +80,14 @@ class BaseClient
 
             if ($this->logger->isEnabled()) {
                 /** @var array<mixed> $queryForLog */
-                $queryForLog = is_array($options['query'] ?? null) ? $options['query'] : [];
-                $this->logger->log('debug', 'API request', [
+                $queryForLog = is_array($options['query'] ?? NULL) ? $options['query'] : [];
+                $this->logger->log(
+                  'debug', 'API request', [
                     'method' => $method,
                     'url'    => $url,
                     'query'  => $this->redactor->redact($queryForLog),
-                ], $this->correlationId);
+                  ], $this->correlationId
+                );
             }
 
             try {
@@ -116,7 +119,7 @@ class BaseClient
             }
 
             $retryStatuses = $isWrite ? $retryable429 : $retryableGet;
-            if (in_array($statusCode, $retryStatuses, true) && $attempt < $maxAttempts) {
+            if (in_array($statusCode, $retryStatuses, TRUE) && $attempt < $maxAttempts) {
                 $retryAfter = $this->extractRetryAfter($response);
                 $backoff     = $retryAfter ?? self::GET_RETRY_BACKOFF[$attempt - 1];
                 $this->sleep($backoff);
@@ -127,33 +130,33 @@ class BaseClient
         }
     }
 
+
     /**
      * @return array<mixed>
      */
-    public function pollProtocol(string $protocolId, int $timeoutSeconds = 60): array
-    {
+    public function pollProtocol(string $protocolId, int $timeoutSeconds=60): array {
         $start        = time();
         $sleepSeconds = self::POLL_INITIAL_SLEEP;
 
-        while (true) {
+        while (TRUE) {
             try {
                 $data = $this->request('GET', "/v1/protocolo/{$protocolId}");
             } catch (CliException $e) {
                 // Only interruptions worth resuming become poll_drop_known_id.
                 // Reporting a failed refresh or a malformed request as retryable
                 // would send the agent into a loop that cannot succeed.
-                if (in_array($e->kind, [ErrorKind::AuthFailed, ErrorKind::ClientError], true)) {
+                if (in_array($e->kind, [ErrorKind::AuthFailed, ErrorKind::ClientError], TRUE)) {
                     throw $e;
                 }
 
                 throw new CliException(
-                    ErrorKind::PollDropKnownId,
-                    true,
-                    "Polling interrompido. protocol_id: {$protocolId}. Retome com: ca protocolo get {$protocolId}",
-                    null,
-                    $protocolId,
-                    $this->correlationId,
-                    $e,
+                  ErrorKind::PollDropKnownId,
+                  TRUE,
+                  "Polling interrompido. protocol_id: {$protocolId}. Retome com: ca protocolo get {$protocolId}",
+                  NULL,
+                  $protocolId,
+                  $this->correlationId,
+                  $e,
                 );
             }
 
@@ -162,30 +165,30 @@ class BaseClient
 
             if ($status === 'SUCCESS') {
                 /** @var array<mixed> $payload */
-                $payload = is_array($data['data'] ?? null) ? $data['data'] : $data;
+                $payload = is_array($data['data'] ?? NULL) ? $data['data'] : $data;
 
                 return $payload;
             }
 
             if ($status === 'ERROR') {
                 throw new CliException(
-                    ErrorKind::ServerError,
-                    false,
-                    "Operação falhou no servidor. protocol_id: {$protocolId}",
-                    null,
-                    $protocolId,
-                    $this->correlationId,
+                  ErrorKind::ServerError,
+                  FALSE,
+                  "Operação falhou no servidor. protocol_id: {$protocolId}",
+                  NULL,
+                  $protocolId,
+                  $this->correlationId,
                 );
             }
 
             if ((time() - $start) >= $timeoutSeconds) {
                 throw new CliException(
-                    ErrorKind::PollTimeoutKnownId,
-                    false,
-                    "Timeout aguardando resultado. Consulte manualmente: ca protocolo get {$protocolId}",
-                    null,
-                    $protocolId,
-                    $this->correlationId,
+                  ErrorKind::PollTimeoutKnownId,
+                  FALSE,
+                  "Timeout aguardando resultado. Consulte manualmente: ca protocolo get {$protocolId}",
+                  NULL,
+                  $protocolId,
+                  $this->correlationId,
                 );
             }
 
@@ -194,12 +197,12 @@ class BaseClient
         }
     }
 
+
     /**
      * @param array<mixed> $response
      * @return array<mixed>
      */
-    public function handleAsyncResponse(array $response, int $pollTimeout = 60, bool $noWait = false): array
-    {
+    public function handleAsyncResponse(array $response, int $pollTimeout=60, bool $noWait=FALSE): array {
         $rawProtocolId = $response['protocolId'] ?? '';
         $protocolId    = is_string($rawProtocolId) ? $rawProtocolId : '';
 
@@ -210,10 +213,10 @@ class BaseClient
         return $this->pollProtocol($protocolId, $pollTimeout);
     }
 
-    private function extractRetryAfter(ResponseInterface $response): ?float
-    {
+
+    private function extractRetryAfter(ResponseInterface $response): ?float {
         try {
-            $headers = $response->getHeaders(false);
+            $headers = $response->getHeaders(FALSE);
             $values  = $headers['retry-after'] ?? [];
             if ($values !== []) {
                 return (float) $values[0];
@@ -221,14 +224,16 @@ class BaseClient
         } catch (\Throwable) {
         }
 
-        return null;
+        return NULL;
     }
 
+
     /** Protected so tests can capture the backoff schedule without real waiting. */
-    protected function sleep(float $seconds): void
-    {
+    protected function sleep(float $seconds): void {
         $jitter = $seconds * 0.2;
         $actual = $seconds + (mt_rand() / mt_getrandmax() * 2.0 - 1.0) * $jitter;
         usleep((int) ($actual * 1_000_000));
     }
+
+
 }

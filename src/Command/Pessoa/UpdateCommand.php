@@ -19,6 +19,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'pessoa update', description: 'Atualiza integralmente uma pessoa')]
 final class UpdateCommand extends Command
 {
+
+
     public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -27,21 +29,23 @@ final class UpdateCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
+
+    protected function configure(): void {
         $this
             ->addArgument('id', InputArgument::REQUIRED, 'ID da pessoa')
-            ->addOption('json', null, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
+            ->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $id = $input->getArgument('id');
-            $this->jsonRenderer->render($this->client->updatePessoa(
+            $this->jsonRenderer->render(
+              $this->client->updatePessoa(
                 is_string($id) ? $id : '',
                 JsonPayload::object($input->getOption('json')),
-            ));
+              )
+            );
 
             return Command::SUCCESS;
         } catch (CliException $e) {
@@ -50,4 +54,6 @@ final class UpdateCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }

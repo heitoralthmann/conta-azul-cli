@@ -14,9 +14,10 @@ namespace ContaAzulCli\Config;
  */
 final class HomeDirectory
 {
+
+
     /** Returns the home directory, or null when the platform gives us nothing. */
-    public static function resolve(): ?string
-    {
+    public static function resolve(): ?string {
         foreach (['HOME', 'USERPROFILE'] as $variable) {
             $value = getenv($variable);
             if (is_string($value) && $value !== '') {
@@ -28,7 +29,7 @@ final class HomeDirectory
         $drive = getenv('HOMEDRIVE');
         $path  = getenv('HOMEPATH');
         if (is_string($drive) && $drive !== '' && is_string($path) && $path !== '') {
-            return self::normalize($drive . $path);
+            return self::normalize($drive.$path);
         }
 
         if (function_exists('posix_getpwuid') && function_exists('posix_getuid')) {
@@ -38,13 +39,15 @@ final class HomeDirectory
             }
         }
 
-        return null;
+        return NULL;
     }
 
-    private static function normalize(string $path): string
-    {
+
+    private static function normalize(string $path): string {
         $trimmed = rtrim($path, '/\\');
 
         return $trimmed === '' ? $path : $trimmed;
     }
+
+
 }

@@ -41,4 +41,4 @@ jobs:
 
       - name: Check code style
         if: matrix.os == 'ubuntu-latest'
-        run: vendor/bin/pint --test
+        run: vendor/bin/phpcs --standard=phpcs.xml.dist

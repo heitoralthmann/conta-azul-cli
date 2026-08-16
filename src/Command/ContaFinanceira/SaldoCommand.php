@@ -18,6 +18,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'conta-financeira saldo', description: 'Obtém o saldo de uma conta financeira')]
 final class SaldoCommand extends Command
 {
+
+
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -26,17 +28,17 @@ final class SaldoCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
-        $this->addOption('id', null, InputOption::VALUE_REQUIRED, 'ID da conta financeira');
+
+    protected function configure(): void {
+        $this->addOption('id', NULL, InputOption::VALUE_REQUIRED, 'ID da conta financeira');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $id = $input->getOption('id');
             if (!is_string($id) || $id === '') {
-                throw new CliException(ErrorKind::ClientError, false, 'A opção --id é obrigatória.');
+                throw new CliException(ErrorKind::ClientError, FALSE, 'A opção --id é obrigatória.');
             }
             $this->jsonRenderer->render($this->client->getSaldoContaFinanceira($id));
 
@@ -47,4 +49,6 @@ final class SaldoCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }

@@ -6,11 +6,14 @@ namespace ContaAzulCli\Output;
 
 final class JsonRenderer
 {
-    public function render(mixed $data): void
-    {
+
+
+    public function render(mixed $data): void {
         echo json_encode(
-            $data,
-            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
-        ) . "\n";
+          $data,
+          JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
+        )."\n";
     }
+
+
 }

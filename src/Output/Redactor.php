@@ -15,15 +15,15 @@ final class Redactor
         'password',
     ];
 
+
     /**
      * @param array<string|int, mixed> $data
      * @return array<string|int, mixed>
      */
-    public function redact(array $data): array
-    {
+    public function redact(array $data): array {
         $result = [];
         foreach ($data as $key => $value) {
-            if (in_array(strtolower((string) $key), self::SENSITIVE_KEYS, true)) {
+            if (in_array(strtolower((string) $key), self::SENSITIVE_KEYS, TRUE)) {
                 $result[$key] = '[REDACTED]';
             } elseif (is_array($value)) {
                 $result[$key] = $this->redact($value);
@@ -35,16 +35,18 @@ final class Redactor
         return $result;
     }
 
-    public function redactString(string $value): string
-    {
+
+    public function redactString(string $value): string {
         foreach (self::SENSITIVE_KEYS as $key) {
             $value = (string) preg_replace(
-                '/(\"' . preg_quote($key, '/') . '\"\s*:\s*\")[^\"]*(\")/',
-                '$1[REDACTED]$2',
-                $value,
+              '/(\"'.preg_quote($key, '/').'\"\s*:\s*\")[^\"]*(\")/',
+              '$1[REDACTED]$2',
+              $value,
             );
         }
 
         return $value;
     }
+
+
 }

@@ -16,6 +16,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class BatchCommand extends Command
 {
+
+
     /** @param 'activate'|'deactivate'|'delete' $operation */
     public function __construct(
         private readonly PessoasClient $client,
@@ -25,20 +27,22 @@ final class BatchCommand extends Command
         private readonly string $operation,
     ) {
         parent::__construct($name);
-        $this->setDescription(match ($operation) {
+        $this->setDescription(
+          match ($operation) {
             'activate' => 'Ativa pessoas em lote',
             'deactivate' => 'Inativa pessoas em lote',
             'delete' => 'Exclui pessoas em lote',
-        });
+          }
+        );
     }
 
-    protected function configure(): void
-    {
-        $this->addOption('json', null, InputOption::VALUE_REQUIRED, 'Payload JSON com a lista de uuids');
+
+    protected function configure(): void {
+        $this->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON com a lista de uuids');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $payload = JsonPayload::object($input->getOption('json'));
             $result  = match ($this->operation) {
@@ -55,4 +59,6 @@ final class BatchCommand extends Command
             return Command::FAILURE;
         }
     }
+
+
 }
