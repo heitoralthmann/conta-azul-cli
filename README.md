@@ -310,8 +310,7 @@ Superfície **humana** em pt-BR: README, `--help`, descrições, campo `message`
 
 ### Limitações conhecidas
 
-- `docs/financial-apis-openapi.yaml` ainda é um **placeholder**. Os paths em `src/Api/FinanceiroClient.php` foram escritos a partir da documentação e não foram validados contra a API real endpoint por endpoint.
-- Por consequência, o workflow `api-drift.yml` está inerte até que a URL da spec oficial seja configurada.
+- `docs/financial-apis-openapi.yaml` ainda é um **placeholder**: a Conta Azul não publica uma URL estável para a spec OpenAPI, então não há automação de detecção de mudança na API — acompanhamento é manual (veja [CONTRIBUTING.md](CONTRIBUTING.md#acompanhando-mudanças-na-api-da-conta-azul)).
 
 ## Contribuição e segurança
 

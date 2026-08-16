@@ -2,8 +2,9 @@
 # foram conferidos um a um contra a API real em 2026-08-15. A versão anterior
 # deste arquivo listava paths deduzidos da documentação e todos respondiam 404.
 #
-# Referenciado por .github/workflows/api-drift.yml para detecção de mudança.
-# Ao atualizar, revise src/Api/FinanceiroClient.php.
+# Sem automação de detecção de drift (a Conta Azul não publica URL estável
+# para a spec) — veja CONTRIBUTING.md. Ao atualizar, revise
+# src/Api/FinanceiroClient.php.
 #
 # Lista autoritativa de operações (o portal bloqueia curl/WebFetch — abra no navegador):
 # https://developers.contaazul.com/docs/financial-apis-openapi/v1
