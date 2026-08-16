@@ -1,6 +1,6 @@
 # Conta Azul CLI
 
-[![Tests](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/ci.yml)
+[![Tests](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/tests.yml/badge.svg)](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/tests.yml)
 ![PHP Version](https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 

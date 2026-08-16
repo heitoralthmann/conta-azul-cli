@@ -21,8 +21,11 @@ vendor/bin/phpunit --no-coverage
 vendor/bin/phpstan analyse src/ --level=max --memory-limit=1G
 ```
 
-O CI roda os quatro. Nenhum aceita regressão: PHPStan está em `level max`
-sem baseline, e o phpcs não tem exceções.
+`composer format` é só para uso local — o CI não corrige nada, só valida.
+Os workflows em `.github/workflows/` (`tests.yml`, `static-analysis.yml`,
+`code-style.yml`, `security.yml`) rodam os outros três em cada PR. Nenhum
+aceita regressão: PHPStan está em `level max` sem baseline, e o phpcs não
+tem exceções.
 
 ## Idioma
 

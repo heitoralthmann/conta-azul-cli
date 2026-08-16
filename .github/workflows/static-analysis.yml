@@ -1,0 +1,31 @@
+name: Static Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  phpstan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, openssl, posix
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      # PHPStan exceeds PHP's default 128 MB limit on this codebase.
+      - name: Run PHPStan (src, level max)
+        run: vendor/bin/phpstan analyse src/ --level=max --no-progress --memory-limit=1G
+
+      - name: Run PHPStan (tests, level 6)
+        run: vendor/bin/phpstan analyse tests/ --level=6 --no-progress --memory-limit=1G
