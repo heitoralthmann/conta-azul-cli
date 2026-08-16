@@ -24,7 +24,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class FinanceiroClient
 {
-    private readonly ApiClientSupport $support;
+    use ApiClientOperations;
 
 
     /**

@@ -19,7 +19,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class PessoasClient
 {
-    private readonly ApiClientSupport $support;
+    use ApiClientOperations;
 
 
     /**

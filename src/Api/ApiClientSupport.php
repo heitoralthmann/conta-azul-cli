@@ -69,6 +69,24 @@ final class ApiClientSupport
 
 
     /**
+     * Returns the correlation identifier attached to transport requests.
+     */
+    public function getCorrelationId(): string {
+        return $this->transport->getCorrelationId();
+    }
+
+
+    /**
+     * Polls an asynchronous protocol identifier until it reaches a terminal state.
+     *
+     * @return array<mixed>
+     */
+    public function pollProtocol(string $protocolId, int $timeoutSeconds=60): array {
+        return $this->poller->poll($protocolId, $timeoutSeconds);
+    }
+
+
+    /**
      * Returns an accepted response immediately or waits for its protocol.
      *
      * @param array<mixed> $response

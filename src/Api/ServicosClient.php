@@ -13,7 +13,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 /** Cliente dos endpoints de serviços da API Conta Azul. */
 final class ServicosClient
 {
-    private readonly ApiClientSupport $support;
+    use ApiClientOperations;
 
 
     /**
