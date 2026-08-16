@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Output;
 
+/** Recursively replaces known credential fields before values are logged. */
 final class Redactor
 {
     private const SENSITIVE_KEYS = [
@@ -17,6 +18,8 @@ final class Redactor
 
 
     /**
+     * Redacts sensitive keys in a nested value tree.
+     *
      * @param array<string|int, mixed> $data
      * @return array<string|int, mixed>
      */
@@ -36,6 +39,7 @@ final class Redactor
     }
 
 
+    /** Redacts credential fields embedded in a JSON-like string. */
     public function redactString(string $value): string {
         foreach (self::SENSITIVE_KEYS as $key) {
             $value = (string) preg_replace(
