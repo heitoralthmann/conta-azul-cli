@@ -1,0 +1,58 @@
+name: Reportar um bug
+description: Algo não funciona como esperado
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Encontrou uma vulnerabilidade de segurança? **Não abra uma issue aqui.** Veja [SECURITY.md](../../SECURITY.md).
+
+  - type: input
+    id: command
+    attributes:
+      label: Comando executado
+      description: O comando `ca` completo, com placeholders no lugar de dados sensíveis (payloads, tokens, IDs reais).
+      placeholder: "ca conta-a-receber create --json '{...}'"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamento esperado
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportamento observado
+      description: Cole o envelope de erro (stderr) se houver um. Redija dados sensíveis antes de colar.
+    validations:
+      required: true
+
+  - type: input
+    id: correlation-id
+    attributes:
+      label: correlation_id
+      description: O campo `correlation_id` do envelope de erro, se houver. Também aparece no log estruturado (`--debug`) e no header `X-Correlation-Id` de cada chamada à API.
+      placeholder: "00000000-0000-0000-0000-000000000000"
+
+  - type: input
+    id: version
+    attributes:
+      label: Versão do ca
+      description: Saída de `ca --version`.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Sistema operacional
+      options:
+        - Linux
+        - macOS
+        - Windows
+    validations:
+      required: true

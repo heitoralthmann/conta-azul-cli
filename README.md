@@ -1,5 +1,9 @@
 # Conta Azul CLI
 
+[![Tests](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/tests.yml/badge.svg)](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/tests.yml)
+![PHP Version](https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white)
+![License](https://img.shields.io/badge/license-Apache%202.0-blue)
+
 CLI em PHP/Symfony que expõe as famílias **Financeiro** (Finanças, Baixas, Cobranças), **Pessoas**, **Produtos** e **Serviços** da API Conta Azul para consumo por agentes de IA.
 
 Cada invocação é de curta duração: faz uma chamada, escreve JSON compacto em `stdout` e sai. Toda a complexidade de OAuth2 — fluxo inicial, persistência, refresh, rotação de token — fica encapsulada dentro do CLI.
@@ -310,12 +314,11 @@ Superfície **humana** em pt-BR: README, `--help`, descrições, campo `message`
 
 ### Limitações conhecidas
 
-- `docs/financial-apis-openapi.yaml` ainda é um **placeholder**. Os paths em `src/Api/FinanceiroClient.php` foram escritos a partir da documentação e não foram validados contra a API real endpoint por endpoint.
-- Por consequência, o workflow `api-drift.yml` está inerte até que a URL da spec oficial seja configurada.
+- `docs/financial-apis-openapi.yaml` ainda é um **placeholder**: a Conta Azul não publica uma URL estável para a spec OpenAPI, então não há automação de detecção de mudança na API — acompanhamento é manual (veja [CONTRIBUTING.md](CONTRIBUTING.md#acompanhando-mudanças-na-api-da-conta-azul)).
 
 ## Contribuição e segurança
 
-Quer contribuir? Veja [CONTRIBUTING.md](CONTRIBUTING.md). Encontrou uma vulnerabilidade? Veja [SECURITY.md](SECURITY.md) — não abra uma issue pública.
+Quer contribuir? Veja [CONTRIBUTING.md](CONTRIBUTING.md) e o [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Encontrou uma vulnerabilidade? Veja [SECURITY.md](SECURITY.md) — não abra uma issue pública.
 
 ## Licença
 

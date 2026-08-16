@@ -7,12 +7,13 @@ namespace ContaAzulCli\Tests\Unit\Command\Support;
 use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Command\Support\PaginationOptions;
 use ContaAzulCli\Error\CliException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 
-/** @covers \ContaAzulCli\Command\Support\PaginationOptions */
+#[CoversClass(PaginationOptions::class)]
 final class PaginationOptionsTest extends TestCase
 {
   public function testReadsConfiguredValues(): void {

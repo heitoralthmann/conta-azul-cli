@@ -1,0 +1,24 @@
+name: Pedido de funcionalidade
+description: Sugerir um comando, endpoint ou comportamento novo
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Que problema isso resolve?
+      description: Prefira descrever o problema a propor a solução direto — às vezes já existe um caminho.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposta
+      description: Se envolve um endpoint novo da API Conta Azul, referencie a documentação oficial e, se souber, se ele já está listado em API_COVERAGE.md.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas

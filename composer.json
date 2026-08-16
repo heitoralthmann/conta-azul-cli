@@ -2,9 +2,23 @@
     "name": "heitoralthmann/conta-azul-cli",
     "description": "CLI PHP/Symfony para as APIs Financeiro, Pessoas, Produtos e Serviços da Conta Azul",
     "type": "project",
+    "keywords": ["conta-azul", "cli", "api-client", "oauth2", "symfony-console", "php"],
     "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Heitor Althmann",
+            "email": "heitoralthmann@gmail.com"
+        }
+    ],
+    "homepage": "https://github.com/heitoralthmann/conta-azul-cli",
+    "support": {
+        "issues": "https://github.com/heitoralthmann/conta-azul-cli/issues",
+        "source": "https://github.com/heitoralthmann/conta-azul-cli"
+    },
     "require": {
         "php": "^8.3",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
         "symfony/console": "^7.0",
         "symfony/http-client": "^7.0",
         "symfony/dotenv": "^7.0",
@@ -15,6 +29,9 @@
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^11.0",
         "squizlabs/php_codesniffer": "^3.9"
+    },
+    "suggest": {
+        "ext-posix": "Enables full CLI behavior on Unix-like systems; guarded and unused on Windows."
     },
     "autoload": {
         "psr-4": {

@@ -21,8 +21,11 @@ vendor/bin/phpunit --no-coverage
 vendor/bin/phpstan analyse src/ --level=max --memory-limit=1G
 ```
 
-O CI roda os quatro. Nenhum aceita regressão: PHPStan está em `level max`
-sem baseline, e o phpcs não tem exceções.
+`composer format` é só para uso local — o CI não corrige nada, só valida.
+Os workflows em `.github/workflows/` (`tests.yml`, `static-analysis.yml`,
+`code-style.yml`, `security.yml`) rodam os outros três em cada PR. Nenhum
+aceita regressão: PHPStan está em `level max` sem baseline, e o phpcs não
+tem exceções.
 
 ## Idioma
 
@@ -42,6 +45,16 @@ deixa de servir ao propósito.
 
 Da mesma forma, ao adicionar ou alterar um comando, atualize
 [`COMMANDS.md`](COMMANDS.md), a referência canônica de todos os comandos.
+
+### Acompanhando mudanças na API da Conta Azul
+
+`docs/financial-apis-openapi.yaml` é um **placeholder**: a Conta Azul ainda
+não publica uma URL estável para a spec OpenAPI (veja
+[Limitações conhecidas](README.md#limitações-conhecidas)). Não há automação
+que detecte drift — checar manualmente de vez em quando contra o [Portal do
+Desenvolvedor](https://developers.contaazul.com/aboutapis) é o processo até
+que essa URL exista. Se a Conta Azul publicar uma, um workflow de
+`schedule` comparando o YAML local contra o publicado volta a fazer sentido.
 
 ## Testando comandos
 
