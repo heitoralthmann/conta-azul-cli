@@ -84,7 +84,7 @@ trait ApiClientFactory
     ];
   }
 
-  private function testConfiguration(): Configuration {
+  protected function testConfiguration(): Configuration {
     return Configuration::fromValues(
         [
           'clientId' => 'test-client-id',
