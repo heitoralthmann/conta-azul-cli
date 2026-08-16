@@ -6,9 +6,10 @@ namespace ContaAzulCli\Tests\Unit\Command\Support;
 
 use ContaAzulCli\Command\Support\JsonPayload;
 use ContaAzulCli\Error\CliException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-/** @covers \ContaAzulCli\Command\Support\JsonPayload */
+#[CoversClass(JsonPayload::class)]
 final class JsonPayloadTest extends TestCase
 {
   public function testDecodesAnObject(): void {
