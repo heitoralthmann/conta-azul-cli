@@ -17,16 +17,19 @@ final class PeriodoPadrao
     private readonly DateTimeImmutable $referencia;
 
 
+    /** Creates a month-range helper anchored to the supplied instant or now. */
     public function __construct(?DateTimeImmutable $referencia=NULL) {
         $this->referencia = $referencia ?? new DateTimeImmutable('now');
     }
 
 
+    /** Returns the first calendar day of the reference month. */
     public function primeiroDia(): string {
         return $this->referencia->modify('first day of this month')->format('Y-m-d');
     }
 
 
+    /** Returns the last calendar day of the reference month. */
     public function ultimoDia(): string {
         return $this->referencia->modify('last day of this month')->format('Y-m-d');
     }
@@ -38,6 +41,7 @@ final class PeriodoPadrao
     }
 
 
+    /** Returns the final second of the reference month without timezone data. */
     public function ultimoInstante(): string {
         return $this->referencia->modify('last day of this month')->format('Y-m-d\T23:59:59');
     }

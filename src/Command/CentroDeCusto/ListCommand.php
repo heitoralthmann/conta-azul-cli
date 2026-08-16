@@ -7,6 +7,7 @@ namespace ContaAzulCli\Command\CentroDeCusto;
 use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Command\Support\PaginationOptions;
+use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -18,6 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'centro-de-custo list', description: 'Lista centros de custo')]
 final class ListCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
     public function __construct(
@@ -25,7 +27,9 @@ final class ListCommand extends Command
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         private readonly PaginationValidator $paginationValidator,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct();
     }
 
@@ -36,17 +40,13 @@ final class ListCommand extends Command
 
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $pagination = PaginationOptions::fromInput($input, $this->paginationValidator);
 
             $this->jsonRenderer->render($this->client->listCentrosDeCusto($pagination->page(), $pagination->pageSize()));
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 

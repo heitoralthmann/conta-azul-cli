@@ -8,6 +8,7 @@ use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Command\Support\PaginationOptions;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
+use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -21,6 +22,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'conta-a-pagar list', description: 'Lista contas a pagar por intervalo de vencimento')]
 final class ListCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
     public function __construct(
@@ -30,7 +32,9 @@ final class ListCommand extends Command
         private readonly PaginationValidator $paginationValidator,
         private readonly WarningEnvelope $warningEnvelope,
         private readonly PeriodoPadrao $periodoPadrao,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct();
     }
 
@@ -44,7 +48,8 @@ final class ListCommand extends Command
 
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $deRaw  = $input->getOption('data-vencimento-de');
             $ateRaw = $input->getOption('data-vencimento-ate');
 
@@ -64,13 +69,8 @@ final class ListCommand extends Command
             $this->jsonRenderer->render(
               $this->client->listContasAPagar($de, $ate, $pagination->page(), $pagination->pageSize()),
             );
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 

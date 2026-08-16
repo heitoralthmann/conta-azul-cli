@@ -6,6 +6,7 @@ namespace ContaAzulCli\Command\Auth;
 
 use ContaAzulCli\Auth\AuthManager;
 use ContaAzulCli\Auth\CallbackServer;
+use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -14,21 +15,28 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(name: 'auth login', description: 'Autentica com a Conta Azul via OAuth2 (abre navegador)')]
+/** Runs the browser-based OAuth login flow. */
 final class LoginCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
+    /** Creates the command and its authentication collaborators. */
     public function __construct(
         private readonly AuthManager $authManager,
         private readonly CallbackServer $callbackServer,
         private readonly ErrorEnvelope $errorEnvelope,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct();
     }
 
 
+    /** Starts OAuth, waits for the local callback, and stores the token. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($output): void {
             $authUrl = $this->authManager->startLoginFlow();
             $output->writeln("Abra este URL no seu navegador:\n");
             $output->writeln($authUrl);
@@ -39,13 +47,8 @@ final class LoginCommand extends Command
 
             $this->authManager->completeLoginFlow($code);
             $output->writeln("\nAutenticado com sucesso!");
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 

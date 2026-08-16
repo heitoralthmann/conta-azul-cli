@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ContaAzulCli\Command\Protocolo;
 
 use ContaAzulCli\Api\FinanceiroClient;
+use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -17,13 +18,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'protocolo get', description: 'Consulta o status de uma escrita assíncrona pelo protocol ID')]
 final class GetCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct();
     }
 
@@ -34,16 +38,12 @@ final class GetCommand extends Command
 
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $id = $input->getArgument('id');
             $this->jsonRenderer->render($this->client->getProtocolo(is_string($id) ? $id : ''));
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 

@@ -6,6 +6,7 @@ namespace ContaAzulCli\Command\Pessoa;
 
 use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Command\Support\JsonPayload;
+use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -16,6 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class BatchCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
     /** @param 'activate'|'deactivate'|'delete' $operation */
@@ -25,7 +27,9 @@ final class BatchCommand extends Command
         private readonly JsonRenderer $jsonRenderer,
         string $name,
         private readonly string $operation,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct($name);
         $this->setDescription(
           match ($operation) {
@@ -43,7 +47,8 @@ final class BatchCommand extends Command
 
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $payload = JsonPayload::object($input->getOption('json'));
             $result  = match ($this->operation) {
                 'activate' => $this->client->activatePessoas($payload),
@@ -51,13 +56,8 @@ final class BatchCommand extends Command
                 'delete' => $this->client->deletePessoas($payload),
             };
             $this->jsonRenderer->render($result);
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 

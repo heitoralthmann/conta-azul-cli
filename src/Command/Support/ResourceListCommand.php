@@ -16,6 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /** Commande reutilizável para listagens paginadas com filtros da API. */
 final class ResourceListCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
     /**
@@ -30,12 +31,15 @@ final class ResourceListCommand extends Command
         private readonly JsonRenderer $jsonRenderer,
         private readonly PaginationValidator $paginationValidator,
         private readonly array $filterOptions=[],
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct($name);
         $this->setDescription($description);
     }
 
 
+    /** Declares pagination and feature-specific filter options. */
     protected function configure(): void {
         PaginationOptions::configure($this);
 
@@ -45,8 +49,10 @@ final class ResourceListCommand extends Command
     }
 
 
+    /** Validates filters, invokes the list operation, and renders its result. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $pagination = PaginationOptions::fromInput($input, $this->paginationValidator);
 
             $filters = [];
@@ -58,13 +64,8 @@ final class ResourceListCommand extends Command
             }
 
             $this->jsonRenderer->render(($this->list)($pagination->page(), $pagination->pageSize(), $filters));
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 

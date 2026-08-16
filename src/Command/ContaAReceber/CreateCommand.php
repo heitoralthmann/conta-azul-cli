@@ -6,6 +6,7 @@ namespace ContaAzulCli\Command\ContaAReceber;
 
 use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Command\Support\AsyncOptions;
+use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Command\Support\JsonPayload;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
@@ -19,13 +20,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'conta-a-receber create', description: 'Cria uma conta a receber')]
 final class CreateCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         parent::__construct();
     }
 
@@ -38,20 +42,16 @@ final class CreateCommand extends Command
 
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $payload = JsonPayload::object($input->getOption('json'));
             $asyncOptions = AsyncOptions::fromInput($input);
 
             $this->jsonRenderer->render(
               $this->client->createContaAReceber($payload, $asyncOptions->pollTimeout(), $asyncOptions->noWait()),
             );
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 

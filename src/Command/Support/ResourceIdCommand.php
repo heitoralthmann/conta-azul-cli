@@ -15,9 +15,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 /** Commande reutilizável para buscar ou excluir um recurso por ID. */
 final class ResourceIdCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
-    /** @param callable(string): array<mixed> $operation */
+    /**
+     * Creates a command that invokes a resource operation with one identifier.
+     *
+     * @param callable(string): array<mixed> $operation
+     */
     public function __construct(
         string $name,
         string $description,
@@ -25,7 +30,9 @@ final class ResourceIdCommand extends Command
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         string $argumentDescription,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         $this->argumentDescription = $argumentDescription;
         parent::__construct($name);
         $this->setDescription($description);
@@ -35,22 +42,20 @@ final class ResourceIdCommand extends Command
     private string $argumentDescription;
 
 
+    /** Declares the required resource identifier argument. */
     protected function configure(): void {
         $this->addArgument('id', InputArgument::REQUIRED, $this->argumentDescription);
     }
 
 
+    /** Executes the operation and renders success or a normalized CLI error. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $id = $input->getArgument('id');
             $this->jsonRenderer->render(($this->operation)(is_string($id) ? $id : ''));
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 

@@ -15,9 +15,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 /** Commande reutilizável para operações que recebem um objeto JSON. */
 final class ResourceJsonCommand extends Command
 {
+    private readonly CommandExecutor $commandExecutor;
 
 
-    /** @param callable(array<string, mixed>): array<mixed> $operation */
+    /**
+     * Creates a command that passes one JSON object to an operation.
+     *
+     * @param callable(array<string, mixed>): array<mixed> $operation
+     */
     public function __construct(
         string $name,
         string $description,
@@ -25,7 +30,9 @@ final class ResourceJsonCommand extends Command
         private readonly ErrorEnvelope $errorEnvelope,
         private readonly JsonRenderer $jsonRenderer,
         string $jsonDescription,
+        ?CommandExecutor $commandExecutor=NULL,
     ) {
+        $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
         $this->jsonDescription = $jsonDescription;
         parent::__construct($name);
         $this->setDescription($description);
@@ -35,21 +42,19 @@ final class ResourceJsonCommand extends Command
     private string $jsonDescription;
 
 
+    /** Declares the JSON payload option accepted by the operation. */
     protected function configure(): void {
         $this->addOption('json', NULL, InputOption::VALUE_REQUIRED, $this->jsonDescription);
     }
 
 
+    /** Parses input, invokes the operation, and renders its result. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        try {
+        return $this->commandExecutor->execute(
+          function () use ($input): void {
             $this->jsonRenderer->render(($this->operation)(JsonPayload::object($input->getOption('json'))));
-
-            return Command::SUCCESS;
-        } catch (CliException $e) {
-            $this->errorEnvelope->renderToStderr($e);
-
-            return Command::FAILURE;
-        }
+          }
+        );
     }
 
 
