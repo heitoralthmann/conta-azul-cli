@@ -17,12 +17,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/** Lists people with pagination and API filter options. */
 #[AsCommand(name: 'pessoa list', description: 'Lista pessoas por filtros')]
 final class ListCommand extends Command
 {
     private readonly CommandExecutor $commandExecutor;
 
 
+    /** Creates the command and its API/output collaborators. */
     public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -35,6 +37,7 @@ final class ListCommand extends Command
     }
 
 
+    /** Declares person filters and shared pagination options. */
     protected function configure(): void {
         $this
             ->addOption('tipo-ordenacao', NULL, InputOption::VALUE_REQUIRED, 'Campo de ordenação')
@@ -60,6 +63,7 @@ final class ListCommand extends Command
     }
 
 
+    /** Collects filters, lists people, and renders output or an error. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
         return $this->commandExecutor->execute(
           function () use ($input): void {

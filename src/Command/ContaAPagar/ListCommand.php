@@ -19,12 +19,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/** Lists payables for a due-date interval. */
 #[AsCommand(name: 'conta-a-pagar list', description: 'Lista contas a pagar por intervalo de vencimento')]
 final class ListCommand extends Command
 {
     private readonly CommandExecutor $commandExecutor;
 
 
+    /** Creates the command and its API/output collaborators. */
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -39,6 +41,7 @@ final class ListCommand extends Command
     }
 
 
+    /** Declares due-date and shared pagination options. */
     protected function configure(): void {
         $this
             ->addOption('data-vencimento-de', NULL, InputOption::VALUE_REQUIRED, 'Vencimento inicial (YYYY-MM-DD). Padrão: primeiro dia do mês corrente')
@@ -47,6 +50,7 @@ final class ListCommand extends Command
     }
 
 
+    /** Resolves dates, lists payables, and renders output or an error. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
         return $this->commandExecutor->execute(
           function () use ($input): void {

@@ -17,12 +17,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/** Creates a receivable from JSON and optionally waits for completion. */
 #[AsCommand(name: 'conta-a-receber create', description: 'Cria uma conta a receber')]
 final class CreateCommand extends Command
 {
     private readonly CommandExecutor $commandExecutor;
 
 
+    /** Creates the command and its API/output collaborators. */
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -34,6 +36,7 @@ final class CreateCommand extends Command
     }
 
 
+    /** Declares the JSON payload and asynchronous options. */
     protected function configure(): void {
         $this
             ->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da conta a receber');
@@ -41,6 +44,7 @@ final class CreateCommand extends Command
     }
 
 
+    /** Creates the receivable and renders output or a normalized error. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
         return $this->commandExecutor->execute(
           function () use ($input): void {

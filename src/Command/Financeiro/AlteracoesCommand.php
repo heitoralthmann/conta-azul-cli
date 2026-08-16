@@ -17,12 +17,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/** Lists financial event changes for reconciliation. */
 #[AsCommand(name: 'financeiro alteracoes', description: 'Lista alterações de eventos financeiros num intervalo (útil para reconciliação)')]
 final class AlteracoesCommand extends Command
 {
     private readonly CommandExecutor $commandExecutor;
 
 
+    /** Creates the command and its API/output collaborators. */
     public function __construct(
         private readonly FinanceiroClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -36,6 +38,7 @@ final class AlteracoesCommand extends Command
     }
 
 
+    /** Declares optional ISO-8601 interval boundaries. */
     protected function configure(): void {
         $this
             ->addOption(
@@ -53,6 +56,7 @@ final class AlteracoesCommand extends Command
     }
 
 
+    /** Resolves the interval, warns about defaults, and fetches changes. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
         return $this->commandExecutor->execute(
           function () use ($input): void {

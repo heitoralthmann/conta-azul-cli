@@ -16,12 +16,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/** Creates a person from a JSON payload. */
 #[AsCommand(name: 'pessoa create', description: 'Cria uma pessoa')]
 final class CreateCommand extends Command
 {
     private readonly CommandExecutor $commandExecutor;
 
 
+    /** Creates the command and its API/output collaborators. */
     public function __construct(
         private readonly PessoasClient $client,
         private readonly ErrorEnvelope $errorEnvelope,
@@ -33,11 +35,13 @@ final class CreateCommand extends Command
     }
 
 
+    /** Declares the JSON payload option. */
     protected function configure(): void {
         $this->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
     }
 
 
+    /** Parses the payload, creates the person, and renders output or an error. */
     protected function execute(InputInterface $input, OutputInterface $output): int {
         return $this->commandExecutor->execute(
           function () use ($input): void {
