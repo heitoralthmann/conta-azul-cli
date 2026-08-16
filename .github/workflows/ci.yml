@@ -53,3 +53,25 @@ jobs:
       - name: Check code style
         if: matrix.os == 'ubuntu-latest' && matrix.php == '8.3'
         run: composer lint
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, openssl, posix
+          coverage: pcov
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      # Visibility only, no gate: the goal is to make the gap between src/Api
+      # and src/Command visible, not to fail the build on a threshold.
+      - name: Run tests with coverage
+        run: vendor/bin/phpunit --coverage-text --colors=never | tee "$GITHUB_STEP_SUMMARY"
