@@ -29,3 +29,6 @@ jobs:
 
       - name: Run PHPStan (tests, level 6)
         run: vendor/bin/phpstan analyse tests/ --level=6 --no-progress --memory-limit=1G
+
+      - name: Check for unused and shadow dependencies
+        run: vendor/bin/composer-dependency-analyser

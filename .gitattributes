@@ -5,6 +5,7 @@
 /phpunit.xml.dist    export-ignore
 /phpcs.xml.dist      export-ignore
 /phpstan.neon        export-ignore
+/composer-dependency-analyser.php export-ignore
 /box.json            export-ignore
 /ESPECIFICACAO.md    export-ignore
 /.editorconfig       export-ignore

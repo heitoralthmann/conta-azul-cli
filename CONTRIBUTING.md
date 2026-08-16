@@ -19,11 +19,12 @@ composer lint    # phpcs — inclui bin/ca via STDIN, veja composer.json
 composer format  # phpcbf — corrige o que for automaticamente corrigível
 vendor/bin/phpunit --no-coverage
 vendor/bin/phpstan analyse src/ --level=max --memory-limit=1G
+vendor/bin/composer-dependency-analyser
 ```
 
 `composer format` é só para uso local — o CI não corrige nada, só valida.
 Os workflows em `.github/workflows/` (`tests.yml`, `static-analysis.yml`,
-`code-style.yml`, `security.yml`) rodam os outros três em cada PR. Nenhum
+`code-style.yml`, `security.yml`) rodam os outros quatro em cada PR. Nenhum
 aceita regressão: PHPStan está em `level max` sem baseline, e o phpcs não
 tem exceções.
 
