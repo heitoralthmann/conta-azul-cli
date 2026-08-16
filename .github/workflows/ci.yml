@@ -48,6 +48,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.php == '8.3'
         run: vendor/bin/phpstan analyse src/ --level=max --no-progress
 
+      # composer lint also covers bin/ca (piped through STDIN, see composer.json),
+      # which a direct phpcs invocation would silently skip.
       - name: Check code style
         if: matrix.os == 'ubuntu-latest' && matrix.php == '8.3'
-        run: vendor/bin/phpcs --standard=phpcs.xml.dist
+        run: composer lint
