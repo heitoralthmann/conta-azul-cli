@@ -4,15 +4,36 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Output;
 
+use Symfony\Component\Console\Output\OutputInterface;
+
+/**
+ * Backwards-compatible success-payload renderer.
+ *
+ * This adapter keeps existing command constructors stable while delegating
+ * serialization and stream handling to JsonConsoleOutput.
+ */
 final class JsonRenderer
 {
+    private readonly JsonConsoleOutput $output;
 
 
+    /**
+     * Creates a success renderer.
+     *
+     * @param OutputInterface|null $output Symfony output used for stdout.
+     */
+    public function __construct(?OutputInterface $output=NULL) {
+        $this->output = new JsonConsoleOutput($output);
+    }
+
+
+    /**
+     * Renders a successful command result as one compact JSON line.
+     *
+     * @throws \JsonException If the result cannot be encoded as JSON.
+     */
     public function render(mixed $data): void {
-        echo json_encode(
-          $data,
-          JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
-        ) . "\n";
+        $this->output->renderSuccess($data);
     }
 
 
