@@ -13,44 +13,41 @@ use Symfony\Component\Console\Input\InputOption;
 /** @covers \ContaAzulCli\Command\Support\AsyncOptions */
 final class AsyncOptionsTest extends TestCase
 {
-
-
-  public function testReadsConfiguredValues(): void {
+  public function testReadsConfiguredValues(): void
+  {
     $options = AsyncOptions::fromInput(
-      new ArrayInput(
-        ['--poll-timeout' => '90', '--no-wait' => TRUE],
-        new InputDefinition(
-          [
-            new InputOption('poll-timeout', NULL, InputOption::VALUE_REQUIRED),
-            new InputOption('no-wait', NULL, InputOption::VALUE_NONE),
-          ]
+        new ArrayInput(
+            ['--poll-timeout' => '90', '--no-wait' => true],
+            new InputDefinition(
+                [
+                  new InputOption('poll-timeout', null, InputOption::VALUE_REQUIRED),
+                  new InputOption('no-wait', null, InputOption::VALUE_NONE),
+                ],
+            ),
         ),
-      ),
     );
 
     self::assertSame(90, $options->pollTimeout());
     self::assertTrue($options->noWait());
   }
 
-
-  public function testUsesDefaultsWhenValuesAreMissing(): void {
+  public function testUsesDefaultsWhenValuesAreMissing(): void
+  {
     $options = AsyncOptions::fromInput(new ArrayInput([]));
 
     self::assertSame(60, $options->pollTimeout());
     self::assertFalse($options->noWait());
   }
 
-
-  public function testFallsBackToTheDefaultForANonNumericTimeout(): void {
+  public function testFallsBackToTheDefaultForANonNumericTimeout(): void
+  {
     $options = AsyncOptions::fromInput(
-      new ArrayInput(
-        ['--poll-timeout' => 'invalid'],
-        new InputDefinition([new InputOption('poll-timeout', NULL, InputOption::VALUE_REQUIRED)]),
-      ),
+        new ArrayInput(
+            ['--poll-timeout' => 'invalid'],
+            new InputDefinition([new InputOption('poll-timeout', null, InputOption::VALUE_REQUIRED)]),
+        ),
     );
 
     self::assertSame(60, $options->pollTimeout());
   }
-
-
 }

@@ -22,20 +22,18 @@ use Symfony\Component\Console\Command\Command;
 /** Registers commands backed by the people API client. */
 final class PessoaCommandModule implements CommandModuleInterface
 {
-
-
   /** Connects the people API client and shared command collaborators. */
   public function __construct(
-        private readonly PessoasClient $client,
-        private readonly ErrorEnvelope $errorEnvelope,
-        private readonly JsonRenderer $jsonRenderer,
-        private readonly PaginationValidator $paginationValidator,
-    ) {
+      private readonly PessoasClient $client,
+      private readonly ErrorEnvelope $errorEnvelope,
+      private readonly JsonRenderer $jsonRenderer,
+      private readonly PaginationValidator $paginationValidator,
+  ) {
   }
 
-
   /** @return list<Command> */
-  public function commands(): array {
+  public function commands(): array
+  {
     return [
       new PessoaListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
       new PessoaCreateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
@@ -49,6 +47,4 @@ final class PessoaCommandModule implements CommandModuleInterface
       new PessoaContaConectadaCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
     ];
   }
-
-
 }

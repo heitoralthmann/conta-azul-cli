@@ -8,13 +8,15 @@ use ContaAzulCli\Config\Configuration;
 use ContaAzulCli\Config\EnvironmentConfigurationLoader;
 use PHPUnit\Framework\TestCase;
 
+use function getenv;
+use function putenv;
+
 final class EnvironmentConfigurationLoaderTest extends TestCase
 {
   /** @var array<string, string|false> */
   private array $originalEnv = [];
 
-  /** @var list<string> */
-  private const ENVIRONMENT_VARIABLES = [
+  private const array ENVIRONMENT_VARIABLES = [
     'CA_CLIENT_ID',
     'CA_CLIENT_SECRET',
     'CA_REDIRECT_URI',
@@ -30,23 +32,23 @@ final class EnvironmentConfigurationLoaderTest extends TestCase
     'CA_CALLBACK_TIMEOUT',
   ];
 
-
-  protected function setUp(): void {
+  protected function setUp(): void
+  {
     foreach (self::ENVIRONMENT_VARIABLES as $variable) {
       $this->originalEnv[$variable] = getenv($variable);
       putenv($variable);
     }
   }
 
-
-  protected function tearDown(): void {
+  protected function tearDown(): void
+  {
     foreach ($this->originalEnv as $variable => $value) {
-      putenv($value === FALSE ? $variable : "{$variable}={$value}");
+      putenv($value === false ? $variable : $variable . '=' . $value);
     }
   }
 
-
-  public function testLoadsEnvironmentIntoConfigurationValueObject(): void {
+  public function testLoadsEnvironmentIntoConfigurationValueObject(): void
+  {
     putenv('CA_CLIENT_ID=client-id');
     putenv('CA_CLIENT_SECRET=client-secret');
     putenv('CA_SCOPE=finance');
@@ -59,29 +61,27 @@ final class EnvironmentConfigurationLoaderTest extends TestCase
     self::assertSame('finance', $configuration->getScope());
   }
 
-
-  public function testConfigurationCanBeCreatedWithoutEnvironmentAccess(): void {
+  public function testConfigurationCanBeCreatedWithoutEnvironmentAccess(): void
+  {
     $configuration = Configuration::fromValues(
-      [
-        'clientId' => 'client-id',
-        'clientSecret' => 'client-secret',
-        'redirectUri' => 'https://example.test/callback',
-        'scope' => NULL,
-        'apiBaseUrl' => 'https://api.example.test',
-        'authBaseUrl' => 'https://auth.example.test',
-        'authorizeUrl' => 'https://auth.example.test/authorize',
-        'tokenUrl' => 'https://auth.example.test/token',
-        'tokenPath' => '/tmp/tokens.json',
-        'bootstrapRefreshToken' => NULL,
-        'callbackCertFile' => NULL,
-        'callbackKeyFile' => NULL,
-        'callbackTimeout' => 30,
-      ]
+        [
+          'clientId' => 'client-id',
+          'clientSecret' => 'client-secret',
+          'redirectUri' => 'https://example.test/callback',
+          'scope' => null,
+          'apiBaseUrl' => 'https://api.example.test',
+          'authBaseUrl' => 'https://auth.example.test',
+          'authorizeUrl' => 'https://auth.example.test/authorize',
+          'tokenUrl' => 'https://auth.example.test/token',
+          'tokenPath' => '/tmp/tokens.json',
+          'bootstrapRefreshToken' => null,
+          'callbackCertFile' => null,
+          'callbackKeyFile' => null,
+          'callbackTimeout' => 30,
+        ],
     );
 
     self::assertSame('https://api.example.test', $configuration->getApiBaseUrl());
     self::assertSame(30, $configuration->getCallbackTimeout());
   }
-
-
 }

@@ -12,6 +12,10 @@ use ContaAzulCli\Output\Redactor;
 use Ramsey\Uuid\Uuid;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
+use Throwable;
+
+use function array_merge;
+use function is_array;
 
 /**
  * Authenticated Symfony HTTP adapter with the API's retry and error policy.
@@ -21,47 +25,46 @@ final class HttpApiTransport implements ApiTransportInterface
   private readonly string $correlationId;
   private readonly HttpErrorMapper $errorMapper;
 
-
   /**
-   * @param Configuration $config API endpoint configuration.
-   * @param AuthManager $authManager Provider for valid and refreshed tokens.
-   * @param Logger $logger Structured request/response logger.
-   * @param Redactor $redactor Removes sensitive query values from logs.
-   * @param HttpClientInterface $httpClient Symfony HTTP adapter.
-   * @param SleeperInterface $sleeper Delay implementation, normally NativeSleeper.
-   * @param RetryPolicy $retryPolicy Safe replay rules for each HTTP method.
+   * @param Configuration       $config      API endpoint configuration.
+   * @param AuthManager         $authManager Provider for valid and refreshed tokens.
+   * @param Logger              $logger      Structured request/response logger.
+   * @param Redactor            $redactor    Removes sensitive query values from logs.
+   * @param HttpClientInterface $httpClient  Symfony HTTP adapter.
+   * @param SleeperInterface    $sleeper     Delay implementation, normally NativeSleeper.
+   * @param RetryPolicy         $retryPolicy Safe replay rules for each HTTP method.
    */
   public function __construct(
-        private readonly Configuration $config,
-        private readonly AuthManager $authManager,
-        private readonly Logger $logger,
-        private readonly Redactor $redactor,
-        private readonly HttpClientInterface $httpClient,
-        private readonly SleeperInterface $sleeper,
-        private readonly RetryPolicy $retryPolicy,
-    ) {
+      private readonly Configuration $config,
+      private readonly AuthManager $authManager,
+      private readonly Logger $logger,
+      private readonly Redactor $redactor,
+      private readonly HttpClientInterface $httpClient,
+      private readonly SleeperInterface $sleeper,
+      private readonly RetryPolicy $retryPolicy,
+  ) {
     $this->correlationId = Uuid::uuid4()->toString();
     $this->errorMapper   = new HttpErrorMapper();
   }
 
-
   /**
    * {@inheritDoc}
    */
-  public function request(string $method, string $path, array $options=[]): array {
+  public function request(string $method, string $path, array $options = []): array
+  {
     $url     = $this->config->getApiBaseUrl() . $path;
     $attempt = 0;
 
-    while (TRUE) {
+    while (true) {
       $attempt++;
-      $accessToken = $this->authManager->getValidAccessToken();
+      $accessToken    = $this->authManager->getValidAccessToken();
       $requestOptions = $this->buildRequestOptions($options, $accessToken);
       $this->logRequest($method, $url, $options);
 
       try {
         $response   = $this->httpClient->request($method, $url, $requestOptions);
         $statusCode = $response->getStatusCode();
-      } catch (\Throwable $e) {
+      } catch (Throwable $e) {
         if ($this->retryPolicy->shouldRetryTransport($method, $attempt)) {
           $this->sleeper->sleep($this->retryPolicy->delay($attempt));
           continue;
@@ -88,31 +91,29 @@ final class HttpApiTransport implements ApiTransportInterface
     }
   }
 
-
-  /**
-   * {@inheritDoc}
-   */
-  public function getCorrelationId(): string {
+  public function getCorrelationId(): string
+  {
     return $this->correlationId;
   }
-
 
   /**
    * Adds authentication, correlation, and JSON headers to caller options.
    *
    * @param array<string, mixed> $options
+   *
    * @return array<string, mixed>
    */
-  private function buildRequestOptions(array $options, string $accessToken): array {
+  private function buildRequestOptions(array $options, string $accessToken): array
+  {
     /** @var array<string, string> $existingHeaders */
-    $existingHeaders = is_array($options['headers'] ?? NULL) ? $options['headers'] : [];
-    $headers = array_merge(
-      $existingHeaders,
-      [
-        'Authorization'    => "Bearer {$accessToken}",
-        'X-Correlation-Id' => $this->correlationId,
-        'Accept'           => 'application/json',
-      ],
+    $existingHeaders = is_array($options['headers'] ?? null) ? $options['headers'] : [];
+    $headers         = array_merge(
+        $existingHeaders,
+        [
+          'Authorization'    => 'Bearer ' . $accessToken,
+          'X-Correlation-Id' => $this->correlationId,
+          'Accept'           => 'application/json',
+        ],
     );
 
     if (isset($options['json'])) {
@@ -122,38 +123,38 @@ final class HttpApiTransport implements ApiTransportInterface
     return array_merge($options, ['headers' => $headers]);
   }
 
-
   /**
    * Logs a request while redacting query values when logging is enabled.
    *
    * @param array<string, mixed> $options
    */
-  private function logRequest(string $method, string $url, array $options): void {
-    if (!$this->logger->isEnabled()) {
+  private function logRequest(string $method, string $url, array $options): void
+  {
+    if (! $this->logger->isEnabled()) {
       return;
     }
 
     /** @var array<mixed> $queryForLog */
-    $queryForLog = is_array($options['query'] ?? NULL) ? $options['query'] : [];
+    $queryForLog = is_array($options['query'] ?? null) ? $options['query'] : [];
     $this->logger->log(
-      'debug',
-      'API request',
-      [
-        'method' => $method,
-        'url'    => $url,
-        'query'  => $this->redactor->redact($queryForLog),
-      ],
-      $this->correlationId,
+        'debug',
+        'API request',
+        [
+          'method' => $method,
+          'url'    => $url,
+          'query'  => $this->redactor->redact($queryForLog),
+        ],
+        $this->correlationId,
     );
   }
-
 
   /**
    * Decodes a successful response and preserves the 204 empty-payload contract.
    *
    * @return array<mixed>
    */
-  private function decodeSuccess(ResponseInterface $response, int $statusCode): array {
+  private function decodeSuccess(ResponseInterface $response, int $statusCode): array
+  {
     if ($statusCode === 204) {
       return [];
     }
@@ -166,22 +167,20 @@ final class HttpApiTransport implements ApiTransportInterface
     return $data;
   }
 
-
   /**
    * Reads a numeric Retry-After response header, if available.
    */
-  private function extractRetryAfter(ResponseInterface $response): ?float {
+  private function extractRetryAfter(ResponseInterface $response): float|null
+  {
     try {
-      $headers = $response->getHeaders(FALSE);
+      $headers = $response->getHeaders(false);
       $values  = $headers['retry-after'] ?? [];
       if ($values !== []) {
         return (float) $values[0];
       }
-    } catch (\Throwable) {
+    } catch (Throwable) {
     }
 
-    return NULL;
+    return null;
   }
-
-
 }

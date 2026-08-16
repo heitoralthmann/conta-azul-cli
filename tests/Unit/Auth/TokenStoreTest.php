@@ -7,7 +7,26 @@ namespace ContaAzulCli\Tests\Unit\Auth;
 use ContaAzulCli\Auth\TokenData;
 use ContaAzulCli\Auth\TokenStore;
 use ContaAzulCli\Config\Configuration;
+use DateTimeImmutable;
+use DateTimeInterface;
 use PHPUnit\Framework\TestCase;
+
+use function array_map;
+use function dirname;
+use function file_exists;
+use function file_put_contents;
+use function fileperms;
+use function getenv;
+use function glob;
+use function is_dir;
+use function mkdir;
+use function putenv;
+use function rmdir;
+use function sys_get_temp_dir;
+use function uniqid;
+use function unlink;
+
+use const DIRECTORY_SEPARATOR;
 
 final class TokenStoreTest extends TestCase
 {
@@ -15,10 +34,10 @@ final class TokenStoreTest extends TestCase
   private array $originalEnv = [];
   private string $tokenPath;
 
-  private const ENV_VARS = ['CA_CLIENT_ID', 'CA_CLIENT_SECRET', 'CA_CLI_TOKEN_PATH'];
+  private const array ENV_VARS = ['CA_CLIENT_ID', 'CA_CLIENT_SECRET', 'CA_CLI_TOKEN_PATH'];
 
-
-  protected function setUp(): void {
+  protected function setUp(): void
+  {
     foreach (self::ENV_VARS as $var) {
       $this->originalEnv[$var] = getenv($var);
       putenv($var);
@@ -27,14 +46,15 @@ final class TokenStoreTest extends TestCase
     $this->tokenPath = sys_get_temp_dir() . '/ca-cli-test-' . uniqid() . '/tokens.json';
     putenv('CA_CLIENT_ID=id');
     putenv('CA_CLIENT_SECRET=secret');
-    putenv("CA_CLI_TOKEN_PATH={$this->tokenPath}");
+    putenv('CA_CLI_TOKEN_PATH=' . $this->tokenPath);
   }
 
-
-  protected function tearDown(): void {
+  protected function tearDown(): void
+  {
     if (file_exists($this->tokenPath)) {
       unlink($this->tokenPath);
     }
+
     $dir = dirname($this->tokenPath);
     if (is_dir($dir)) {
       array_map('unlink', glob($dir . '/*') ?: []);
@@ -42,31 +62,31 @@ final class TokenStoreTest extends TestCase
     }
 
     foreach ($this->originalEnv as $var => $value) {
-      if ($value === FALSE) {
+      if ($value === false) {
         putenv($var);
       } else {
-        putenv("{$var}={$value}");
+        putenv($var . '=' . $value);
       }
     }
   }
 
-
-  private function store(): TokenStore {
+  private function store(): TokenStore
+  {
     return new TokenStore(new Configuration());
   }
 
-
-  private function sampleToken(): TokenData {
+  private function sampleToken(): TokenData
+  {
     return new TokenData(
-      accessToken: 'access-abc',
-      accessTokenExpiresAt: new \DateTimeImmutable('2026-05-29T18:00:00+00:00'),
-      refreshToken: 'refresh-xyz',
-      refreshTokenObtainedAt: new \DateTimeImmutable('2026-05-29T17:00:00+00:00'),
+        accessToken: 'access-abc',
+        accessTokenExpiresAt: new DateTimeImmutable('2026-05-29T18:00:00+00:00'),
+        refreshToken: 'refresh-xyz',
+        refreshTokenObtainedAt: new DateTimeImmutable('2026-05-29T17:00:00+00:00'),
     );
   }
 
-
-  public function testSaveThenLoadRoundTrips(): void {
+  public function testSaveThenLoadRoundTrips(): void
+  {
     $store = $this->store();
     $store->save($this->sampleToken());
 
@@ -77,13 +97,13 @@ final class TokenStoreTest extends TestCase
     self::assertSame('refresh-xyz', $loaded->refreshToken);
     self::assertSame('Bearer', $loaded->tokenType);
     self::assertSame(
-      '2026-05-29T18:00:00+00:00',
-      $loaded->accessTokenExpiresAt->format(\DateTimeInterface::ATOM),
+        '2026-05-29T18:00:00+00:00',
+        $loaded->accessTokenExpiresAt->format(DateTimeInterface::ATOM),
     );
   }
 
-
-  public function testSaveCreatesTheDirectoryWhenMissing(): void {
+  public function testSaveCreatesTheDirectoryWhenMissing(): void
+  {
     self::assertDirectoryDoesNotExist(dirname($this->tokenPath));
 
     $this->store()->save($this->sampleToken());
@@ -91,8 +111,8 @@ final class TokenStoreTest extends TestCase
     self::assertFileExists($this->tokenPath);
   }
 
-
-  public function testSavedFileIsNotReadableByOtherUsers(): void {
+  public function testSavedFileIsNotReadableByOtherUsers(): void
+  {
     if (DIRECTORY_SEPARATOR === '\\') {
       self::markTestSkipped('Windows has no POSIX permission bits; chmod only toggles read-only there.');
     }
@@ -104,29 +124,29 @@ final class TokenStoreTest extends TestCase
     self::assertSame(0600, $mode, 'Token file must be 0600 — it holds credentials.');
   }
 
-
-  public function testLoadReturnsNullWhenFileIsAbsent(): void {
+  public function testLoadReturnsNullWhenFileIsAbsent(): void
+  {
     self::assertNull($this->store()->load());
   }
 
-
-  public function testLoadReturnsNullOnCorruptJson(): void {
-    mkdir(dirname($this->tokenPath), 0700, TRUE);
+  public function testLoadReturnsNullOnCorruptJson(): void
+  {
+    mkdir(dirname($this->tokenPath), 0700, true);
     file_put_contents($this->tokenPath, '{not valid json');
 
     self::assertNull($this->store()->load());
   }
 
-
-  public function testLoadReturnsNullOnEmptyFile(): void {
-    mkdir(dirname($this->tokenPath), 0700, TRUE);
+  public function testLoadReturnsNullOnEmptyFile(): void
+  {
+    mkdir(dirname($this->tokenPath), 0700, true);
     file_put_contents($this->tokenPath, '');
 
     self::assertNull($this->store()->load());
   }
 
-
-  public function testDeleteRemovesTheFile(): void {
+  public function testDeleteRemovesTheFile(): void
+  {
     $store = $this->store();
     $store->save($this->sampleToken());
 
@@ -136,12 +156,10 @@ final class TokenStoreTest extends TestCase
     self::assertNull($store->load());
   }
 
-
-  public function testDeleteIsANoopWhenFileIsAbsent(): void {
+  public function testDeleteIsANoopWhenFileIsAbsent(): void
+  {
     $this->store()->delete();
 
     self::assertFileDoesNotExist($this->tokenPath);
   }
-
-
 }

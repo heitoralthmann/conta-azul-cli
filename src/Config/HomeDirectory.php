@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Config;
 
+use function function_exists;
+use function getenv;
+use function is_array;
+use function is_string;
+use function posix_getpwuid;
+use function posix_getuid;
+use function rtrim;
+
 /**
  * Resolves the current user's home directory across platforms.
  *
@@ -14,10 +22,9 @@ namespace ContaAzulCli\Config;
  */
 final class HomeDirectory
 {
-
-
   /** Returns the home directory, or null when the platform gives us nothing. */
-  public static function resolve(): ?string {
+  public static function resolve(): string|null
+  {
     foreach (['HOME', 'USERPROFILE'] as $variable) {
       $value = getenv($variable);
       if (is_string($value) && $value !== '') {
@@ -39,16 +46,14 @@ final class HomeDirectory
       }
     }
 
-    return NULL;
+    return null;
   }
 
-
   /** Removes trailing separators while preserving a root path. */
-  private static function normalize(string $path): string {
+  private static function normalize(string $path): string
+  {
     $trimmed = rtrim($path, '/\\');
 
     return $trimmed === '' ? $path : $trimmed;
   }
-
-
 }

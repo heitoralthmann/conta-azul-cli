@@ -14,14 +14,10 @@ use Symfony\Component\Console\Command\Command;
  */
 interface CommandModuleInterface
 {
-
-
   /**
    * Returns the commands that this feature contributes to the CLI.
    *
    * @return list<Command>
    */
   public function commands(): array;
-
-
 }

@@ -7,80 +7,84 @@ namespace ContaAzulCli\Tests\Unit\Config;
 use ContaAzulCli\Config\HomeDirectory;
 use PHPUnit\Framework\TestCase;
 
+use function function_exists;
+use function getenv;
+use function putenv;
+
 final class HomeDirectoryTest extends TestCase
 {
   /** @var array<string, string|false> */
   private array $originalEnv = [];
 
-  private const ENV_VARS = ['HOME', 'USERPROFILE', 'HOMEDRIVE', 'HOMEPATH'];
+  private const array ENV_VARS = ['HOME', 'USERPROFILE', 'HOMEDRIVE', 'HOMEPATH'];
 
-
-  protected function setUp(): void {
+  protected function setUp(): void
+  {
     foreach (self::ENV_VARS as $var) {
       $this->originalEnv[$var] = getenv($var);
       putenv($var);
     }
   }
 
-
-  protected function tearDown(): void {
+  protected function tearDown(): void
+  {
     foreach ($this->originalEnv as $var => $value) {
-      if ($value === FALSE) {
+      if ($value === false) {
         putenv($var);
       } else {
-        putenv("{$var}={$value}");
+        putenv($var . '=' . $value);
       }
     }
   }
 
-
-  public function testPrefersHome(): void {
+  public function testPrefersHome(): void
+  {
     putenv('HOME=/home/heitor');
     putenv('USERPROFILE=C:\Users\heitor');
 
     self::assertSame('/home/heitor', HomeDirectory::resolve());
   }
 
-
-  public function testFallsBackToUserProfileOnWindows(): void {
+  public function testFallsBackToUserProfileOnWindows(): void
+  {
     // Windows sets USERPROFILE and leaves HOME unset.
     putenv('USERPROFILE=C:\Users\heitor');
 
     self::assertSame('C:\Users\heitor', HomeDirectory::resolve());
   }
 
-
-  public function testFallsBackToHomeDriveAndHomePath(): void {
+  public function testFallsBackToHomeDriveAndHomePath(): void
+  {
     putenv('HOMEDRIVE=C:');
     putenv('HOMEPATH=\Users\heitor');
 
     self::assertSame('C:\Users\heitor', HomeDirectory::resolve());
   }
 
-
-  public function testIgnoresEmptyValues(): void {
+  public function testIgnoresEmptyValues(): void
+  {
     putenv('HOME=');
     putenv('USERPROFILE=C:\Users\heitor');
 
     self::assertSame('C:\Users\heitor', HomeDirectory::resolve());
   }
 
-
-  public function testStripsTrailingSeparators(): void {
+  public function testStripsTrailingSeparators(): void
+  {
     putenv('HOME=/home/heitor/');
 
     self::assertSame('/home/heitor', HomeDirectory::resolve());
   }
 
-
-  public function testTrailingSeparatorOnlyPathIsPreserved(): void {
+  public function testTrailingSeparatorOnlyPathIsPreserved(): void
+  {
     putenv('HOME=/');
 
     self::assertSame('/', HomeDirectory::resolve());
   }
 
-
-  public function testResolvesOnTheCurrentPlatformWithoutEnvHints(): void {
+  public function testResolvesOnTheCurrentPlatformWithoutEnvHints(): void
+  {
     // With every variable cleared, POSIX platforms still resolve via passwd;
     // the guard is what keeps this from being fatal on Windows.
     $resolved = HomeDirectory::resolve();
@@ -91,6 +95,4 @@ final class HomeDirectoryTest extends TestCase
       self::assertNull($resolved);
     }
   }
-
-
 }

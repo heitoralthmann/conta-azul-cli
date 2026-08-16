@@ -11,7 +11,7 @@ $autoloadPaths = [
   __DIR__ . '/../../../autoload.php',
 ];
 
-$autoloadFile = NULL;
+$autoloadFile = null;
 foreach ($autoloadPaths as $path) {
   if (file_exists($path)) {
     $autoloadFile = $path;
@@ -19,18 +19,19 @@ foreach ($autoloadPaths as $path) {
   }
 }
 
-if ($autoloadFile === NULL) {
+if ($autoloadFile === null) {
   fwrite(
-    STDERR, json_encode(
-      [
-        'kind' => 'client_error',
-        'retryable' => FALSE,
-        'http_status' => NULL,
-        'protocol_id' => NULL,
-        'correlation_id' => NULL,
-        'message' => 'Dependências não encontradas. Execute "composer install".',
-      ]
-    ) . PHP_EOL
+      STDERR,
+      json_encode(
+          [
+            'kind' => 'client_error',
+            'retryable' => false,
+            'http_status' => null,
+            'protocol_id' => null,
+            'correlation_id' => null,
+            'message' => 'Dependências não encontradas. Execute "composer install".',
+          ],
+      ) . PHP_EOL,
   );
   exit(1);
 }
@@ -40,7 +41,7 @@ require $autoloadFile;
 $envFile = __DIR__ . '/../.env';
 if (file_exists($envFile)) {
   $dotenv = new Dotenv();
-  $dotenv->usePutenv(TRUE);
+  $dotenv->usePutenv(true);
   $dotenv->load($envFile);
 }
 

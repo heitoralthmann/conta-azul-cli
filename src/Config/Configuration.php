@@ -20,7 +20,7 @@ final class Configuration
   /** OAuth redirect URI. */
   private readonly string $redirectUri;
   /** Optional OAuth scope. */
-  private readonly ?string $scope;
+  private readonly string|null $scope;
   /** Conta Azul API base URL. */
   private readonly string $apiBaseUrl;
   /** OAuth authorization server base URL. */
@@ -32,14 +32,13 @@ final class Configuration
   /** File path used to persist tokens. */
   private readonly string $tokenPath;
   /** Optional bootstrap refresh token. */
-  private readonly ?string $bootstrapRefreshToken;
+  private readonly string|null $bootstrapRefreshToken;
   /** Optional callback TLS certificate path. */
-  private readonly ?string $callbackCertFile;
+  private readonly string|null $callbackCertFile;
   /** Optional callback TLS key path. */
-  private readonly ?string $callbackKeyFile;
+  private readonly string|null $callbackKeyFile;
   /** Callback server timeout in seconds. */
   private readonly int $callbackTimeout;
-
 
   /**
    * Creates a configuration value object from normalized values.
@@ -67,26 +66,26 @@ final class Configuration
    * @throws ConfigException When the environment is used and required
    *                         values are missing.
    */
-  public function __construct(?array $values=NULL) {
-    if ($values === NULL) {
+  public function __construct(array|null $values = null)
+  {
+    if ($values === null) {
       $values = (new EnvironmentConfigurationLoader())->read();
     }
 
-    $this->clientId = $values['clientId'];
-    $this->clientSecret = $values['clientSecret'];
-    $this->redirectUri = $values['redirectUri'];
-    $this->scope = $values['scope'];
-    $this->apiBaseUrl = $values['apiBaseUrl'];
-    $this->authBaseUrl = $values['authBaseUrl'];
-    $this->authorizeUrl = $values['authorizeUrl'];
-    $this->tokenUrl = $values['tokenUrl'];
-    $this->tokenPath = $values['tokenPath'];
+    $this->clientId              = $values['clientId'];
+    $this->clientSecret          = $values['clientSecret'];
+    $this->redirectUri           = $values['redirectUri'];
+    $this->scope                 = $values['scope'];
+    $this->apiBaseUrl            = $values['apiBaseUrl'];
+    $this->authBaseUrl           = $values['authBaseUrl'];
+    $this->authorizeUrl          = $values['authorizeUrl'];
+    $this->tokenUrl              = $values['tokenUrl'];
+    $this->tokenPath             = $values['tokenPath'];
     $this->bootstrapRefreshToken = $values['bootstrapRefreshToken'];
-    $this->callbackCertFile = $values['callbackCertFile'];
-    $this->callbackKeyFile = $values['callbackKeyFile'];
-    $this->callbackTimeout = $values['callbackTimeout'];
+    $this->callbackCertFile      = $values['callbackCertFile'];
+    $this->callbackKeyFile       = $values['callbackKeyFile'];
+    $this->callbackTimeout       = $values['callbackTimeout'];
   }
-
 
   /**
    * Creates a configuration by reading the process environment.
@@ -96,10 +95,10 @@ final class Configuration
    *
    * @throws ConfigException When a required value is missing.
    */
-  public static function fromEnvironment(?EnvironmentConfigurationLoader $loader=NULL): self {
+  public static function fromEnvironment(EnvironmentConfigurationLoader|null $loader = null): self
+  {
     return ($loader ?? new EnvironmentConfigurationLoader())->load();
   }
-
 
   /**
    * Creates a configuration from normalized values.
@@ -120,87 +119,86 @@ final class Configuration
    *     callbackTimeout: int
    * } $values
    */
-  public static function fromValues(array $values): self {
+  public static function fromValues(array $values): self
+  {
     return new self($values);
   }
 
-
   /** Returns the OAuth client identifier. */
-  public function getClientId(): string {
+  public function getClientId(): string
+  {
     return $this->clientId;
   }
 
-
   /** Returns the OAuth client secret. */
-  public function getClientSecret(): string {
+  public function getClientSecret(): string
+  {
     return $this->clientSecret;
   }
 
-
   /** Returns the OAuth redirect URI. */
-  public function getRedirectUri(): string {
+  public function getRedirectUri(): string
+  {
     return $this->redirectUri;
   }
 
-
   /** Returns the Conta Azul API base URL without a trailing slash. */
-  public function getApiBaseUrl(): string {
+  public function getApiBaseUrl(): string
+  {
     return $this->apiBaseUrl;
   }
 
-
   /** Returns the OAuth service base URL without a trailing slash. */
-  public function getAuthBaseUrl(): string {
+  public function getAuthBaseUrl(): string
+  {
     return $this->authBaseUrl;
   }
 
-
   /** Returns the complete OAuth authorization endpoint URL. */
-  public function getAuthorizeUrl(): string {
+  public function getAuthorizeUrl(): string
+  {
     return $this->authorizeUrl;
   }
 
-
   /** Returns the complete OAuth token endpoint URL. */
-  public function getTokenUrl(): string {
+  public function getTokenUrl(): string
+  {
     return $this->tokenUrl;
   }
 
-
   /** Returns the expanded local token file path. */
-  public function getTokenPath(): string {
+  public function getTokenPath(): string
+  {
     return $this->tokenPath;
   }
 
-
   /** Returns the optional bootstrap refresh token. */
-  public function getBootstrapRefreshToken(): ?string {
+  public function getBootstrapRefreshToken(): string|null
+  {
     return $this->bootstrapRefreshToken;
   }
 
-
   /** Returns the optional OAuth scope. */
-  public function getScope(): ?string {
+  public function getScope(): string|null
+  {
     return $this->scope;
   }
 
-
   /** Returns the optional TLS callback certificate path. */
-  public function getCallbackCertFile(): ?string {
+  public function getCallbackCertFile(): string|null
+  {
     return $this->callbackCertFile;
   }
 
-
   /** Returns the optional TLS callback private key path. */
-  public function getCallbackKeyFile(): ?string {
+  public function getCallbackKeyFile(): string|null
+  {
     return $this->callbackKeyFile;
   }
 
-
   /** Returns the callback server timeout in seconds. */
-  public function getCallbackTimeout(): int {
+  public function getCallbackTimeout(): int
+  {
     return $this->callbackTimeout;
   }
-
-
 }

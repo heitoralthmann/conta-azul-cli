@@ -6,7 +6,6 @@ namespace ContaAzulCli\Command\Pessoa;
 
 use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Command\Support\CommandExecutor;
-use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -20,27 +19,25 @@ final class ContaConectadaCommand extends Command
 {
   private readonly CommandExecutor $commandExecutor;
 
-
   /** Creates the command and its API/output collaborators. */
   public function __construct(
-        private readonly PessoasClient $client,
-        private readonly ErrorEnvelope $errorEnvelope,
-        private readonly JsonRenderer $jsonRenderer,
-        ?CommandExecutor $commandExecutor=NULL,
-    ) {
+      private readonly PessoasClient $client,
+      private readonly ErrorEnvelope $errorEnvelope,
+      private readonly JsonRenderer $jsonRenderer,
+      CommandExecutor|null $commandExecutor = null,
+  ) {
     $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
+
     parent::__construct();
   }
 
-
   /** Fetches the connected account and renders output or a normalized error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
+  protected function execute(InputInterface $input, OutputInterface $output): int
+  {
     return $this->commandExecutor->execute(
-      function (): void {
-        $this->jsonRenderer->render($this->client->getContaConectada());
-      }
+        function (): void {
+          $this->jsonRenderer->render($this->client->getContaConectada());
+        },
     );
   }
-
-
 }

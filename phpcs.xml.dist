@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ruleset name="conta-azul-cli">
-  <description>Coding standard for the Conta Azul CLI, adapted from Interactive Strategies' is_drupal_boilerplate ruleset with the Drupal-specific sniffs removed.</description>
+  <description>Coding standard for the Conta Azul CLI, based on the Doctrine Coding Standard with 2-space indentation.</description>
 
   <arg name="extensions" value="php"/>
   <!-- Project indentation uses spaces, with a tab expanded to two columns. -->
@@ -14,27 +14,64 @@
   <exclude-pattern>*/vendor/*</exclude-pattern>
   <exclude-pattern>*/node_modules/*</exclude-pattern>
 
+  <rule ref="Doctrine">
+    <!--
+      Squiz.Arrays.ArrayDeclaration.ValueNoNewline misfires on arrow
+      functions used as the first value in a multi-line array: it flags
+      lines that are already correctly split, and phpcbf's fix for it
+      inserts a newline in the middle of the "fn" token, corrupting the
+      file. Reproduced against a minimal case on squizlabs/php_codesniffer
+      3.13.6; not specific to this project's ruleset overrides.
+    -->
+    <exclude name="Squiz.Arrays.ArrayDeclaration.ValueNoNewline"/>
+
+    <!--
+      Doctrine forbids "Interface"/"Exception" name suffixes. This project
+      follows the Symfony convention instead (HttpClientInterface, etc.,
+      already used by its dependencies), so both are kept off.
+    -->
+    <exclude name="SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming"/>
+    <exclude name="SlevomatCodingStandard.Classes.SuperfluousExceptionNaming"/>
+
+    <!--
+      Squiz.Commenting.FunctionComment cannot parse the parameter name out of
+      a @param tag whose type is a multi-line PHPStan/Psalm array shape
+      (array{...} split across lines): it reports a false "Missing parameter
+      name". Reproduced with a minimal multi-line array{} case against
+      squizlabs/php_codesniffer 3.13.6; single-line array shapes parse fine.
+      This project documents wide config/payload shapes this way, so the
+      sniff is disabled rather than flattening those docblocks to one line.
+    -->
+    <exclude name="Squiz.Commenting.FunctionComment.MissingParamName"/>
+  </rule>
+
+  <!--
+    Doctrine/PSR-12 default to 4-space indentation. This project uses 2, so
+    the two sniffs that own indent width are overridden here; everything
+    else about scope/array indentation (brace alignment, continuation
+    lines, etc.) is inherited from Doctrine unchanged.
+  -->
+  <rule ref="Generic.WhiteSpace.ScopeIndent">
+    <properties>
+      <property name="indent" value="2" />
+      <property name="tabIndent" value="false" />
+      <property name="exact" value="true" />
+    </properties>
+  </rule>
+
+  <rule ref="Generic.Arrays.ArrayIndent">
+    <properties>
+      <property name="indent" value="2" />
+    </properties>
+  </rule>
+
+  <!-- Project-specific sniffs with no Doctrine equivalent. -->
+
   <rule ref="Generic.CodeAnalysis.ForLoopShouldBeWhileLoop"/>
 
   <rule ref="Generic.CodeAnalysis.JumbledIncrementer"/>
 
   <rule ref="Generic.CodeAnalysis.UnconditionalIfStatement"/>
-
-  <rule ref="Generic.Formatting.SpaceAfterCast.NoSpace">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Generic.Functions.FunctionCallArgumentSpacing.SpaceBeforeComma">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Generic.Functions.FunctionCallArgumentSpacing.TooMuchSpaceAfterComma">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie">
-    <type>warning</type>
-  </rule>
 
   <rule ref="Generic.Metrics.NestingLevel">
     <properties>
@@ -47,182 +84,59 @@
     <type>warning</type>
   </rule>
 
-  <rule ref="Generic.PHP.CharacterBeforePHPOpeningTag"/>
-
   <rule ref="Generic.PHP.DiscourageGoto">
     <type>error</type>
   </rule>
 
-  <!-- Forbid functions that are insecure or that bypass Symfony's response buffering. -->
+  <rule ref="Generic.PHP.NoSilencedErrors"/>
+
+  <!--
+    Doctrine already forbids the classic PHP alias functions (chop, sizeof,
+    is_null, etc). The project-specific additions layered on top are
+    eval/extract/ob_end_flush/ob_flush/ob_get_flush, which are security- or
+    output-buffering-sensitive in a Symfony CLI context. Re-declaring the
+    sniff replaces its property array wholesale, so Doctrine's list is
+    repeated here rather than merged automatically.
+  -->
   <rule ref="Generic.PHP.ForbiddenFunctions">
     <properties>
       <property name="forbiddenFunctions" type="array">
+        <element key="chop" value="rtrim"/>
+        <element key="close" value="closedir"/>
+        <element key="compact" value="null"/>
+        <element key="delete" value="unset"/>
+        <element key="doubleval" value="floatval"/>
         <element key="eval" value="null"/>
-        <element key="extract" value="list"/>
+        <element key="extract" value="null"/>
+        <element key="fputs" value="fwrite"/>
+        <element key="ini_alter" value="ini_set"/>
+        <element key="is_double" value="is_float"/>
+        <element key="is_integer" value="is_int"/>
+        <element key="is_long" value="is_int"/>
+        <element key="is_null" value="null"/>
+        <element key="is_real" value="is_float"/>
+        <element key="is_writeable" value="is_writable"/>
+        <element key="join" value="implode"/>
+        <element key="key_exists" value="array_key_exists"/>
         <element key="ob_end_flush" value="ob_get_clean"/>
         <element key="ob_flush" value="null"/>
         <element key="ob_get_flush" value="ob_get_clean"/>
+        <element key="pos" value="current"/>
+        <element key="settype" value="null"/>
+        <element key="show_source" value="highlight_file"/>
+        <element key="sizeof" value="count"/>
+        <element key="strchr" value="strstr"/>
+        <element key="user_error" value="trigger_error"/>
       </property>
     </properties>
-  </rule>
-
-  <rule ref="Generic.PHP.NoSilencedErrors"/>
-
-  <rule ref="Generic.PHP.UpperCaseConstant">
-    <type>warning</type>
-  </rule>
-
-  <!-- Indentation is spaces only: tabs anywhere in leading whitespace are an error. -->
-  <rule ref="Generic.WhiteSpace.DisallowTabIndent"/>
-
-  <!--
-    exact="true" is what actually enforces the two-space rule. With the default
-    exact="false" the sniff only reports lines indented *less* than expected, so
-    over-indented lines pass silently and the report looks clean while the files
-    are not.
-  -->
-  <rule ref="Generic.WhiteSpace.ScopeIndent">
-    <properties>
-      <property name="indent" value="2" />
-      <property name="tabIndent" value="false" />
-      <property name="exact" value="true" />
-    </properties>
-  </rule>
-
-  <!-- Closing braces line up with the statement that opened the scope. -->
-  <rule ref="PEAR.WhiteSpace.ScopeClosingBrace">
-    <properties>
-      <property name="indent" value="2" />
-    </properties>
-  </rule>
-
-  <!--
-    ScopeIndent only governs indentation of scopes (classes, functions, control
-    structures); it says nothing about elements inside a multi-line array, which
-    is why array literals stayed at four spaces. This covers that gap.
-  -->
-  <rule ref="Generic.Arrays.ArrayIndent">
-    <properties>
-      <property name="indent" value="2" />
-    </properties>
-  </rule>
-
-  <!-- Local reimplementation of ISDrupal.Functions.DebuggingFunctions. -->
-  <rule ref="./phpcs-sniffs/ContaAzulCli/Sniffs/Functions/DebuggingFunctionsSniff.php">
-    <type>error</type>
-  </rule>
-
-  <rule ref="PEAR.Functions.FunctionCallSignature">
-    <properties>
-      <property name="indent" value="2" />
-    </properties>
-  </rule>
-
-  <rule ref="PEAR.Functions.FunctionCallSignature.Indent">
-    <severity>5</severity>
-    <type>warning</type>
-  </rule>
-
-  <rule ref="PEAR.Functions.FunctionCallSignature.SpaceAfterOpenBracket">
-    <severity>5</severity>
-    <type>warning</type>
-  </rule>
-
-  <rule ref="PEAR.Functions.FunctionCallSignature.SpaceBeforeCloseBracket">
-    <severity>5</severity>
-    <type>warning</type>
-  </rule>
-
-  <rule ref="PSR2.Namespaces.NamespaceDeclaration.BlankLineAfter">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="PSR2.Namespaces.UseDeclaration.SpaceAfterLastUse">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="PSR12.ControlStructures.BooleanOperatorPlacement">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.Arrays.ArrayBracketSpacing">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.Arrays.ArrayDeclaration.CloseBraceNewLine">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.Arrays.ArrayDeclaration.CommaAfterLast">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.Arrays.ArrayDeclaration.IndexNoNewline">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.Arrays.ArrayDeclaration.NoSpaceAfterComma">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.Arrays.ArrayDeclaration.SpaceInEmptyArray">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.ControlStructures.ForLoopDeclaration">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.ControlStructures.SwitchDeclaration.MissingCase">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.ControlStructures.SwitchDeclaration.SpacingAfterBreak">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.ControlStructures.SwitchDeclaration.SpaceBeforeColonCase">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.Functions.FunctionDeclarationArgumentSpacing">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.Operators.ValidLogicalOperators">
-    <type>warning</type>
   </rule>
 
   <rule ref="Squiz.PHP.DisallowSizeFunctionsInLoops">
     <type>warning</type>
   </rule>
 
-  <rule ref="Squiz.PHP.InnerFunctions">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.Scope.StaticThisUsage"/>
-
-  <rule ref="Squiz.Strings.ConcatenationSpacing">
-    <properties>
-      <property name="spacing" value="1" />
-    </properties>
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.Strings.DoubleQuoteUsage.NotRequired">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.WhiteSpace.FunctionSpacing">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.WhiteSpace.OperatorSpacing">
-    <type>warning</type>
-  </rule>
-
-  <rule ref="Squiz.WhiteSpace.SuperfluousWhitespace">
-    <type>warning</type>
+  <!-- Local reimplementation of ISDrupal.Functions.DebuggingFunctions. -->
+  <rule ref="./phpcs-sniffs/ContaAzulCli/Sniffs/Functions/DebuggingFunctionsSniff.php">
+    <type>error</type>
   </rule>
 </ruleset>

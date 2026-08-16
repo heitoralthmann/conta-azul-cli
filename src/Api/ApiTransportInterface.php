@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Api;
 
+use ContaAzulCli\Error\CliException;
+
 /**
  * Executes authenticated requests against the Conta Azul API.
  *
@@ -12,22 +14,19 @@ namespace ContaAzulCli\Api;
  */
 interface ApiTransportInterface
 {
-
-
   /**
    * Sends a request and returns its decoded JSON payload.
    *
    * @param array<string, mixed> $options Symfony HttpClient request options.
+   *
    * @return array<mixed>
-   * @throws \ContaAzulCli\Error\CliException when the request cannot succeed.
+   *
+   * @throws CliException when the request cannot succeed.
    */
-  public function request(string $method, string $path, array $options=[]): array;
-
+  public function request(string $method, string $path, array $options = []): array;
 
   /**
    * Returns the identifier attached to every request in this transport.
    */
   public function getCorrelationId(): string;
-
-
 }

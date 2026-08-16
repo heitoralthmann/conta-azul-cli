@@ -31,8 +31,7 @@ use Symfony\Component\HttpClient\HttpClient;
 /** Builds the application's external adapters, services, and command modules. */
 final class ApplicationFactory
 {
-  private ?Logger $logger = NULL;
-
+  private Logger|null $logger = null;
 
   /**
    * Assembles the complete console dependency graph.
@@ -40,55 +39,61 @@ final class ApplicationFactory
    * Configuration and adapter construction deliberately remain here: this
    * composition root is the only place that needs to know concrete classes.
    */
-  public function build(): ApplicationComponents {
-    $config = $this->loadConfiguration();
-    $redactor = new Redactor();
+  public function build(): ApplicationComponents
+  {
+    $config       = $this->loadConfiguration();
+    $redactor     = new Redactor();
     $this->logger = new Logger($redactor);
-    $httpClient = HttpClient::create();
+    $httpClient   = HttpClient::create();
 
-    $errorEnvelope = new ErrorEnvelope();
-    $jsonRenderer = new JsonRenderer();
+    $errorEnvelope       = new ErrorEnvelope();
+    $jsonRenderer        = new JsonRenderer();
     $paginationValidator = new PaginationValidator();
-    $warningEnvelope = new WarningEnvelope();
-    $periodoPadrao = new PeriodoPadrao();
+    $warningEnvelope     = new WarningEnvelope();
+    $periodoPadrao       = new PeriodoPadrao();
 
-    $tokenStore = new TokenStore($config);
-    $oauthClient = new OAuthClient($httpClient, $config);
-    $authManager = new AuthManager($tokenStore, $oauthClient, $config);
+    $tokenStore     = new TokenStore($config);
+    $oauthClient    = new OAuthClient($httpClient, $config);
+    $authManager    = new AuthManager($tokenStore, $oauthClient, $config);
     $callbackServer = new CallbackServer(
-      timeoutSeconds: $config->getCallbackTimeout(),
-      certFile: $config->getCallbackCertFile(),
-      keyFile: $config->getCallbackKeyFile(),
+        timeoutSeconds: $config->getCallbackTimeout(),
+        certFile: $config->getCallbackCertFile(),
+        keyFile: $config->getCallbackKeyFile(),
     );
 
     $financeiroClient = new FinanceiroClient($config, $authManager, $this->logger, $redactor, $httpClient);
-    $pessoasClient = new PessoasClient($config, $authManager, $this->logger, $redactor, $httpClient);
-    $produtosClient = new ProdutosClient($config, $authManager, $this->logger, $redactor, $httpClient);
-    $servicosClient = new ServicosClient($config, $authManager, $this->logger, $redactor, $httpClient);
+    $pessoasClient    = new PessoasClient($config, $authManager, $this->logger, $redactor, $httpClient);
+    $produtosClient   = new ProdutosClient($config, $authManager, $this->logger, $redactor, $httpClient);
+    $servicosClient   = new ServicosClient($config, $authManager, $this->logger, $redactor, $httpClient);
 
     return new ApplicationComponents(
-      $this->logger,
-      [
-        new AuthCommandModule($authManager, $callbackServer, $errorEnvelope),
-        new FinanceiroCommandModule($financeiroClient, $errorEnvelope, $jsonRenderer, $paginationValidator, $warningEnvelope, $periodoPadrao),
-        new PessoaCommandModule($pessoasClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
-        new ProdutoCommandModule($produtosClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
-        new ServicoCommandModule($servicosClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
-      ],
+        $this->logger,
+        [
+          new AuthCommandModule($authManager, $callbackServer, $errorEnvelope),
+          new FinanceiroCommandModule(
+              $financeiroClient,
+              $errorEnvelope,
+              $jsonRenderer,
+              $paginationValidator,
+              $warningEnvelope,
+              $periodoPadrao,
+          ),
+          new PessoaCommandModule($pessoasClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
+          new ProdutoCommandModule($produtosClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
+          new ServicoCommandModule($servicosClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
+        ],
     );
   }
 
-
   /** Returns the logger created before a later adapter fails to initialize. */
-  public function logger(): ?Logger {
+  public function logger(): Logger|null
+  {
     return $this->logger;
   }
 
-
   /** Loads configuration through the dedicated environment boundary. */
-  private function loadConfiguration(): Configuration {
+  private function loadConfiguration(): Configuration
+  {
     return (new EnvironmentConfigurationLoader())->load();
   }
-
-
 }

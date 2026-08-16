@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace ContaAzulCli\Command\Pessoa;
 
 use ContaAzulCli\Api\PessoasClient;
-use ContaAzulCli\Command\Support\JsonPayload;
 use ContaAzulCli\Command\Support\CommandExecutor;
-use ContaAzulCli\Error\CliException;
+use ContaAzulCli\Command\Support\JsonPayload;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -22,33 +21,31 @@ final class CreateCommand extends Command
 {
   private readonly CommandExecutor $commandExecutor;
 
-
   /** Creates the command and its API/output collaborators. */
   public function __construct(
-        private readonly PessoasClient $client,
-        private readonly ErrorEnvelope $errorEnvelope,
-        private readonly JsonRenderer $jsonRenderer,
-        ?CommandExecutor $commandExecutor=NULL,
-    ) {
+      private readonly PessoasClient $client,
+      private readonly ErrorEnvelope $errorEnvelope,
+      private readonly JsonRenderer $jsonRenderer,
+      CommandExecutor|null $commandExecutor = null,
+  ) {
     $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
+
     parent::__construct();
   }
 
-
   /** Declares the JSON payload option. */
-  protected function configure(): void {
-    $this->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
+  protected function configure(): void
+  {
+    $this->addOption('json', null, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
   }
-
 
   /** Parses the payload, creates the person, and renders output or an error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
+  protected function execute(InputInterface $input, OutputInterface $output): int
+  {
     return $this->commandExecutor->execute(
-      function () use ($input): void {
-        $this->jsonRenderer->render($this->client->createPessoa(JsonPayload::object($input->getOption('json'))));
-      }
+        function () use ($input): void {
+          $this->jsonRenderer->render($this->client->createPessoa(JsonPayload::object($input->getOption('json'))));
+        },
     );
   }
-
-
 }

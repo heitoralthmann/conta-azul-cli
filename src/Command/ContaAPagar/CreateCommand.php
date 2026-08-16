@@ -8,7 +8,6 @@ use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Command\Support\AsyncOptions;
 use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Command\Support\JsonPayload;
-use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -23,40 +22,38 @@ final class CreateCommand extends Command
 {
   private readonly CommandExecutor $commandExecutor;
 
-
   /** Creates the command and its API/output collaborators. */
   public function __construct(
-        private readonly FinanceiroClient $client,
-        private readonly ErrorEnvelope $errorEnvelope,
-        private readonly JsonRenderer $jsonRenderer,
-        ?CommandExecutor $commandExecutor=NULL,
-    ) {
+      private readonly FinanceiroClient $client,
+      private readonly ErrorEnvelope $errorEnvelope,
+      private readonly JsonRenderer $jsonRenderer,
+      CommandExecutor|null $commandExecutor = null,
+  ) {
     $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
+
     parent::__construct();
   }
 
-
   /** Declares the JSON payload and asynchronous options. */
-  protected function configure(): void {
+  protected function configure(): void
+  {
     $this
-          ->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da conta a pagar');
+          ->addOption('json', null, InputOption::VALUE_REQUIRED, 'Payload JSON da conta a pagar');
     AsyncOptions::configure($this);
   }
 
-
   /** Creates the payable and renders output or a normalized error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
+  protected function execute(InputInterface $input, OutputInterface $output): int
+  {
     return $this->commandExecutor->execute(
-      function () use ($input): void {
-        $payload = JsonPayload::object($input->getOption('json'));
-        $asyncOptions = AsyncOptions::fromInput($input);
+        function () use ($input): void {
+          $payload      = JsonPayload::object($input->getOption('json'));
+          $asyncOptions = AsyncOptions::fromInput($input);
 
-        $this->jsonRenderer->render(
-          $this->client->createContaAPagar($payload, $asyncOptions->pollTimeout(), $asyncOptions->noWait()),
-        );
-      }
+          $this->jsonRenderer->render(
+              $this->client->createContaAPagar($payload, $asyncOptions->pollTimeout(), $asyncOptions->noWait()),
+          );
+        },
     );
   }
-
-
 }

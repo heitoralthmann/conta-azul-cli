@@ -11,38 +11,35 @@ use PHPUnit\Framework\TestCase;
 /** @covers \ContaAzulCli\Command\Support\JsonPayload */
 final class JsonPayloadTest extends TestCase
 {
-
-
-  public function testDecodesAnObject(): void {
+  public function testDecodesAnObject(): void
+  {
     self::assertSame(
-      ['descricao' => 'Teste', 'valor' => 12.5],
-      JsonPayload::object('{"descricao":"Teste","valor":12.5}'),
+        ['descricao' => 'Teste', 'valor' => 12.5],
+        JsonPayload::object('{"descricao":"Teste","valor":12.5}'),
     );
   }
 
-
-  public function testRejectsAJsonArray(): void {
+  public function testRejectsAJsonArray(): void
+  {
     $this->expectException(CliException::class);
     $this->expectExceptionMessage('JSON deve ser um objeto.');
 
     JsonPayload::object('[1,2,3]');
   }
 
-
-  public function testRejectsInvalidJson(): void {
+  public function testRejectsInvalidJson(): void
+  {
     $this->expectException(CliException::class);
     $this->expectExceptionMessage('JSON inválido:');
 
     JsonPayload::object('{');
   }
 
-
-  public function testRejectsAnEmptyOption(): void {
+  public function testRejectsAnEmptyOption(): void
+  {
     $this->expectException(CliException::class);
     $this->expectExceptionMessage('A opção --json é obrigatória.');
 
     JsonPayload::object('');
   }
-
-
 }

@@ -21,19 +21,25 @@ class DebuggingFunctionsSniff extends ForbiddenFunctionsSniff
    *
    * @var array<string, string|null>
    */
+  // Untyped: the parent Generic.PHP.ForbiddenFunctions sniff declares this
+  // property without a native type, and PHP forbids a child class from
+  // adding one where the parent has none.
+  // phpcs:ignore SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
   public $forbiddenFunctions = [
-    'dump' => NULL,
-    'error_log' => NULL,
-    'phpinfo' => NULL,
-    'print_r' => NULL,
-    'var_dump' => NULL,
-    'var_export' => NULL,
+    'dump' => null,
+    'error_log' => null,
+    'phpinfo' => null,
+    'print_r' => null,
+    'var_dump' => null,
+    'var_export' => null,
   ];
 
   /**
    * If true, an error will be thrown; otherwise a warning.
    *
-   * @var boolean
+   * @var bool
    */
-  public $error = FALSE;
+  // Untyped for the same reason as $forbiddenFunctions above.
+  // phpcs:ignore SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
+  public $error = false;
 }

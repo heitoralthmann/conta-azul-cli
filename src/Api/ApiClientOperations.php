@@ -15,45 +15,45 @@ trait ApiClientOperations
 {
   private readonly ApiClientSupport $support;
 
-
   /**
    * Returns the correlation identifier attached to this client's requests.
    */
-  public function getCorrelationId(): string {
+  public function getCorrelationId(): string
+  {
     return $this->support->getCorrelationId();
   }
-
 
   /**
    * Sends an authenticated request through the shared transport.
    *
    * @param array<string, mixed> $options
+   *
    * @return array<mixed>
    */
-  public function request(string $method, string $path, array $options=[]): array {
+  public function request(string $method, string $path, array $options = []): array
+  {
     return $this->support->request($method, $path, $options);
   }
-
 
   /**
    * Polls an asynchronous protocol identifier.
    *
    * @return array<mixed>
    */
-  public function pollProtocol(string $protocolId, int $timeoutSeconds=60): array {
+  public function pollProtocol(string $protocolId, int $timeoutSeconds = 60): array
+  {
     return $this->support->pollProtocol($protocolId, $timeoutSeconds);
   }
-
 
   /**
    * Returns an accepted response immediately or waits for its protocol.
    *
    * @param array<mixed> $response
+   *
    * @return array<mixed>
    */
-  public function handleAsyncResponse(array $response, int $pollTimeout=60, bool $noWait=FALSE): array {
+  public function handleAsyncResponse(array $response, int $pollTimeout = 60, bool $noWait = false): array
+  {
     return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
   }
-
-
 }

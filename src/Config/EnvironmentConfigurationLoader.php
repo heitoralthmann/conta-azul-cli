@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Config;
 
+use function ctype_digit;
+use function getenv;
+use function rtrim;
+use function str_starts_with;
+use function substr;
+
 /**
  * Reads and validates configuration values from the process environment.
  *
@@ -12,18 +18,16 @@ namespace ContaAzulCli\Config;
  */
 final class EnvironmentConfigurationLoader
 {
-
-
   /**
    * Loads the current process environment into an immutable configuration.
    *
    * @throws ConfigException When a required value is missing or a home path
    *                         cannot be resolved.
    */
-  public function load(): Configuration {
+  public function load(): Configuration
+  {
     return new Configuration($this->read());
   }
-
 
   /**
    * Reads, validates, and normalizes all supported environment variables.
@@ -47,7 +51,8 @@ final class EnvironmentConfigurationLoader
    * @throws ConfigException When a required value is missing or a home path
    *                         cannot be resolved.
    */
-  public function read(): array {
+  public function read(): array
+  {
     $authBaseUrl = rtrim($this->getEnv('CA_AUTH_BASE_URL', 'https://auth.contaazul.com'), '/');
 
     return [
@@ -69,83 +74,85 @@ final class EnvironmentConfigurationLoader
     ];
   }
 
-
   /**
    * Returns a required non-empty environment variable.
    *
    * @throws ConfigException When the variable is absent or empty.
    */
-  private function requireEnv(string $name): string {
+  private function requireEnv(string $name): string
+  {
     $value = getenv($name);
-    if ($value === FALSE || $value === '') {
-      throw new ConfigException("Variável de ambiente obrigatória não definida: {$name}. Configure em .env ou exporte antes de executar.");
+    if ($value === false || $value === '') {
+      throw new ConfigException(
+          'Variável de ambiente obrigatória não definida: ' . $name
+              . '. Configure em .env ou exporte antes de executar.',
+      );
     }
 
     return $value;
   }
 
-
   /**
    * Returns an environment variable or its default when absent or empty.
    */
-  private function getEnv(string $name, string $default): string {
+  private function getEnv(string $name, string $default): string
+  {
     $value = getenv($name);
 
-    return ($value !== FALSE && $value !== '') ? $value : $default;
+    return $value !== false && $value !== '' ? $value : $default;
   }
-
 
   /**
    * Returns a nullable environment variable, treating empty as absent.
    */
-  private function nullableEnv(string $name): ?string {
+  private function nullableEnv(string $name): string|null
+  {
     $value = getenv($name);
 
-    return ($value !== FALSE && $value !== '') ? $value : NULL;
+    return $value !== false && $value !== '' ? $value : null;
   }
-
 
   /**
    * Returns a nullable environment path after expanding a leading tilde.
    *
    * @throws ConfigException When the home directory cannot be determined.
    */
-  private function nullableExpandedEnv(string $name): ?string {
+  private function nullableExpandedEnv(string $name): string|null
+  {
     $value = $this->nullableEnv($name);
 
-    return $value === NULL ? NULL : $this->expandHome($value);
+    return $value === null ? null : $this->expandHome($value);
   }
-
 
   /**
    * Reads the callback timeout, falling back to five minutes when invalid.
    */
-  private function callbackTimeout(): int {
+  private function callbackTimeout(): int
+  {
     $timeout = $this->getEnv('CA_CALLBACK_TIMEOUT', '300');
 
     return ctype_digit($timeout) && (int) $timeout > 0 ? (int) $timeout : 300;
   }
-
 
   /**
    * Expands a leading `~/` using the platform home directory.
    *
    * @throws ConfigException When the home directory cannot be determined.
    */
-  private function expandHome(string $path): string {
-    if (!str_starts_with($path, '~/')) {
+  private function expandHome(string $path): string
+  {
+    if (! str_starts_with($path, '~/')) {
       return $path;
     }
 
     $home = HomeDirectory::resolve();
-    if ($home === NULL) {
+    if ($home === null) {
       throw new ConfigException(
-        'Não foi possível determinar o diretório home do usuário. ' . 'Defina CA_CLI_TOKEN_PATH com um caminho absoluto.',
+          'Não foi possível determinar o diretório home do usuário. '
+              . 'Defina CA_CLI_TOKEN_PATH com um caminho absoluto.',
       );
     }
 
     return $home . substr($path, 1);
   }
-
-
 }

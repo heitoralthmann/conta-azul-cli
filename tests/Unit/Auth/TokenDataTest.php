@@ -5,23 +5,26 @@ declare(strict_types=1);
 namespace ContaAzulCli\Tests\Unit\Auth;
 
 use ContaAzulCli\Auth\TokenData;
+use DateTimeImmutable;
+use DateTimeZone;
 use PHPUnit\Framework\TestCase;
+
+use function time;
 
 final class TokenDataTest extends TestCase
 {
-
-
-  public function testFromOAuthResponseCalculatesExpiry(): void {
+  public function testFromOAuthResponseCalculatesExpiry(): void
+  {
     $before = time();
-    $token = TokenData::fromOAuthResponse(
-      [
-        'access_token'  => 'at-123',
-        'refresh_token' => 'rt-456',
-        'expires_in'    => 3600,
-        'token_type'    => 'Bearer',
-      ]
+    $token  = TokenData::fromOAuthResponse(
+        [
+          'access_token'  => 'at-123',
+          'refresh_token' => 'rt-456',
+          'expires_in'    => 3600,
+          'token_type'    => 'Bearer',
+        ],
     );
-    $after = time();
+    $after  = time();
 
     $expiresAt = $token->accessTokenExpiresAt->getTimestamp();
     self::assertGreaterThanOrEqual($before + 3600, $expiresAt);
@@ -30,56 +33,56 @@ final class TokenDataTest extends TestCase
     self::assertSame('rt-456', $token->refreshToken);
   }
 
-
-  public function testToArrayAndFromArrayRoundTrip(): void {
+  public function testToArrayAndFromArrayRoundTrip(): void
+  {
     $original = TokenData::fromOAuthResponse(
-      [
-        'access_token'  => 'at-abc',
-        'refresh_token' => 'rt-def',
-        'expires_in'    => 7200,
-        'token_type'    => 'Bearer',
-      ]
+        [
+          'access_token'  => 'at-abc',
+          'refresh_token' => 'rt-def',
+          'expires_in'    => 7200,
+          'token_type'    => 'Bearer',
+        ],
     );
 
-    $array = $original->toArray();
+    $array    = $original->toArray();
     $restored = TokenData::fromArray($array);
 
     self::assertSame($original->accessToken, $restored->accessToken);
     self::assertSame($original->refreshToken, $restored->refreshToken);
     self::assertSame(
-      $original->accessTokenExpiresAt->getTimestamp(),
-      $restored->accessTokenExpiresAt->getTimestamp(),
+        $original->accessTokenExpiresAt->getTimestamp(),
+        $restored->accessTokenExpiresAt->getTimestamp(),
     );
   }
 
-
-  public function testIsExpiringSoonReturnsTrueWhenLessThan60Seconds(): void {
-    $expiry = new \DateTimeImmutable('+30 seconds', new \DateTimeZone('UTC'));
-    $token = new TokenData(
-      accessToken: 'at',
-      accessTokenExpiresAt: $expiry,
-      refreshToken: 'rt',
-      refreshTokenObtainedAt: new \DateTimeImmutable('now', new \DateTimeZone('UTC')),
+  public function testIsExpiringSoonReturnsTrueWhenLessThan60Seconds(): void
+  {
+    $expiry = new DateTimeImmutable('+30 seconds', new DateTimeZone('UTC'));
+    $token  = new TokenData(
+        accessToken: 'at',
+        accessTokenExpiresAt: $expiry,
+        refreshToken: 'rt',
+        refreshTokenObtainedAt: new DateTimeImmutable('now', new DateTimeZone('UTC')),
     );
 
     self::assertTrue($token->isExpiringSoon());
   }
 
-
-  public function testIsExpiringSoonReturnsFalseWhenMoreThan120Seconds(): void {
-    $expiry = new \DateTimeImmutable('+300 seconds', new \DateTimeZone('UTC'));
-    $token = new TokenData(
-      accessToken: 'at',
-      accessTokenExpiresAt: $expiry,
-      refreshToken: 'rt',
-      refreshTokenObtainedAt: new \DateTimeImmutable('now', new \DateTimeZone('UTC')),
+  public function testIsExpiringSoonReturnsFalseWhenMoreThan120Seconds(): void
+  {
+    $expiry = new DateTimeImmutable('+300 seconds', new DateTimeZone('UTC'));
+    $token  = new TokenData(
+        accessToken: 'at',
+        accessTokenExpiresAt: $expiry,
+        refreshToken: 'rt',
+        refreshTokenObtainedAt: new DateTimeImmutable('now', new DateTimeZone('UTC')),
     );
 
     self::assertFalse($token->isExpiringSoon());
   }
 
-
-  public function testFromArrayPreservesAllFields(): void {
+  public function testFromArrayPreservesAllFields(): void
+  {
     $data = [
       'access_token'              => 'my-at',
       'access_token_expires_at'   => '2026-06-01T12:00:00+00:00',
@@ -94,6 +97,4 @@ final class TokenDataTest extends TestCase
     self::assertSame('my-rt', $token->refreshToken);
     self::assertSame('Bearer', $token->tokenType);
   }
-
-
 }
