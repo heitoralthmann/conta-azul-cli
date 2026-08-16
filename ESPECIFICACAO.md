@@ -382,7 +382,7 @@ src/
 **Decisão.**
 
 - **Primário:** PHAR único construído com Box, publicado em GitHub Releases.
-- **Secundário:** `composer global require contaazul-cli/cli` (essencialmente gratuito ao publicar no Packagist).
+- **Secundário:** `composer global require heitoralthmann/conta-azul-cli` (essencialmente gratuito ao publicar no Packagist).
 - **Adiado:** imagem Docker — adicionar quando houver caso de uso CI explicitamente solicitado.
 
 **Justificativa.** PHAR roda em qualquer máquina com PHP na versão mínima; Composer global é canal alternativo natural para devs PHP que já têm o ambiente.

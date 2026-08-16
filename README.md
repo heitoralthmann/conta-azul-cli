@@ -6,6 +6,8 @@ Cada invocação é de curta duração: faz uma chamada, escreve JSON compacto e
 
 O consumidor primário é um **agente**, não um humano. Por isso a saída é JSON compacto, o exit code é binário e os erros vêm em envelope estruturado com um campo `kind` estável.
 
+> **Projeto não oficial.** Este CLI não é mantido, endossado ou afiliado à Conta Azul. É um cliente de terceiros para a API pública da Conta Azul.
+
 ---
 
 ## Requisitos

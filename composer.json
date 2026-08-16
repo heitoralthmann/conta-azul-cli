@@ -1,5 +1,5 @@
 {
-    "name": "contaazul-cli/cli",
+    "name": "heitoralthmann/conta-azul-cli",
     "description": "CLI PHP/Symfony para as APIs Financeiro, Pessoas, Produtos e Serviços da Conta Azul",
     "type": "project",
     "license": "Apache-2.0",
