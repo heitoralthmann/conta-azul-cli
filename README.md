@@ -285,6 +285,7 @@ composer install
 vendor/bin/phpunit                                              # testes
 vendor/bin/pint                                                 # estilo
 vendor/bin/phpstan analyse src/ --level=max --memory-limit=1G   # análise estática
+vendor/bin/phpcs                                                # padrões (phpcs.xml.dist)
 ```
 
 > O PHPStan estoura o limite default de 128 MB do PHP; passe `--memory-limit=1G`.
