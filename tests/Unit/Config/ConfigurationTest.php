@@ -156,7 +156,7 @@ final class ConfigurationTest extends TestCase
 
         $config = new Configuration();
 
-        self::assertSame($home.'/my-tokens.json', $config->getTokenPath());
+        self::assertSame($home . '/my-tokens.json', $config->getTokenPath());
     }
 
 
@@ -234,7 +234,7 @@ final class ConfigurationTest extends TestCase
 
         $config = new Configuration();
 
-        self::assertSame($home.'/.certs/cert.pem', $config->getCallbackCertFile());
+        self::assertSame($home . '/.certs/cert.pem', $config->getCallbackCertFile());
     }
 
 

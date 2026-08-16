@@ -29,7 +29,7 @@ final class HomeDirectory
         $drive = getenv('HOMEDRIVE');
         $path  = getenv('HOMEPATH');
         if (is_string($drive) && $drive !== '' && is_string($path) && $path !== '') {
-            return self::normalize($drive.$path);
+            return self::normalize($drive . $path);
         }
 
         if (function_exists('posix_getpwuid') && function_exists('posix_getuid')) {

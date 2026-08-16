@@ -42,7 +42,7 @@ final class CallbackServer
             throw new CliException(
               ErrorKind::ClientError,
               FALSE,
-              'Não foi possível iniciar o servidor local na porta '.$this->port.': '.($errstr ?? '').' ('.($errno ?? 0).'). Verifique se a porta está livre.',
+              'Não foi possível iniciar o servidor local na porta ' . $this->port . ': ' . ($errstr ?? '') . ' (' . ($errno ?? 0) . '). Verifique se a porta está livre.',
             );
         }
 
@@ -72,7 +72,7 @@ final class CallbackServer
                 throw new CliException(
                   ErrorKind::ClientError,
                   FALSE,
-                  "Timeout aguardando callback OAuth ({$this->timeoutSeconds}s). ".'Rode "ca auth login" novamente e tenha o navegador pronto, '.'ou aumente a janela com CA_CALLBACK_TIMEOUT.',
+                  "Timeout aguardando callback OAuth ({$this->timeoutSeconds}s). " . 'Rode "ca auth login" novamente e tenha o navegador pronto, ' . 'ou aumente a janela com CA_CALLBACK_TIMEOUT.',
                 );
             }
 
@@ -178,7 +178,7 @@ final class CallbackServer
         // phpcs:ignore Generic.PHP.NoSilencedErrors
         @fwrite(
           $conn,
-          "HTTP/1.1 {$status}\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\n\r\n"."<html><body>{$body}</body></html>",
+          "HTTP/1.1 {$status}\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\n\r\n" . "<html><body>{$body}</body></html>",
         );
     }
 

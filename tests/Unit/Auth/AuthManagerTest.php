@@ -38,7 +38,7 @@ final class AuthManagerTest extends TestCase
             putenv($var);
         }
 
-        $this->tokenPath = sys_get_temp_dir().'/ca-cli-test-'.uniqid().'/tokens.json';
+        $this->tokenPath = sys_get_temp_dir() . '/ca-cli-test-' . uniqid() . '/tokens.json';
         putenv('CA_CLIENT_ID=my-client');
         putenv('CA_CLIENT_SECRET=my-secret');
         putenv("CA_CLI_TOKEN_PATH={$this->tokenPath}");
@@ -48,7 +48,7 @@ final class AuthManagerTest extends TestCase
     protected function tearDown(): void {
         $dir = dirname($this->tokenPath);
         if (is_dir($dir)) {
-            array_map('unlink', glob($dir.'/*') ?: []);
+            array_map('unlink', glob($dir . '/*') ?: []);
             rmdir($dir);
         }
 

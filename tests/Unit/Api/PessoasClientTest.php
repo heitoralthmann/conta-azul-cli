@@ -31,7 +31,7 @@ final class PessoasClientTest extends TestCase
             $this->originalEnv[$var] = getenv($var);
             putenv($var);
         }
-        $this->tokenPath = sys_get_temp_dir().'/ca-cli-person-'.uniqid().'/tokens.json';
+        $this->tokenPath = sys_get_temp_dir() . '/ca-cli-person-' . uniqid() . '/tokens.json';
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_API_BASE_URL=https://api-v2.contaazul.com');
@@ -51,7 +51,7 @@ final class PessoasClientTest extends TestCase
     protected function tearDown(): void {
         $dir = dirname($this->tokenPath);
         if (is_dir($dir)) {
-            array_map('unlink', glob($dir.'/*') ?: []);
+            array_map('unlink', glob($dir . '/*') ?: []);
             rmdir($dir);
         }
         foreach ($this->originalEnv as $var => $value) {
@@ -91,7 +91,7 @@ final class PessoasClientTest extends TestCase
 
         self::assertNotNull($captured);
         self::assertSame($method, $captured['method']);
-        self::assertSame('https://api-v2.contaazul.com'.$path, strtok($captured['url'], '?'));
+        self::assertSame('https://api-v2.contaazul.com' . $path, strtok($captured['url'], '?'));
     }
 
 

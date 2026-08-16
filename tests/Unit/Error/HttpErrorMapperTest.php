@@ -62,7 +62,7 @@ final class HttpErrorMapperTest extends TestCase
 
     public function testPrettyPrintedBodyIsFlattenedIntoOneLine(): void {
         // Conta Azul pretty-prints error bodies; the envelope must stay compact.
-        $body = "\n            {\n                \"descricao_erro\": \"Conta não elegível.\",\n"."                \"status_conta\": \"END_TRIAL\"\n            }\n            ";
+        $body = "\n            {\n                \"descricao_erro\": \"Conta não elegível.\",\n" . "                \"status_conta\": \"END_TRIAL\"\n            }\n            ";
         $client   = new MockHttpClient([new MockResponse($body, ['http_code' => 403])]);
         $response = $client->request('GET', 'https://example.com/test');
         $response->getStatusCode();

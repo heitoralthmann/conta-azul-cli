@@ -24,7 +24,7 @@ final class ErrorEnvelope
           STDERR, json_encode(
             $envelope,
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
-          )."\n"
+          ) . "\n"
         );
     }
 
@@ -42,7 +42,7 @@ final class ErrorEnvelope
           STDERR, json_encode(
             $envelope,
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
-          )."\n"
+          ) . "\n"
         );
     }
 

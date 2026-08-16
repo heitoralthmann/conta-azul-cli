@@ -31,8 +31,8 @@ final class Configuration
         $this->authBaseUrl  = rtrim($this->getEnv('CA_AUTH_BASE_URL', 'https://auth.contaazul.com'), '/');
         // Apps de produção usam um endpoint de autorização distinto do de token,
         // com host e path próprios — daí ser configurável por inteiro.
-        $this->authorizeUrl = $this->getEnv('CA_AUTHORIZE_URL', $this->authBaseUrl.'/oauth2/authorize');
-        $this->tokenUrl     = $this->getEnv('CA_TOKEN_URL', $this->authBaseUrl.'/oauth2/token');
+        $this->authorizeUrl = $this->getEnv('CA_AUTHORIZE_URL', $this->authBaseUrl . '/oauth2/authorize');
+        $this->tokenUrl     = $this->getEnv('CA_TOKEN_URL', $this->authBaseUrl . '/oauth2/token');
         $rawPath            = $this->getEnv('CA_CLI_TOKEN_PATH', '~/.config/conta-azul-cli/tokens.json');
         $this->tokenPath    = $this->expandHome($rawPath);
 
@@ -139,11 +139,11 @@ final class Configuration
         $home = HomeDirectory::resolve();
         if ($home === NULL) {
             throw new ConfigException(
-              'Não foi possível determinar o diretório home do usuário. '.'Defina CA_CLI_TOKEN_PATH com um caminho absoluto.',
+              'Não foi possível determinar o diretório home do usuário. ' . 'Defina CA_CLI_TOKEN_PATH com um caminho absoluto.',
             );
         }
 
-        return $home.substr($path, 1);
+        return $home . substr($path, 1);
     }
 
 

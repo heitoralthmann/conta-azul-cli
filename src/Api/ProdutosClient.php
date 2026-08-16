@@ -29,7 +29,7 @@ final class ProdutosClient extends BaseClient
 
     /** @return array<mixed> */
     public function getProduto(string $id): array {
-        return $this->request('GET', '/v1/produtos/'.rawurlencode($id));
+        return $this->request('GET', '/v1/produtos/' . rawurlencode($id));
     }
 
 
@@ -38,13 +38,13 @@ final class ProdutosClient extends BaseClient
      * @return array<mixed>
      */
     public function updateProduto(string $id, array $payload): array {
-        return $this->request('PATCH', '/v1/produtos/'.rawurlencode($id), ['json' => $payload]);
+        return $this->request('PATCH', '/v1/produtos/' . rawurlencode($id), ['json' => $payload]);
     }
 
 
     /** @return array<mixed> */
     public function deleteProduto(string $id): array {
-        return $this->request('DELETE', '/v1/produtos/'.rawurlencode($id));
+        return $this->request('DELETE', '/v1/produtos/' . rawurlencode($id));
     }
 
 

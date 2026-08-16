@@ -38,7 +38,7 @@ final class FinanceiroClientTest extends TestCase
             $this->originalEnv[$var] = getenv($var);
             putenv($var);
         }
-        $this->tokenPath = sys_get_temp_dir().'/ca-cli-fin-'.uniqid().'/tokens.json';
+        $this->tokenPath = sys_get_temp_dir() . '/ca-cli-fin-' . uniqid() . '/tokens.json';
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_API_BASE_URL=https://api-v2.contaazul.com');
@@ -58,7 +58,7 @@ final class FinanceiroClientTest extends TestCase
     protected function tearDown(): void {
         $dir = dirname($this->tokenPath);
         if (is_dir($dir)) {
-            array_map('unlink', glob($dir.'/*') ?: []);
+            array_map('unlink', glob($dir . '/*') ?: []);
             rmdir($dir);
         }
         foreach ($this->originalEnv as $var => $value) {

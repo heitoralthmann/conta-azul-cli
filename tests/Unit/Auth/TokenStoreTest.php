@@ -24,7 +24,7 @@ final class TokenStoreTest extends TestCase
             putenv($var);
         }
 
-        $this->tokenPath = sys_get_temp_dir().'/ca-cli-test-'.uniqid().'/tokens.json';
+        $this->tokenPath = sys_get_temp_dir() . '/ca-cli-test-' . uniqid() . '/tokens.json';
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv("CA_CLI_TOKEN_PATH={$this->tokenPath}");
@@ -37,7 +37,7 @@ final class TokenStoreTest extends TestCase
         }
         $dir = dirname($this->tokenPath);
         if (is_dir($dir)) {
-            array_map('unlink', glob($dir.'/*') ?: []);
+            array_map('unlink', glob($dir . '/*') ?: []);
             rmdir($dir);
         }
 

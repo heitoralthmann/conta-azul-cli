@@ -55,7 +55,7 @@ final class ListCommand extends Command
             // recorte de quem lê só o stdout.
             if ($de !== $deRaw || $ate !== $ateRaw) {
                 $this->warningEnvelope->renderToStderr(
-                  "Intervalo de vencimento não informado por completo; usando {$de} a {$ate}. ".'Use --data-vencimento-de e --data-vencimento-ate para definir outro.',
+                  "Intervalo de vencimento não informado por completo; usando {$de} a {$ate}. " . 'Use --data-vencimento-de e --data-vencimento-ate para definir outro.',
                 );
             }
 

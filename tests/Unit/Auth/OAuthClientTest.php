@@ -99,7 +99,7 @@ final class OAuthClientTest extends TestCase
         (new OAuthClient($client, new Configuration()))->refresh('some-refresh');
 
         self::assertIsArray($captured);
-        $expected = 'Authorization: Basic '.base64_encode('my-client:my-secret');
+        $expected = 'Authorization: Basic ' . base64_encode('my-client:my-secret');
         self::assertContains($expected, $captured['headers']);
     }
 

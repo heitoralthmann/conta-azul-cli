@@ -44,7 +44,7 @@ final class PessoasClient extends BaseClient
 
     /** @return array<mixed> */
     public function getPessoa(string $id): array {
-        return $this->request('GET', '/v1/pessoas/'.rawurlencode($id));
+        return $this->request('GET', '/v1/pessoas/' . rawurlencode($id));
     }
 
 
@@ -53,7 +53,7 @@ final class PessoasClient extends BaseClient
      * @return array<mixed>
      */
     public function updatePessoa(string $id, array $payload): array {
-        return $this->request('PUT', '/v1/pessoas/'.rawurlencode($id), ['json' => $payload]);
+        return $this->request('PUT', '/v1/pessoas/' . rawurlencode($id), ['json' => $payload]);
     }
 
 
@@ -62,13 +62,13 @@ final class PessoasClient extends BaseClient
      * @return array<mixed>
      */
     public function patchPessoa(string $id, array $payload): array {
-        return $this->request('PATCH', '/v1/pessoas/'.rawurlencode($id), ['json' => $payload]);
+        return $this->request('PATCH', '/v1/pessoas/' . rawurlencode($id), ['json' => $payload]);
     }
 
 
     /** @return array<mixed> */
     public function getPessoaLegado(string $id): array {
-        return $this->request('GET', '/v1/pessoas/legado/'.rawurlencode($id));
+        return $this->request('GET', '/v1/pessoas/legado/' . rawurlencode($id));
     }
 
 

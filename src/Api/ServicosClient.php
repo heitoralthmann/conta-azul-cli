@@ -38,7 +38,7 @@ final class ServicosClient extends BaseClient
 
     /** @return array<mixed> */
     public function getServico(string $id): array {
-        return $this->request('GET', '/v1/servicos/'.rawurlencode($id));
+        return $this->request('GET', '/v1/servicos/' . rawurlencode($id));
     }
 
 
@@ -47,7 +47,7 @@ final class ServicosClient extends BaseClient
      * @return array<mixed>
      */
     public function updateServico(string $id, array $payload): array {
-        return $this->request('PATCH', '/v1/servicos/'.rawurlencode($id), ['json' => $payload]);
+        return $this->request('PATCH', '/v1/servicos/' . rawurlencode($id), ['json' => $payload]);
     }
 
 

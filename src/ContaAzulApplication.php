@@ -310,7 +310,7 @@ final class ContaAzulApplication extends Application
               new CliException(
                 ErrorKind::ClientError,
                 FALSE,
-                'Falha ao inicializar o CLI: '.$this->bootstrapError->getMessage(),
+                'Falha ao inicializar o CLI: ' . $this->bootstrapError->getMessage(),
                 NULL,
                 NULL,
                 Uuid::uuid4()->toString(),
@@ -367,7 +367,7 @@ final class ContaAzulApplication extends Application
             && !str_starts_with($argv[1], '-')
             && !str_starts_with($argv[2], '-')
         ) {
-            $compound = $argv[1].' '.$argv[2];
+            $compound = $argv[1] . ' ' . $argv[2];
             if ($this->has($compound)) {
                 $argv = [$argv[0], $compound, ...array_slice($argv, 3)];
             }

@@ -59,7 +59,7 @@ final class AlteracoesCommand extends Command
 
             if ($inicio !== $inicioRaw || $fim !== $fimRaw) {
                 $this->warningEnvelope->renderToStderr(
-                  "Intervalo não informado por completo; usando {$inicio} a {$fim}. ".'Use --data-inicio e --data-fim para definir outro.',
+                  "Intervalo não informado por completo; usando {$inicio} a {$fim}. " . 'Use --data-inicio e --data-fim para definir outro.',
                 );
             }
 

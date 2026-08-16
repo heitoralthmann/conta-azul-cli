@@ -69,7 +69,7 @@ final class CallbackServerTest extends TestCase
     /** A real browser request runs well past a kilobyte of headers. */
     public function testHandlesRequestLargerThanASingleReadBuffer(): void {
         $port    = $this->freePort();
-        $padding = str_repeat('X-Padding: '.str_repeat('a', 200)."\r\n", 40);
+        $padding = str_repeat('X-Padding: ' . str_repeat('a', 200) . "\r\n", 40);
         $this->spawnClient(
           $port, [
             "GET /callback?code=big-headers&state=st-3 HTTP/1.1\r\nHost: localhost\r\n{$padding}\r\n",

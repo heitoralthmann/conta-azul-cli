@@ -22,7 +22,7 @@ final class JsonRendererTest extends TestCase
         $this->renderer->render(['key' => 'value', 'num' => 42]);
         $out = ob_get_clean();
 
-        self::assertSame('{"key":"value","num":42}'."\n", $out);
+        self::assertSame('{"key":"value","num":42}' . "\n", $out);
     }
 
 

@@ -17,7 +17,7 @@ final class PaginationValidator
             throw new CliException(
               ErrorKind::ClientError,
               FALSE,
-              'Tamanho de página inválido: '.$size.'. Valores aceitos: '.implode(', ', self::VALID_SIZES),
+              'Tamanho de página inválido: ' . $size . '. Valores aceitos: ' . implode(', ', self::VALID_SIZES),
             );
         }
     }

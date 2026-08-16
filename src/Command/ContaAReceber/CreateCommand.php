@@ -47,7 +47,7 @@ final class CreateCommand extends Command
             try {
                 $decoded = json_decode($jsonOption, TRUE, 512, JSON_THROW_ON_ERROR);
             } catch (\JsonException $e) {
-                throw new CliException(ErrorKind::ClientError, FALSE, 'JSON inválido: '.$e->getMessage(), previous: $e);
+                throw new CliException(ErrorKind::ClientError, FALSE, 'JSON inválido: ' . $e->getMessage(), previous: $e);
             }
             if (!is_array($decoded)) {
                 throw new CliException(ErrorKind::ClientError, FALSE, 'JSON deve ser um objeto.');

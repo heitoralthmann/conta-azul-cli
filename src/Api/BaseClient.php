@@ -48,7 +48,7 @@ class BaseClient
      * @return array<mixed>
      */
     public function request(string $method, string $path, array $options=[]): array {
-        $url     = $this->config->getApiBaseUrl().$path;
+        $url     = $this->config->getApiBaseUrl() . $path;
         $isWrite = in_array(strtoupper($method), ['POST', 'PUT', 'PATCH', 'DELETE'], TRUE);
 
         $retryable429 = [429];

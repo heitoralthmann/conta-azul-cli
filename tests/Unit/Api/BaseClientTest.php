@@ -54,7 +54,7 @@ final class BaseClientTest extends TestCase
             putenv($var);
         }
 
-        $this->tokenPath = sys_get_temp_dir().'/ca-cli-test-'.uniqid().'/tokens.json';
+        $this->tokenPath = sys_get_temp_dir() . '/ca-cli-test-' . uniqid() . '/tokens.json';
         putenv('CA_CLIENT_ID=id');
         putenv('CA_CLIENT_SECRET=secret');
         putenv('CA_API_BASE_URL=https://api.example.test');
@@ -67,7 +67,7 @@ final class BaseClientTest extends TestCase
     protected function tearDown(): void {
         $dir = dirname($this->tokenPath);
         if (is_dir($dir)) {
-            array_map('unlink', glob($dir.'/*') ?: []);
+            array_map('unlink', glob($dir . '/*') ?: []);
             rmdir($dir);
         }
 
@@ -111,7 +111,7 @@ final class BaseClientTest extends TestCase
 
 
     private static function fixture(string $name): string {
-        $content = file_get_contents(__DIR__.'/../../fixtures/'.$name);
+        $content = file_get_contents(__DIR__ . '/../../fixtures/' . $name);
         self::assertIsString($content);
 
         return $content;
@@ -146,7 +146,7 @@ final class BaseClientTest extends TestCase
         self::assertIsArray($captured);
         self::assertSame('https://api.example.test/v1/financeiro/categorias', $captured['url']);
         self::assertContains('Authorization: Bearer access-current', $captured['headers']);
-        self::assertContains('X-Correlation-Id: '.$client->getCorrelationId(), $captured['headers']);
+        self::assertContains('X-Correlation-Id: ' . $client->getCorrelationId(), $captured['headers']);
     }
 
 

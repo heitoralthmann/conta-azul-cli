@@ -46,7 +46,7 @@ final class OAuthClient
         $isCodeExchange = ($body['grant_type'] ?? '') === 'authorization_code';
 
         $credentials = base64_encode(
-          $this->config->getClientId().':'.$this->config->getClientSecret(),
+          $this->config->getClientId() . ':' . $this->config->getClientSecret(),
         );
 
         try {
@@ -79,15 +79,15 @@ final class OAuthClient
                 // The same error code means opposite things per grant type, and
                 // telling the operator to re-login when the *code* just expired
                 // sends them in circles.
-                $message = $isCodeExchange ? 'Código de autorização inválido, expirado ou já utilizado. '.'Rode "ca auth login" e conclua o login no navegador sem reaproveitar URLs antigas.'.$this->endpointMismatchHint() : 'Refresh token inválido ou expirado. Execute: ca auth login';
+                $message = $isCodeExchange ? 'Código de autorização inválido, expirado ou já utilizado. ' . 'Rode "ca auth login" e conclua o login no navegador sem reaproveitar URLs antigas.' . $this->endpointMismatchHint() : 'Refresh token inválido ou expirado. Execute: ca auth login';
 
-                throw new CliException(ErrorKind::AuthFailed, FALSE, $message.$suffix, $status, previous: $e);
+                throw new CliException(ErrorKind::AuthFailed, FALSE, $message . $suffix, $status, previous: $e);
             }
 
             throw new CliException(
               ErrorKind::AuthFailed,
               FALSE,
-              "Falha na autenticação (HTTP {$status}). Execute: ca auth login".$suffix,
+              "Falha na autenticação (HTTP {$status}). Execute: ca auth login" . $suffix,
               $status,
               previous: $e,
             );
@@ -119,7 +119,7 @@ final class OAuthClient
             return '';
         }
 
-        return " Atenção: a autorização acontece em {$authorizeHost} mas a troca do código em {$tokenHost}.".' Um código só é resgatável em quem o emitiu — confira CA_AUTHORIZE_URL e CA_TOKEN_URL.';
+        return " Atenção: a autorização acontece em {$authorizeHost} mas a troca do código em {$tokenHost}." . ' Um código só é resgatável em quem o emitiu — confira CA_AUTHORIZE_URL e CA_TOKEN_URL.';
     }
 
 
@@ -134,7 +134,7 @@ final class OAuthClient
             return " (HTTP {$status}, sem detalhe do provedor)";
         }
 
-        return ' Provedor respondeu: '.implode(' — ', $parts);
+        return ' Provedor respondeu: ' . implode(' — ', $parts);
     }
 
 

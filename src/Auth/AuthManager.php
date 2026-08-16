@@ -101,7 +101,7 @@ final class AuthManager
         // provedor exija, inclusive rotas de fragmento.
         $separator = str_contains($this->config->getAuthorizeUrl(), '?') ? '&' : '?';
 
-        return $this->config->getAuthorizeUrl().$separator.http_build_query($params);
+        return $this->config->getAuthorizeUrl() . $separator . http_build_query($params);
     }
 
 
@@ -129,7 +129,7 @@ final class AuthManager
      * @return resource
      */
     private function acquireLock(): mixed {
-        $lockFile = $this->tokenStore->getPath().'.lock';
+        $lockFile = $this->tokenStore->getPath() . '.lock';
         $lockDir  = dirname($lockFile);
         if (!is_dir($lockDir)) {
             mkdir($lockDir, 0700, TRUE);

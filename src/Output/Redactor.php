@@ -39,7 +39,7 @@ final class Redactor
     public function redactString(string $value): string {
         foreach (self::SENSITIVE_KEYS as $key) {
             $value = (string) preg_replace(
-              '/(\"'.preg_quote($key, '/').'\"\s*:\s*\")[^\"]*(\")/',
+              '/(\"' . preg_quote($key, '/') . '\"\s*:\s*\")[^\"]*(\")/',
               '$1[REDACTED]$2',
               $value,
             );

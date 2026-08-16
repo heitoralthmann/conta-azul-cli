@@ -22,11 +22,11 @@ final class Logger
         // Logging is best-effort: an unresolvable home must not break the run,
         // so it degrades to the system temp directory instead of throwing.
         $home     = HomeDirectory::resolve() ?? sys_get_temp_dir();
-        $cacheDir = $home.'/.cache/conta-azul-cli';
+        $cacheDir = $home . '/.cache/conta-azul-cli';
         if (!is_dir($cacheDir)) {
             mkdir($cacheDir, 0700, TRUE);
         }
-        $this->logPath = $cacheDir.'/log.jsonl';
+        $this->logPath = $cacheDir . '/log.jsonl';
         $this->enabled = TRUE;
         $this->rotate();
     }
@@ -51,7 +51,7 @@ final class Logger
             'context'        => $this->redactor->redact($context),
             'correlation_id' => $correlationId,
           ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
-        )."\n";
+        ) . "\n";
 
         file_put_contents($this->logPath, $entry, FILE_APPEND | LOCK_EX);
     }
@@ -65,13 +65,13 @@ final class Logger
             return;
         }
         for ($i = self::MAX_FILES - 1; $i >= 1; $i--) {
-            $old = $this->logPath.'.'.$i;
-            $new = $this->logPath.'.'.($i + 1);
+            $old = $this->logPath . '.' . $i;
+            $new = $this->logPath . '.' . ($i + 1);
             if (file_exists($old)) {
                 rename($old, $new);
             }
         }
-        rename($this->logPath, $this->logPath.'.1');
+        rename($this->logPath, $this->logPath . '.1');
     }
 
 
