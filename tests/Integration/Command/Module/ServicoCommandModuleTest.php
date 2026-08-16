@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ContaAzulCli\Tests\Integration\Command\Module;
+
+use ContaAzulCli\Api\PaginationValidator;
+use ContaAzulCli\Command\Module\ServicoCommandModule;
+use ContaAzulCli\Command\Support\ResourceIdCommand;
+use ContaAzulCli\Command\Support\ResourceIdJsonCommand;
+use ContaAzulCli\Command\Support\ResourceJsonCommand;
+use ContaAzulCli\Command\Support\ResourceListCommand;
+use ContaAzulCli\Output\ErrorEnvelope;
+use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
+
+/**
+ * Wiring-only: confirms each command name maps to the right generic Support
+ * class. The generic classes' own request/response/error behavior is
+ * already covered in tests/Integration/Command/Support/, so this does not
+ * repeat that here.
+ */
+final class ServicoCommandModuleTest extends CommandTestCase
+{
+  public function testRegistersEveryServiceCommandWithTheExpectedShape(): void {
+    $output = $this->newOutput();
+    $module = new ServicoCommandModule(
+        $this->servicosClient([]),
+        new ErrorEnvelope($output),
+        new JsonRenderer($output),
+        new PaginationValidator(),
+    );
+
+    $byName = [];
+    foreach ($module->commands() as $command) {
+      $byName[(string) $command->getName()] = $command;
+    }
+
+    self::assertCount(5, $byName);
+    self::assertInstanceOf(ResourceListCommand::class, $byName['servico list']);
+    self::assertInstanceOf(ResourceJsonCommand::class, $byName['servico create']);
+    self::assertInstanceOf(ResourceIdCommand::class, $byName['servico get']);
+    self::assertInstanceOf(ResourceIdJsonCommand::class, $byName['servico update']);
+    self::assertInstanceOf(ResourceJsonCommand::class, $byName['servico delete']);
+  }
+}

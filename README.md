@@ -313,6 +313,10 @@ Superfície **humana** em pt-BR: README, `--help`, descrições, campo `message`
 - `docs/financial-apis-openapi.yaml` ainda é um **placeholder**. Os paths em `src/Api/FinanceiroClient.php` foram escritos a partir da documentação e não foram validados contra a API real endpoint por endpoint.
 - Por consequência, o workflow `api-drift.yml` está inerte até que a URL da spec oficial seja configurada.
 
+## Contribuição e segurança
+
+Quer contribuir? Veja [CONTRIBUTING.md](CONTRIBUTING.md). Encontrou uma vulnerabilidade? Veja [SECURITY.md](SECURITY.md) — não abra uma issue pública.
+
 ## Licença
 
 Apache 2.0. Veja [LICENSE](LICENSE).

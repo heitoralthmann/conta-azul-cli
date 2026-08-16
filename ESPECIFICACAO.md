@@ -1,6 +1,6 @@
 # Especificação — Conta Azul CLI
 
-**Versão:** 0.1.0 (rascunho)
+**Versão:** 0.1.0
 **Data:** 2026-05-27
 **Audiência:** desenvolvedores e operadores do wrapper CLI da API Conta Azul
 **Consumidor primário do CLI:** agente de IA (não humano)
