@@ -37,16 +37,14 @@ final class UpdateCommand extends Command
   }
 
   /** Declares the person identifier and JSON payload options. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this
           ->addArgument('id', InputArgument::REQUIRED, 'ID da pessoa')
           ->addOption('json', null, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
   }
 
   /** Parses input, updates the person, and renders output or an error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $id = $input->getArgument('id');

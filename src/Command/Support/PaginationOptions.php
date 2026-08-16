@@ -29,8 +29,7 @@ final readonly class PaginationOptions
   }
 
   /** Adds the shared pagination options to a command definition. */
-  public static function configure(Command $command): void
-  {
+  public static function configure(Command $command): void {
     $command
           ->addOption('pagina', null, InputOption::VALUE_REQUIRED, 'Número da página', (string) self::DEFAULT_PAGE)
           ->addOption(
@@ -47,8 +46,7 @@ final readonly class PaginationOptions
    *
    * @throws CliException when the page size is unsupported.
    */
-  public static function fromInput(InputInterface $input, PaginationValidator $validator): self
-  {
+  public static function fromInput(InputInterface $input, PaginationValidator $validator): self {
     $pageRaw     = $input->hasOption('pagina') ? $input->getOption('pagina') : null;
     $pageSizeRaw = $input->hasOption('tamanho-pagina') ? $input->getOption('tamanho-pagina') : null;
     $page        = is_numeric($pageRaw) ? (int) $pageRaw : self::DEFAULT_PAGE;
@@ -59,14 +57,12 @@ final readonly class PaginationOptions
   }
 
   /** Returns the requested one-based page number. */
-  public function page(): int
-  {
+  public function page(): int {
     return $this->page;
   }
 
   /** Returns the requested number of records per page. */
-  public function pageSize(): int
-  {
+  public function pageSize(): int {
     return $this->pageSize;
   }
 }

@@ -49,8 +49,7 @@ final class FinanceiroClientTest extends TestCase
 
   private string $tokenPath = '';
 
-  protected function setUp(): void
-  {
+  protected function setUp(): void {
     foreach (self::ENV_VARS as $var) {
       $this->originalEnv[$var] = getenv($var);
       putenv($var);
@@ -72,8 +71,7 @@ final class FinanceiroClientTest extends TestCase
     );
   }
 
-  protected function tearDown(): void
-  {
+  protected function tearDown(): void {
     $dir = dirname($this->tokenPath);
     if (is_dir($dir)) {
       array_map('unlink', glob($dir . '/*') ?: []);
@@ -86,8 +84,7 @@ final class FinanceiroClientTest extends TestCase
   }
 
   /** @return array<string, array{callable(FinanceiroClient): mixed, string, string}> */
-  public static function endpointProvider(): array
-  {
+  public static function endpointProvider(): array {
     return [
       'categorias fica na raiz da v1, no plural' => [
         static fn (FinanceiroClient $c) => $c->listCategorias(),
@@ -134,8 +131,7 @@ final class FinanceiroClientTest extends TestCase
 
   /** @param callable(FinanceiroClient): mixed $call */
   #[DataProvider('endpointProvider')]
-  public function testEndpointPathsMatchTheRealApi(callable $call, string $method, string $expectedUrl): void
-  {
+  public function testEndpointPathsMatchTheRealApi(callable $call, string $method, string $expectedUrl): void {
     $captured = null;
     $client   = $this->clientRecording($captured);
 
@@ -147,8 +143,7 @@ final class FinanceiroClientTest extends TestCase
   }
 
   /** A baixa é um PATCH na parcela; o subrecurso /baixar nunca existiu. */
-  public function testBaixaIsAPatchOnTheInstallmentItself(): void
-  {
+  public function testBaixaIsAPatchOnTheInstallmentItself(): void {
     $captured = null;
     $client   = $this->clientRecording($captured);
 
@@ -162,8 +157,7 @@ final class FinanceiroClientTest extends TestCase
     );
   }
 
-  public function testSearchSendsTheRequiredDueDateRange(): void
-  {
+  public function testSearchSendsTheRequiredDueDateRange(): void {
     $captured = null;
     $client   = $this->clientRecording($captured);
 
@@ -176,8 +170,7 @@ final class FinanceiroClientTest extends TestCase
   }
 
   /** A API recusa `desde`; os parâmetros são data_inicio e data_fim. */
-  public function testAlteracoesSendsDataInicioAndDataFim(): void
-  {
+  public function testAlteracoesSendsDataInicioAndDataFim(): void {
     $captured = null;
     $client   = $this->clientRecording($captured);
 
@@ -191,8 +184,7 @@ final class FinanceiroClientTest extends TestCase
   }
 
   /** @param array{method: string, url: string}|null $captured */
-  private function clientRecording(array|null &$captured): FinanceiroClient
-  {
+  private function clientRecording(array|null &$captured): FinanceiroClient {
     $http = new MockHttpClient(
         static function (string $method, string $url) use (&$captured) {
           $captured = ['method' => $method, 'url' => $url];

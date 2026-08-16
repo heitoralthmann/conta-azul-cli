@@ -23,8 +23,7 @@ final class ApplicationComponents
   }
 
   /** Returns the logger used by API clients and the application shell. */
-  public function logger(): Logger
-  {
+  public function logger(): Logger {
     return $this->logger;
   }
 
@@ -33,8 +32,7 @@ final class ApplicationComponents
    *
    * @return list<Command>
    */
-  public function commands(): array
-  {
+  public function commands(): array {
     $commands = [];
     foreach ($this->modules as $module) {
       foreach ($module->commands() as $command) {

@@ -20,8 +20,7 @@ final class PaginationValidator
    *
    * @throws CliException When the requested size is not in the documented list.
    */
-  public function validatePageSize(int $size): void
-  {
+  public function validatePageSize(int $size): void {
     if (! in_array($size, self::VALID_SIZES, true)) {
       throw new CliException(
           ErrorKind::ClientError,

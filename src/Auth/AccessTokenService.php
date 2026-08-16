@@ -28,14 +28,12 @@ final class AccessTokenService implements AccessTokenServiceInterface
   }
 
   /** Returns a usable access token, refreshing it when it is expiring soon. */
-  public function getValidAccessToken(): string
-  {
+  public function getValidAccessToken(): string {
     return $this->tokenLock->synchronized(fn (): string => $this->resolveToken());
   }
 
   /** Refreshes and persists the token after an API 401 response. */
-  public function refreshAfter401(): string
-  {
+  public function refreshAfter401(): string {
     return $this->tokenLock->synchronized(
         function (): string {
           $token = $this->tokenRepository->load();
@@ -52,14 +50,12 @@ final class AccessTokenService implements AccessTokenServiceInterface
   }
 
   /** Removes the locally cached credentials. */
-  public function logout(): void
-  {
+  public function logout(): void {
     $this->tokenRepository->delete();
   }
 
   /** Resolves a token while the caller holds the refresh lock. */
-  private function resolveToken(): string
-  {
+  private function resolveToken(): string {
     $bootstrap = $this->config->getBootstrapRefreshToken();
     if ($bootstrap !== null) {
       $token = $this->oauthGateway->refresh($bootstrap);
@@ -82,8 +78,7 @@ final class AccessTokenService implements AccessTokenServiceInterface
   }
 
   /** Creates the stable error returned when no local token exists. */
-  private function notAuthenticated(): CliException
-  {
+  private function notAuthenticated(): CliException {
     return new CliException(
         ErrorKind::AuthFailed,
         false,

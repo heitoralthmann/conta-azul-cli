@@ -13,8 +13,7 @@ final class RecordingSleeper implements SleeperInterface
   public array $delays = [];
 
   /** Records a requested delay. */
-  public function sleep(float $seconds): void
-  {
+  public function sleep(float $seconds): void {
     $this->delays[] = $seconds;
   }
 }

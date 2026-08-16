@@ -81,8 +81,7 @@ final class FinanceiroClient
    *
    * @return array<mixed>
    */
-  public function createContaAReceber(array $payload, int $pollTimeout = 60, bool $noWait = false): array
-  {
+  public function createContaAReceber(array $payload, int $pollTimeout = 60, bool $noWait = false): array {
     $response = $this->support->request(
         'POST',
         '/v1/financeiro/eventos-financeiros/contas-a-receber',
@@ -130,8 +129,7 @@ final class FinanceiroClient
    *
    * @return array<mixed>
    */
-  public function createContaAPagar(array $payload, int $pollTimeout = 60, bool $noWait = false): array
-  {
+  public function createContaAPagar(array $payload, int $pollTimeout = 60, bool $noWait = false): array {
     $response = $this->support->request(
         'POST',
         '/v1/financeiro/eventos-financeiros/contas-a-pagar',
@@ -146,8 +144,7 @@ final class FinanceiroClient
   // -------------------------------------------------------------------------
 
   /** @return array<mixed> */
-  public function getParcela(string $id): array
-  {
+  public function getParcela(string $id): array {
     return $this->support->request('GET', '/v1/financeiro/eventos-financeiros/parcelas/' . $id);
   }
 
@@ -158,8 +155,7 @@ final class FinanceiroClient
    *
    * @return array<mixed>
    */
-  public function baixarParcela(string $id, array $payload, int $pollTimeout = 60, bool $noWait = false): array
-  {
+  public function baixarParcela(string $id, array $payload, int $pollTimeout = 60, bool $noWait = false): array {
     $response = $this->support->request(
         'PATCH',
         '/v1/financeiro/eventos-financeiros/parcelas/' . $id,
@@ -174,8 +170,7 @@ final class FinanceiroClient
   // -------------------------------------------------------------------------
 
   /** @return array<mixed> */
-  public function listContasFinanceiras(int $pagina = 1, int $tamanhoPagina = 50): array
-  {
+  public function listContasFinanceiras(int $pagina = 1, int $tamanhoPagina = 50): array {
     return $this->support->request(
         'GET',
         '/v1/conta-financeira',
@@ -186,8 +181,7 @@ final class FinanceiroClient
   }
 
   /** @return array<mixed> */
-  public function getSaldoContaFinanceira(string $id): array
-  {
+  public function getSaldoContaFinanceira(string $id): array {
     return $this->support->request('GET', '/v1/conta-financeira/' . $id . '/saldo-atual');
   }
 
@@ -196,8 +190,7 @@ final class FinanceiroClient
   // -------------------------------------------------------------------------
 
   /** @return array<mixed> */
-  public function listCategorias(int $pagina = 1, int $tamanhoPagina = 50): array
-  {
+  public function listCategorias(int $pagina = 1, int $tamanhoPagina = 50): array {
     return $this->support->request(
         'GET',
         '/v1/categorias',
@@ -212,8 +205,7 @@ final class FinanceiroClient
   // -------------------------------------------------------------------------
 
   /** @return array<mixed> */
-  public function listCentrosDeCusto(int $pagina = 1, int $tamanhoPagina = 50): array
-  {
+  public function listCentrosDeCusto(int $pagina = 1, int $tamanhoPagina = 50): array {
     return $this->support->request(
         'GET',
         '/v1/centro-de-custo',
@@ -235,8 +227,7 @@ final class FinanceiroClient
    *
    * @return array<mixed>
    */
-  public function getAlteracoes(string $dataInicio, string $dataFim, array $filters = []): array
-  {
+  public function getAlteracoes(string $dataInicio, string $dataFim, array $filters = []): array {
     return $this->support->request(
         'GET',
         '/v1/financeiro/eventos-financeiros/alteracoes',
@@ -257,8 +248,7 @@ final class FinanceiroClient
   // -------------------------------------------------------------------------
 
   /** @return array<mixed> */
-  public function getProtocolo(string $id): array
-  {
+  public function getProtocolo(string $id): array {
     return $this->support->request('GET', '/v1/protocolo/' . $id);
   }
 }

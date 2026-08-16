@@ -44,8 +44,7 @@ final class ProdutosServicosClientTest extends TestCase
 
   private const array ENV_VARS = ['CA_CLIENT_ID', 'CA_CLIENT_SECRET', 'CA_API_BASE_URL', 'CA_CLI_TOKEN_PATH'];
 
-  protected function setUp(): void
-  {
+  protected function setUp(): void {
     foreach (self::ENV_VARS as $var) {
       $this->originalEnv[$var] = getenv($var);
       putenv($var);
@@ -67,8 +66,7 @@ final class ProdutosServicosClientTest extends TestCase
     );
   }
 
-  protected function tearDown(): void
-  {
+  protected function tearDown(): void {
     $dir = dirname($this->tokenPath);
     if (is_dir($dir)) {
       array_map('unlink', glob($dir . '/*') ?: []);
@@ -81,8 +79,7 @@ final class ProdutosServicosClientTest extends TestCase
   }
 
   /** @return array<string, array{callable(ProdutosClient): mixed, string, string}> */
-  public static function productEndpointProvider(): array
-  {
+  public static function productEndpointProvider(): array {
     return [
       'lista produtos' => [static fn (ProdutosClient $c) => $c->listProdutos(), 'GET', '/v1/produtos'],
       'cria produto' => [
@@ -124,8 +121,7 @@ final class ProdutosServicosClientTest extends TestCase
 
   /** @param callable(ProdutosClient): mixed $call */
   #[DataProvider('productEndpointProvider')]
-  public function testProductEndpointsUseTheDocumentedPaths(callable $call, string $method, string $path): void
-  {
+  public function testProductEndpointsUseTheDocumentedPaths(callable $call, string $method, string $path): void {
     $captured = null;
     $call($this->productClientRecording($captured));
 
@@ -135,8 +131,7 @@ final class ProdutosServicosClientTest extends TestCase
   }
 
   /** @return array<string, array{callable(ServicosClient): mixed, string, string}> */
-  public static function serviceEndpointProvider(): array
-  {
+  public static function serviceEndpointProvider(): array {
     return [
       'lista serviços' => [static fn (ServicosClient $c) => $c->listServicos(), 'GET', '/v1/servicos'],
       'cria serviço' => [
@@ -160,8 +155,7 @@ final class ProdutosServicosClientTest extends TestCase
 
   /** @param callable(ServicosClient): mixed $call */
   #[DataProvider('serviceEndpointProvider')]
-  public function testServiceEndpointsUseTheDocumentedPaths(callable $call, string $method, string $path): void
-  {
+  public function testServiceEndpointsUseTheDocumentedPaths(callable $call, string $method, string $path): void {
     $captured = null;
     $call($this->serviceClientRecording($captured));
 
@@ -170,8 +164,7 @@ final class ProdutosServicosClientTest extends TestCase
     self::assertSame('https://api-v2.contaazul.com' . $path, strtok($captured['url'], '?'));
   }
 
-  public function testProductListSendsPaginationAndFilters(): void
-  {
+  public function testProductListSendsPaginationAndFilters(): void {
     $captured = null;
     $client   = $this->productClientRecording($captured);
 
@@ -185,8 +178,7 @@ final class ProdutosServicosClientTest extends TestCase
     self::assertSame('cat-1', $query['categoria_id'] ?? null);
   }
 
-  public function testServiceBatchDeleteSendsJsonPayload(): void
-  {
+  public function testServiceBatchDeleteSendsJsonPayload(): void {
     $captured = null;
     $client   = $this->serviceClientRecording($captured);
 
@@ -197,14 +189,12 @@ final class ProdutosServicosClientTest extends TestCase
   }
 
   /** @param array<string, mixed>|null $captured */
-  private function productClientRecording(array|null &$captured): ProdutosClient
-  {
+  private function productClientRecording(array|null &$captured): ProdutosClient {
     return new ProdutosClient(...$this->dependencies($captured));
   }
 
   /** @param array<string, mixed>|null $captured */
-  private function serviceClientRecording(array|null &$captured): ServicosClient
-  {
+  private function serviceClientRecording(array|null &$captured): ServicosClient {
     return new ServicosClient(...$this->dependencies($captured));
   }
 
@@ -213,8 +203,7 @@ final class ProdutosServicosClientTest extends TestCase
    *
    * @return array{Configuration, AuthManager, Logger, Redactor, MockHttpClient}
    */
-  private function dependencies(array|null &$captured): array
-  {
+  private function dependencies(array|null &$captured): array {
     $http = new MockHttpClient(
         static function (string $method, string $url, array $options) use (&$captured) {
           $captured = [

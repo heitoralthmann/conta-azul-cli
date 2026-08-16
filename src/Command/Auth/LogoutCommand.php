@@ -15,14 +15,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class LogoutCommand extends Command
 {
   /** Creates the command with the authentication facade. */
-  public function __construct(private readonly AuthManager $authManager)
-  {
+  public function __construct(private readonly AuthManager $authManager) {
     parent::__construct();
   }
 
   /** Deletes local credentials and reports completion to the operator. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     $this->authManager->logout();
     $output->writeln('Sessão encerrada. Execute "ca auth login" para autenticar novamente.');
 

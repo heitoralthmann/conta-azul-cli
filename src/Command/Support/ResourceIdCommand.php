@@ -40,14 +40,12 @@ final class ResourceIdCommand extends Command
   }
 
   /** Declares the required resource identifier argument. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this->addArgument('id', InputArgument::REQUIRED, $this->argumentDescription);
   }
 
   /** Executes the operation and renders success or a normalized CLI error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $id = $input->getArgument('id');

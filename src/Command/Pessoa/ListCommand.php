@@ -38,8 +38,7 @@ final class ListCommand extends Command
   }
 
   /** Declares person filters and shared pagination options. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this
           ->addOption('tipo-ordenacao', null, InputOption::VALUE_REQUIRED, 'Campo de ordenação')
           ->addOption('ordem-ordenacao', null, InputOption::VALUE_REQUIRED, 'Direção da ordenação')
@@ -64,8 +63,7 @@ final class ListCommand extends Command
   }
 
   /** Collects filters, lists people, and renders output or an error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $pagination = PaginationOptions::fromInput($input, $this->paginationValidator);

@@ -42,8 +42,7 @@ final class PessoasClient
    *
    * @return array<mixed>
    */
-  public function listPessoas(int $pagina = 1, int $tamanhoPagina = 50, array $filters = []): array
-  {
+  public function listPessoas(int $pagina = 1, int $tamanhoPagina = 50, array $filters = []): array {
     return $this->support->request(
         'GET',
         '/v1/pessoas',
@@ -64,14 +63,12 @@ final class PessoasClient
    *
    * @return array<mixed>
    */
-  public function createPessoa(array $payload): array
-  {
+  public function createPessoa(array $payload): array {
     return $this->support->request('POST', '/v1/pessoas', ['json' => $payload]);
   }
 
   /** @return array<mixed> */
-  public function getPessoa(string $id): array
-  {
+  public function getPessoa(string $id): array {
     return $this->support->request('GET', '/v1/pessoas/' . rawurlencode($id));
   }
 
@@ -80,8 +77,7 @@ final class PessoasClient
    *
    * @return array<mixed>
    */
-  public function updatePessoa(string $id, array $payload): array
-  {
+  public function updatePessoa(string $id, array $payload): array {
     return $this->support->request('PUT', '/v1/pessoas/' . rawurlencode($id), ['json' => $payload]);
   }
 
@@ -90,14 +86,12 @@ final class PessoasClient
    *
    * @return array<mixed>
    */
-  public function patchPessoa(string $id, array $payload): array
-  {
+  public function patchPessoa(string $id, array $payload): array {
     return $this->support->request('PATCH', '/v1/pessoas/' . rawurlencode($id), ['json' => $payload]);
   }
 
   /** @return array<mixed> */
-  public function getPessoaLegado(string $id): array
-  {
+  public function getPessoaLegado(string $id): array {
     return $this->support->request('GET', '/v1/pessoas/legado/' . rawurlencode($id));
   }
 
@@ -106,8 +100,7 @@ final class PessoasClient
    *
    * @return array<mixed>
    */
-  public function activatePessoas(array $payload): array
-  {
+  public function activatePessoas(array $payload): array {
     return $this->support->request('POST', '/v1/pessoas/ativar', ['json' => $payload]);
   }
 
@@ -116,8 +109,7 @@ final class PessoasClient
    *
    * @return array<mixed>
    */
-  public function deactivatePessoas(array $payload): array
-  {
+  public function deactivatePessoas(array $payload): array {
     return $this->support->request('POST', '/v1/pessoas/inativar', ['json' => $payload]);
   }
 
@@ -126,14 +118,12 @@ final class PessoasClient
    *
    * @return array<mixed>
    */
-  public function deletePessoas(array $payload): array
-  {
+  public function deletePessoas(array $payload): array {
     return $this->support->request('POST', '/v1/pessoas/excluir', ['json' => $payload]);
   }
 
   /** @return array<mixed> */
-  public function getContaConectada(): array
-  {
+  public function getContaConectada(): array {
     return $this->support->request('GET', '/v1/pessoas/conta-conectada');
   }
 }

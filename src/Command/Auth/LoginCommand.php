@@ -32,8 +32,7 @@ final class LoginCommand extends Command
   }
 
   /** Starts OAuth, waits for the local callback, and stores the token. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($output): void {
           $authUrl = $this->authManager->startLoginFlow();

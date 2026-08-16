@@ -18,8 +18,7 @@ trait ApiClientOperations
   /**
    * Returns the correlation identifier attached to this client's requests.
    */
-  public function getCorrelationId(): string
-  {
+  public function getCorrelationId(): string {
     return $this->support->getCorrelationId();
   }
 
@@ -30,8 +29,7 @@ trait ApiClientOperations
    *
    * @return array<mixed>
    */
-  public function request(string $method, string $path, array $options = []): array
-  {
+  public function request(string $method, string $path, array $options = []): array {
     return $this->support->request($method, $path, $options);
   }
 
@@ -40,8 +38,7 @@ trait ApiClientOperations
    *
    * @return array<mixed>
    */
-  public function pollProtocol(string $protocolId, int $timeoutSeconds = 60): array
-  {
+  public function pollProtocol(string $protocolId, int $timeoutSeconds = 60): array {
     return $this->support->pollProtocol($protocolId, $timeoutSeconds);
   }
 
@@ -52,8 +49,7 @@ trait ApiClientOperations
    *
    * @return array<mixed>
    */
-  public function handleAsyncResponse(array $response, int $pollTimeout = 60, bool $noWait = false): array
-  {
+  public function handleAsyncResponse(array $response, int $pollTimeout = 60, bool $noWait = false): array {
     return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
   }
 }

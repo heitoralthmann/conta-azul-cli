@@ -36,8 +36,7 @@ final class TokenStoreTest extends TestCase
 
   private const array ENV_VARS = ['CA_CLIENT_ID', 'CA_CLIENT_SECRET', 'CA_CLI_TOKEN_PATH'];
 
-  protected function setUp(): void
-  {
+  protected function setUp(): void {
     foreach (self::ENV_VARS as $var) {
       $this->originalEnv[$var] = getenv($var);
       putenv($var);
@@ -49,8 +48,7 @@ final class TokenStoreTest extends TestCase
     putenv('CA_CLI_TOKEN_PATH=' . $this->tokenPath);
   }
 
-  protected function tearDown(): void
-  {
+  protected function tearDown(): void {
     if (file_exists($this->tokenPath)) {
       unlink($this->tokenPath);
     }
@@ -70,13 +68,11 @@ final class TokenStoreTest extends TestCase
     }
   }
 
-  private function store(): TokenStore
-  {
+  private function store(): TokenStore {
     return new TokenStore(new Configuration());
   }
 
-  private function sampleToken(): TokenData
-  {
+  private function sampleToken(): TokenData {
     return new TokenData(
         accessToken: 'access-abc',
         accessTokenExpiresAt: new DateTimeImmutable('2026-05-29T18:00:00+00:00'),
@@ -85,8 +81,7 @@ final class TokenStoreTest extends TestCase
     );
   }
 
-  public function testSaveThenLoadRoundTrips(): void
-  {
+  public function testSaveThenLoadRoundTrips(): void {
     $store = $this->store();
     $store->save($this->sampleToken());
 
@@ -102,8 +97,7 @@ final class TokenStoreTest extends TestCase
     );
   }
 
-  public function testSaveCreatesTheDirectoryWhenMissing(): void
-  {
+  public function testSaveCreatesTheDirectoryWhenMissing(): void {
     self::assertDirectoryDoesNotExist(dirname($this->tokenPath));
 
     $this->store()->save($this->sampleToken());
@@ -111,8 +105,7 @@ final class TokenStoreTest extends TestCase
     self::assertFileExists($this->tokenPath);
   }
 
-  public function testSavedFileIsNotReadableByOtherUsers(): void
-  {
+  public function testSavedFileIsNotReadableByOtherUsers(): void {
     if (DIRECTORY_SEPARATOR === '\\') {
       self::markTestSkipped('Windows has no POSIX permission bits; chmod only toggles read-only there.');
     }
@@ -124,29 +117,25 @@ final class TokenStoreTest extends TestCase
     self::assertSame(0600, $mode, 'Token file must be 0600 — it holds credentials.');
   }
 
-  public function testLoadReturnsNullWhenFileIsAbsent(): void
-  {
+  public function testLoadReturnsNullWhenFileIsAbsent(): void {
     self::assertNull($this->store()->load());
   }
 
-  public function testLoadReturnsNullOnCorruptJson(): void
-  {
+  public function testLoadReturnsNullOnCorruptJson(): void {
     mkdir(dirname($this->tokenPath), 0700, true);
     file_put_contents($this->tokenPath, '{not valid json');
 
     self::assertNull($this->store()->load());
   }
 
-  public function testLoadReturnsNullOnEmptyFile(): void
-  {
+  public function testLoadReturnsNullOnEmptyFile(): void {
     mkdir(dirname($this->tokenPath), 0700, true);
     file_put_contents($this->tokenPath, '');
 
     self::assertNull($this->store()->load());
   }
 
-  public function testDeleteRemovesTheFile(): void
-  {
+  public function testDeleteRemovesTheFile(): void {
     $store = $this->store();
     $store->save($this->sampleToken());
 
@@ -156,8 +145,7 @@ final class TokenStoreTest extends TestCase
     self::assertNull($store->load());
   }
 
-  public function testDeleteIsANoopWhenFileIsAbsent(): void
-  {
+  public function testDeleteIsANoopWhenFileIsAbsent(): void {
     $this->store()->delete();
 
     self::assertFileDoesNotExist($this->tokenPath);

@@ -21,8 +21,7 @@ final class HttpErrorMapper
    *
    * @throws Throwable Only failures while reading the response are handled internally.
    */
-  public function mapResponse(ResponseInterface $response, string $method, string $correlationId): CliException
-  {
+  public function mapResponse(ResponseInterface $response, string $method, string $correlationId): CliException {
     $status        = $response->getStatusCode();
     $isWriteMethod = in_array(strtoupper($method), ['POST', 'PUT', 'PATCH', 'DELETE'], true);
 
@@ -94,8 +93,7 @@ final class HttpErrorMapper
    * personal login. Dropping it costs the operator the one hint that resolves
    * the failure.
    */
-  private function authFailedMessage(string $body): string
-  {
+  private function authFailedMessage(string $body): string {
     $base = 'Autenticação falhou. Execute: ca auth login';
 
     return $body === '' ? $base : $base . ' Resposta da API: ' . $body;
@@ -106,16 +104,14 @@ final class HttpErrorMapper
    * and deeply indented. The envelope is a single compact JSON object, so the
    * body is flattened rather than embedded verbatim.
    */
-  private function normalizeBody(string $body): string
-  {
+  private function normalizeBody(string $body): string {
     $collapsed = preg_replace('/\s+/', ' ', trim($body));
 
     return trim($collapsed ?? $body);
   }
 
   /** Converts a transport exception into a retryable transient CLI error. */
-  public function mapTransportError(Throwable $e, string $correlationId): CliException
-  {
+  public function mapTransportError(Throwable $e, string $correlationId): CliException {
     return new CliException(
         ErrorKind::Transient,
         true,

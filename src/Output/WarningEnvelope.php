@@ -22,8 +22,7 @@ final class WarningEnvelope
    *
    * @param OutputInterface|null $output Symfony output used for stderr.
    */
-  public function __construct(OutputInterface|null $output = null)
-  {
+  public function __construct(OutputInterface|null $output = null) {
     $this->output = new JsonConsoleOutput($output);
   }
 
@@ -32,8 +31,7 @@ final class WarningEnvelope
    *
    * @throws JsonException If the warning cannot be encoded as JSON.
    */
-  public function renderToStderr(string $message): void
-  {
+  public function renderToStderr(string $message): void {
     $this->output->renderWarning($message);
   }
 }

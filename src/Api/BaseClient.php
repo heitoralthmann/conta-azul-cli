@@ -59,8 +59,7 @@ class BaseClient
   /**
    * Returns the correlation identifier shared by requests and poll errors.
    */
-  public function getCorrelationId(): string
-  {
+  public function getCorrelationId(): string {
     return $this->transport->getCorrelationId();
   }
 
@@ -71,8 +70,7 @@ class BaseClient
    *
    * @return array<mixed>
    */
-  public function request(string $method, string $path, array $options = []): array
-  {
+  public function request(string $method, string $path, array $options = []): array {
     return $this->transport->request($method, $path, $options);
   }
 
@@ -81,8 +79,7 @@ class BaseClient
    *
    * @return array<mixed>
    */
-  public function pollProtocol(string $protocolId, int $timeoutSeconds = 60): array
-  {
+  public function pollProtocol(string $protocolId, int $timeoutSeconds = 60): array {
     return $this->poller->poll($protocolId, $timeoutSeconds);
   }
 
@@ -93,8 +90,7 @@ class BaseClient
    *
    * @return array<mixed>
    */
-  public function handleAsyncResponse(array $response, int $pollTimeout = 60, bool $noWait = false): array
-  {
+  public function handleAsyncResponse(array $response, int $pollTimeout = 60, bool $noWait = false): array {
     $rawProtocolId = $response['protocolId'] ?? '';
     $protocolId    = is_string($rawProtocolId) ? $rawProtocolId : '';
 
@@ -108,8 +104,7 @@ class BaseClient
   /**
    * Delays retries and polling. Tests override this method to record delays.
    */
-  protected function sleep(float $seconds): void
-  {
+  protected function sleep(float $seconds): void {
     (new NativeSleeper())->sleep($seconds);
   }
 }

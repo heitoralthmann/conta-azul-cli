@@ -48,8 +48,7 @@ final class BaseClientTest extends TestCase
     'CA_BOOTSTRAP_REFRESH_TOKEN',
   ];
 
-  protected function setUp(): void
-  {
+  protected function setUp(): void {
     foreach (self::ENV_VARS as $var) {
       $this->originalEnv[$var] = getenv($var);
       putenv($var);
@@ -64,8 +63,7 @@ final class BaseClientTest extends TestCase
     $this->storeValidToken('access-current');
   }
 
-  protected function tearDown(): void
-  {
+  protected function tearDown(): void {
     $dir = dirname($this->tokenPath);
     if (is_dir($dir)) {
       array_map('unlink', glob($dir . '/*') ?: []);
@@ -81,8 +79,7 @@ final class BaseClientTest extends TestCase
     }
   }
 
-  private function storeValidToken(string $accessToken): void
-  {
+  private function storeValidToken(string $accessToken): void {
     (new TokenStore(new Configuration()))->save(
         new TokenData(
             accessToken: $accessToken,
@@ -112,8 +109,7 @@ final class BaseClientTest extends TestCase
     );
   }
 
-  private static function fixture(string $name): string
-  {
+  private static function fixture(string $name): string {
     $content = file_get_contents(__DIR__ . '/../../fixtures/' . $name);
     self::assertIsString($content);
 
@@ -123,8 +119,7 @@ final class BaseClientTest extends TestCase
   // --- Success path -----------------------------------------------------
 
   // phpcs:ignore Squiz.Commenting.FunctionComment.WrongStyle -- divider comment above, not a docblock.
-  public function testSuccessfulGetReturnsDecodedPayload(): void
-  {
+  public function testSuccessfulGetReturnsDecodedPayload(): void {
     $client = $this->client([new MockResponse(self::fixture('lancamentos_list.json'))]);
 
     $result = $client->request('GET', '/v1/financeiro/lancamentos');
@@ -134,8 +129,7 @@ final class BaseClientTest extends TestCase
     self::assertSame([], $client->sleeps);
   }
 
-  public function testRequestCarriesBearerAndCorrelationHeaders(): void
-  {
+  public function testRequestCarriesBearerAndCorrelationHeaders(): void {
     $captured = null;
     $client   = $this->client(
         static function (string $method, string $url, array $options) use (&$captured) {
@@ -153,8 +147,7 @@ final class BaseClientTest extends TestCase
     self::assertContains('X-Correlation-Id: ' . $client->getCorrelationId(), $captured['headers']);
   }
 
-  public function testNoContentResponseReturnsEmptyArray(): void
-  {
+  public function testNoContentResponseReturnsEmptyArray(): void {
     $client = $this->client([new MockResponse('', ['http_code' => 204])]);
 
     self::assertSame([], $client->request('DELETE', '/v1/financeiro/contas-a-receber/abc'));
@@ -163,8 +156,7 @@ final class BaseClientTest extends TestCase
   // --- Retry policy -----------------------------------------------------
 
   // phpcs:ignore Squiz.Commenting.FunctionComment.WrongStyle -- divider comment above, not a docblock.
-  public function testGetRetriesOn429AndThenSucceeds(): void
-  {
+  public function testGetRetriesOn429AndThenSucceeds(): void {
     $client = $this->client(
         [
           new MockResponse(self::fixture('error_429.json'), ['http_code' => 429]),
@@ -178,8 +170,7 @@ final class BaseClientTest extends TestCase
     self::assertSame([0.5], $client->sleeps);
   }
 
-  public function testGetRetriesOn503(): void
-  {
+  public function testGetRetriesOn503(): void {
     $client = $this->client(
         [
           new MockResponse('gateway down', ['http_code' => 503]),
@@ -193,8 +184,7 @@ final class BaseClientTest extends TestCase
     self::assertSame([0.5], $client->sleeps);
   }
 
-  public function testGetGivesUpAfterThreeAttemptsAndReportsRateLimited(): void
-  {
+  public function testGetGivesUpAfterThreeAttemptsAndReportsRateLimited(): void {
     $client = $this->client(
         [
           new MockResponse(self::fixture('error_429.json'), ['http_code' => 429]),
@@ -214,8 +204,7 @@ final class BaseClientTest extends TestCase
     self::assertSame([0.5, 2.0], $client->sleeps, 'Backoff must follow the documented schedule.');
   }
 
-  public function testRetryAfterHeaderOverridesTheBackoffSchedule(): void
-  {
+  public function testRetryAfterHeaderOverridesTheBackoffSchedule(): void {
     $client = $this->client(
         [
           new MockResponse('{}', ['http_code' => 429, 'response_headers' => ['retry-after' => '5']]),
@@ -228,8 +217,7 @@ final class BaseClientTest extends TestCase
     self::assertSame([5.0], $client->sleeps);
   }
 
-  public function testWritesAreNotRetriedOn500AndMapToAmbiguous(): void
-  {
+  public function testWritesAreNotRetriedOn500AndMapToAmbiguous(): void {
     // I1: a write that may have been applied must never be replayed silently.
     $client = $this->client([new MockResponse('boom', ['http_code' => 500])]);
 
@@ -243,8 +231,7 @@ final class BaseClientTest extends TestCase
     self::assertSame([], $client->sleeps, 'Writes must not be retried on 5xx.');
   }
 
-  public function testWritesAreRetriedOn429(): void
-  {
+  public function testWritesAreRetriedOn429(): void {
     // 429 is safe to replay: the request was never processed.
     $client = $this->client(
         [
@@ -259,8 +246,7 @@ final class BaseClientTest extends TestCase
     self::assertSame([0.5], $client->sleeps);
   }
 
-  public function testClientErrorIsNotRetried(): void
-  {
+  public function testClientErrorIsNotRetried(): void {
     $client = $this->client([new MockResponse(self::fixture('error_422.json'), ['http_code' => 422])]);
 
     try {
@@ -276,8 +262,7 @@ final class BaseClientTest extends TestCase
   // --- Reactive refresh on 401 -----------------------------------------
 
   // phpcs:ignore Squiz.Commenting.FunctionComment.WrongStyle -- divider comment above, not a docblock.
-  public function testUnauthorizedTriggersASingleRefreshAndRetriesWithTheNewToken(): void
-  {
+  public function testUnauthorizedTriggersASingleRefreshAndRetriesWithTheNewToken(): void {
     $sentTokens = [];
     $apiClient  = static function (string $method, string $url, array $options) use (&$sentTokens) {
       foreach ($options['headers'] as $header) {
@@ -307,8 +292,7 @@ final class BaseClientTest extends TestCase
     self::assertSame(['access-current', 'access-refreshed'], $sentTokens);
   }
 
-  public function testUnauthorizedTwiceSurfacesAsAuthFailed(): void
-  {
+  public function testUnauthorizedTwiceSurfacesAsAuthFailed(): void {
     $apiClient = new MockHttpClient(
         [
           new MockResponse(self::fixture('error_401.json'), ['http_code' => 401]),
@@ -341,8 +325,7 @@ final class BaseClientTest extends TestCase
   // --- Async writes / polling ------------------------------------------
 
   // phpcs:ignore Squiz.Commenting.FunctionComment.WrongStyle -- divider comment above, not a docblock.
-  public function testPollingReturnsThePayloadOnTerminalSuccess(): void
-  {
+  public function testPollingReturnsThePayloadOnTerminalSuccess(): void {
     $client = $this->client(
         [
           new MockResponse(self::fixture('protocolo_pending.json')),
@@ -356,8 +339,7 @@ final class BaseClientTest extends TestCase
     self::assertSame([1.0], $client->sleeps, 'First poll waits the initial backoff.');
   }
 
-  public function testPollingBackoffDoublesAndCapsAtEightSeconds(): void
-  {
+  public function testPollingBackoffDoublesAndCapsAtEightSeconds(): void {
     $pending = self::fixture('protocolo_pending.json');
     $client  = $this->client(
         [
@@ -375,8 +357,7 @@ final class BaseClientTest extends TestCase
     self::assertSame([1.0, 2.0, 4.0, 8.0, 8.0], $client->sleeps);
   }
 
-  public function testPollingTimeoutReportsTheKnownProtocolId(): void
-  {
+  public function testPollingTimeoutReportsTheKnownProtocolId(): void {
     $client = $this->client([new MockResponse(self::fixture('protocolo_pending.json'))]);
 
     try {
@@ -390,8 +371,7 @@ final class BaseClientTest extends TestCase
     }
   }
 
-  public function testTerminalErrorStatusReportsServerErrorWithProtocolId(): void
-  {
+  public function testTerminalErrorStatusReportsServerErrorWithProtocolId(): void {
     $client = $this->client([new MockResponse('{"protocolId":"p-9","status":"ERROR"}')]);
 
     try {
@@ -403,8 +383,7 @@ final class BaseClientTest extends TestCase
     }
   }
 
-  public function testPollingInterruptionReportsTheKnownProtocolId(): void
-  {
+  public function testPollingInterruptionReportsTheKnownProtocolId(): void {
     $client = $this->client(
         [
           new MockResponse('boom', ['http_code' => 500]),
@@ -423,8 +402,7 @@ final class BaseClientTest extends TestCase
     }
   }
 
-  public function testUnrecoverableErrorDuringPollingKeepsItsOwnKind(): void
-  {
+  public function testUnrecoverableErrorDuringPollingKeepsItsOwnKind(): void {
     // Reporting a 422 as poll_drop_known_id would tell the agent to resume
     // a poll that can never succeed.
     $client = $this->client([new MockResponse(self::fixture('error_422.json'), ['http_code' => 422])]);
@@ -438,8 +416,7 @@ final class BaseClientTest extends TestCase
     }
   }
 
-  public function testNoWaitReturnsTheRawAcceptedResponse(): void
-  {
+  public function testNoWaitReturnsTheRawAcceptedResponse(): void {
     $client = $this->client([]);
 
     $result = $client->handleAsyncResponse(['protocolId' => 'p-1'], 60, true);
@@ -448,8 +425,7 @@ final class BaseClientTest extends TestCase
     self::assertSame([], $client->sleeps, 'No polling should happen under --no-wait.');
   }
 
-  public function testSynchronousResponseWithoutProtocolIdIsPassedThrough(): void
-  {
+  public function testSynchronousResponseWithoutProtocolIdIsPassedThrough(): void {
     $client = $this->client([]);
 
     $result = $client->handleAsyncResponse(['id' => 'created-1'], 60, false);

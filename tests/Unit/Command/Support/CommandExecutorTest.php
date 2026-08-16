@@ -16,8 +16,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 final class CommandExecutorTest extends TestCase
 {
   /** Successful operations return zero and are invoked exactly once. */
-  public function testReturnsSuccessWhenOperationCompletes(): void
-  {
+  public function testReturnsSuccessWhenOperationCompletes(): void {
     $invocations = 0;
     $executor    = new CommandExecutor(new ErrorEnvelope(new BufferedOutput()));
 
@@ -32,8 +31,7 @@ final class CommandExecutorTest extends TestCase
   }
 
   /** Known CLI failures are rendered and return the failure status. */
-  public function testRendersCliExceptionAndReturnsFailure(): void
-  {
+  public function testRendersCliExceptionAndReturnsFailure(): void {
     $output   = new BufferedOutput();
     $executor = new CommandExecutor(new ErrorEnvelope($output));
 

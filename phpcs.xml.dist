@@ -65,6 +65,26 @@
     </properties>
   </rule>
 
+  <!--
+    Doctrine/PSR-12 place a function or method's opening brace on its own
+    line (BSD-Allman). This is enforced by Squiz.Functions.
+    MultiLineFunctionDeclaration, which for single-line declarations
+    internally instantiates Generic.Functions.OpeningFunctionBraceBsdAllman
+    and calls it directly, bypassing normal sniff registration. So the
+    violation is actually recorded under
+    Squiz.Functions.MultiLineFunctionDeclaration.BraceOnSameLine, not under
+    the Generic sniff's own code. Confirmed with a minimal repro; silencing
+    Generic.Functions.OpeningFunctionBraceBsdAllman directly has no effect
+    and leaves it fighting the Kernighan-Ritchie sniff below in an
+    unresolvable phpcbf loop. Closures are unaffected: PEAR's
+    FunctionDeclaration sniff already applies K&R to them regardless.
+  -->
+  <rule ref="Squiz.Functions.MultiLineFunctionDeclaration.BraceOnSameLine">
+    <severity>0</severity>
+  </rule>
+
+  <rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
+
   <!-- Project-specific sniffs with no Doctrine equivalent. -->
 
   <rule ref="Generic.CodeAnalysis.ForLoopShouldBeWhileLoop"/>

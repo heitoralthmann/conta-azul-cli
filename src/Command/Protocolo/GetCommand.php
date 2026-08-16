@@ -35,14 +35,12 @@ final class GetCommand extends Command
   }
 
   /** Declares the required protocol identifier argument. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this->addArgument('id', InputArgument::REQUIRED, 'Protocol ID retornado pela operação assíncrona');
   }
 
   /** Fetches protocol status and renders output or a normalized error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $id = $input->getArgument('id');

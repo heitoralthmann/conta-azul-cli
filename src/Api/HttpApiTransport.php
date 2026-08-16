@@ -50,8 +50,7 @@ final class HttpApiTransport implements ApiTransportInterface
   /**
    * {@inheritDoc}
    */
-  public function request(string $method, string $path, array $options = []): array
-  {
+  public function request(string $method, string $path, array $options = []): array {
     $url     = $this->config->getApiBaseUrl() . $path;
     $attempt = 0;
 
@@ -91,8 +90,7 @@ final class HttpApiTransport implements ApiTransportInterface
     }
   }
 
-  public function getCorrelationId(): string
-  {
+  public function getCorrelationId(): string {
     return $this->correlationId;
   }
 
@@ -103,8 +101,7 @@ final class HttpApiTransport implements ApiTransportInterface
    *
    * @return array<string, mixed>
    */
-  private function buildRequestOptions(array $options, string $accessToken): array
-  {
+  private function buildRequestOptions(array $options, string $accessToken): array {
     /** @var array<string, string> $existingHeaders */
     $existingHeaders = is_array($options['headers'] ?? null) ? $options['headers'] : [];
     $headers         = array_merge(
@@ -128,8 +125,7 @@ final class HttpApiTransport implements ApiTransportInterface
    *
    * @param array<string, mixed> $options
    */
-  private function logRequest(string $method, string $url, array $options): void
-  {
+  private function logRequest(string $method, string $url, array $options): void {
     if (! $this->logger->isEnabled()) {
       return;
     }
@@ -153,8 +149,7 @@ final class HttpApiTransport implements ApiTransportInterface
    *
    * @return array<mixed>
    */
-  private function decodeSuccess(ResponseInterface $response, int $statusCode): array
-  {
+  private function decodeSuccess(ResponseInterface $response, int $statusCode): array {
     if ($statusCode === 204) {
       return [];
     }
@@ -170,8 +165,7 @@ final class HttpApiTransport implements ApiTransportInterface
   /**
    * Reads a numeric Retry-After response header, if available.
    */
-  private function extractRetryAfter(ResponseInterface $response): float|null
-  {
+  private function extractRetryAfter(ResponseInterface $response): float|null {
     try {
       $headers = $response->getHeaders(false);
       $values  = $headers['retry-after'] ?? [];

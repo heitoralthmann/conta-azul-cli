@@ -13,8 +13,7 @@ use Symfony\Component\Console\Input\InputOption;
 /** @covers \ContaAzulCli\Command\Support\AsyncOptions */
 final class AsyncOptionsTest extends TestCase
 {
-  public function testReadsConfiguredValues(): void
-  {
+  public function testReadsConfiguredValues(): void {
     $options = AsyncOptions::fromInput(
         new ArrayInput(
             ['--poll-timeout' => '90', '--no-wait' => true],
@@ -31,16 +30,14 @@ final class AsyncOptionsTest extends TestCase
     self::assertTrue($options->noWait());
   }
 
-  public function testUsesDefaultsWhenValuesAreMissing(): void
-  {
+  public function testUsesDefaultsWhenValuesAreMissing(): void {
     $options = AsyncOptions::fromInput(new ArrayInput([]));
 
     self::assertSame(60, $options->pollTimeout());
     self::assertFalse($options->noWait());
   }
 
-  public function testFallsBackToTheDefaultForANonNumericTimeout(): void
-  {
+  public function testFallsBackToTheDefaultForANonNumericTimeout(): void {
     $options = AsyncOptions::fromInput(
         new ArrayInput(
             ['--poll-timeout' => 'invalid'],

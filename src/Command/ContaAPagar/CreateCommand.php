@@ -35,16 +35,14 @@ final class CreateCommand extends Command
   }
 
   /** Declares the JSON payload and asynchronous options. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this
           ->addOption('json', null, InputOption::VALUE_REQUIRED, 'Payload JSON da conta a pagar');
     AsyncOptions::configure($this);
   }
 
   /** Creates the payable and renders output or a normalized error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $payload      = JsonPayload::object($input->getOption('json'));

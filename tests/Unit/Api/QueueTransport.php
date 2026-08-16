@@ -12,8 +12,7 @@ use function array_shift;
 final class QueueTransport implements ApiTransportInterface
 {
   /** @param list<array<mixed>> $responses */
-  public function __construct(private array $responses)
-  {
+  public function __construct(private array $responses) {
   }
 
   /**
@@ -23,14 +22,12 @@ final class QueueTransport implements ApiTransportInterface
    *
    * @return array<mixed>
    */
-  public function request(string $method, string $path, array $options = []): array
-  {
+  public function request(string $method, string $path, array $options = []): array {
     return array_shift($this->responses) ?? [];
   }
 
   /** Returns a stable correlation id for generated polling errors. */
-  public function getCorrelationId(): string
-  {
+  public function getCorrelationId(): string {
     return 'correlation-test';
   }
 }

@@ -10,8 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 final class PeriodoPadraoTest extends TestCase
 {
-  public function testCobreOMesCorrenteInteiro(): void
-  {
+  public function testCobreOMesCorrenteInteiro(): void {
     $periodo = new PeriodoPadrao(new DateTimeImmutable('2026-08-15 13:45:00'));
 
     self::assertSame('2026-08-01', $periodo->primeiroDia());
@@ -19,8 +18,7 @@ final class PeriodoPadraoTest extends TestCase
   }
 
   /** Fevereiro é onde um cálculo ingênuo de "último dia" quebra. */
-  public function testRespeitaMesesCurtos(): void
-  {
+  public function testRespeitaMesesCurtos(): void {
     $periodo = new PeriodoPadrao(new DateTimeImmutable('2026-02-10'));
 
     self::assertSame('2026-02-28', $periodo->ultimoDia());
@@ -28,8 +26,7 @@ final class PeriodoPadraoTest extends TestCase
   }
 
   /** A API responde 400 se as datas vierem com timezone. */
-  public function testInstantesNaoCarregamTimezone(): void
-  {
+  public function testInstantesNaoCarregamTimezone(): void {
     $periodo = new PeriodoPadrao(new DateTimeImmutable('2026-08-15 13:45:00'));
 
     self::assertSame('2026-08-01T00:00:00', $periodo->primeiroInstante());
@@ -37,8 +34,7 @@ final class PeriodoPadraoTest extends TestCase
   }
 
   /** Um dia 31 não pode "vazar" para o mês seguinte ao normalizar o início. */
-  public function testNaoTransbordaQuandoAReferenciaEhFimDeMes(): void
-  {
+  public function testNaoTransbordaQuandoAReferenciaEhFimDeMes(): void {
     $periodo = new PeriodoPadrao(new DateTimeImmutable('2026-05-31 23:00:00'));
 
     self::assertSame('2026-05-01', $periodo->primeiroDia());

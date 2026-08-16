@@ -35,14 +35,12 @@ final class ListCommand extends Command
   }
 
   /** Declares the shared pagination options. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     PaginationOptions::configure($this);
   }
 
   /** Lists categories and renders a normalized error on failure. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $pagination = PaginationOptions::fromInput($input, $this->paginationValidator);

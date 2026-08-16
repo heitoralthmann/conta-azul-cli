@@ -35,14 +35,12 @@ final class GetCommand extends Command
   }
 
   /** Declares the required person identifier argument. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this->addArgument('id', InputArgument::REQUIRED, 'ID da pessoa');
   }
 
   /** Fetches the person and renders its payload or a normalized error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $id = $input->getArgument('id');

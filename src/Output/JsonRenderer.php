@@ -22,8 +22,7 @@ final class JsonRenderer
    *
    * @param OutputInterface|null $output Symfony output used for stdout.
    */
-  public function __construct(OutputInterface|null $output = null)
-  {
+  public function __construct(OutputInterface|null $output = null) {
     $this->output = new JsonConsoleOutput($output);
   }
 
@@ -32,8 +31,7 @@ final class JsonRenderer
    *
    * @throws JsonException If the result cannot be encoded as JSON.
    */
-  public function render(mixed $data): void
-  {
+  public function render(mixed $data): void {
     $this->output->renderSuccess($data);
   }
 }

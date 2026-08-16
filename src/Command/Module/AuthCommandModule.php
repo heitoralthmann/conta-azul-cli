@@ -24,8 +24,7 @@ final class AuthCommandModule implements CommandModuleInterface
   }
 
   /** @return list<Command> */
-  public function commands(): array
-  {
+  public function commands(): array {
     return [
       new LoginCommand($this->authManager, $this->callbackServer, $this->errorEnvelope),
       new LogoutCommand($this->authManager),

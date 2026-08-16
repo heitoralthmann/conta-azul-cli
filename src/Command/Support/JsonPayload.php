@@ -25,8 +25,7 @@ final class JsonPayload
    *
    * @throws CliException when the option is missing or is not a JSON object.
    */
-  public static function object(mixed $value): array
-  {
+  public static function object(mixed $value): array {
     if (! is_string($value) || $value === '') {
       throw new CliException(ErrorKind::ClientError, false, 'A opção --json é obrigatória.');
     }

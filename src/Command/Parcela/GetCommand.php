@@ -35,14 +35,12 @@ final class GetCommand extends Command
   }
 
   /** Declares the required installment identifier argument. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this->addArgument('id', InputArgument::REQUIRED, 'ID da parcela');
   }
 
   /** Fetches the installment and renders a normalized error on failure. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $id = $input->getArgument('id');

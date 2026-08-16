@@ -16,8 +16,7 @@ final class JsonConsoleOutputTest extends TestCase
   /**
    * Ensures successful payloads are emitted as compact raw JSON.
    */
-  public function testRendersSuccessPayloadThroughSymfonyOutput(): void
-  {
+  public function testRendersSuccessPayloadThroughSymfonyOutput(): void {
     $output = new BufferedOutput();
 
     (new JsonConsoleOutput($output))->renderSuccess(['value' => '<keep>']);
@@ -28,8 +27,7 @@ final class JsonConsoleOutputTest extends TestCase
   /**
    * Ensures warnings use the stable warning envelope on the configured sink.
    */
-  public function testRendersWarningEnvelope(): void
-  {
+  public function testRendersWarningEnvelope(): void {
     $output = new BufferedOutput();
 
     (new JsonConsoleOutput($output))->renderWarning('Atenção');
@@ -40,8 +38,7 @@ final class JsonConsoleOutputTest extends TestCase
   /**
    * Ensures pre-normalized errors are emitted without changing their fields.
    */
-  public function testRendersErrorEnvelope(): void
-  {
+  public function testRendersErrorEnvelope(): void {
     $output   = new BufferedOutput();
     $envelope = [
       'kind'           => 'client_error',

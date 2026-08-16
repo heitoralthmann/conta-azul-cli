@@ -32,8 +32,7 @@ final class ContaConectadaCommand extends Command
   }
 
   /** Fetches the connected account and renders output or a normalized error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function (): void {
           $this->jsonRenderer->render($this->client->getContaConectada());

@@ -15,8 +15,7 @@ use Symfony\Component\Console\Input\InputOption;
 /** @covers \ContaAzulCli\Command\Support\PaginationOptions */
 final class PaginationOptionsTest extends TestCase
 {
-  public function testReadsConfiguredValues(): void
-  {
+  public function testReadsConfiguredValues(): void {
     $options = PaginationOptions::fromInput(
         new ArrayInput(
             ['--pagina' => '3', '--tamanho-pagina' => '100'],
@@ -34,16 +33,14 @@ final class PaginationOptionsTest extends TestCase
     self::assertSame(100, $options->pageSize());
   }
 
-  public function testUsesDefaultsWhenValuesAreMissing(): void
-  {
+  public function testUsesDefaultsWhenValuesAreMissing(): void {
     $options = PaginationOptions::fromInput(new ArrayInput([]), new PaginationValidator());
 
     self::assertSame(1, $options->page());
     self::assertSame(50, $options->pageSize());
   }
 
-  public function testValidatesPageSize(): void
-  {
+  public function testValidatesPageSize(): void {
     $this->expectException(CliException::class);
     $this->expectExceptionMessage('Tamanho de página inválido: 25.');
 

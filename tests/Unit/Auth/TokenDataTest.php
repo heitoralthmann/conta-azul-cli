@@ -13,8 +13,7 @@ use function time;
 
 final class TokenDataTest extends TestCase
 {
-  public function testFromOAuthResponseCalculatesExpiry(): void
-  {
+  public function testFromOAuthResponseCalculatesExpiry(): void {
     $before = time();
     $token  = TokenData::fromOAuthResponse(
         [
@@ -33,8 +32,7 @@ final class TokenDataTest extends TestCase
     self::assertSame('rt-456', $token->refreshToken);
   }
 
-  public function testToArrayAndFromArrayRoundTrip(): void
-  {
+  public function testToArrayAndFromArrayRoundTrip(): void {
     $original = TokenData::fromOAuthResponse(
         [
           'access_token'  => 'at-abc',
@@ -55,8 +53,7 @@ final class TokenDataTest extends TestCase
     );
   }
 
-  public function testIsExpiringSoonReturnsTrueWhenLessThan60Seconds(): void
-  {
+  public function testIsExpiringSoonReturnsTrueWhenLessThan60Seconds(): void {
     $expiry = new DateTimeImmutable('+30 seconds', new DateTimeZone('UTC'));
     $token  = new TokenData(
         accessToken: 'at',
@@ -68,8 +65,7 @@ final class TokenDataTest extends TestCase
     self::assertTrue($token->isExpiringSoon());
   }
 
-  public function testIsExpiringSoonReturnsFalseWhenMoreThan120Seconds(): void
-  {
+  public function testIsExpiringSoonReturnsFalseWhenMoreThan120Seconds(): void {
     $expiry = new DateTimeImmutable('+300 seconds', new DateTimeZone('UTC'));
     $token  = new TokenData(
         accessToken: 'at',
@@ -81,8 +77,7 @@ final class TokenDataTest extends TestCase
     self::assertFalse($token->isExpiringSoon());
   }
 
-  public function testFromArrayPreservesAllFields(): void
-  {
+  public function testFromArrayPreservesAllFields(): void {
     $data = [
       'access_token'              => 'my-at',
       'access_token_expires_at'   => '2026-06-01T12:00:00+00:00',

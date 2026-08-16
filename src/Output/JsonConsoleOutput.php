@@ -31,8 +31,7 @@ final class JsonConsoleOutput
    * The default is suitable for the standalone CLI. Tests and embedders can
    * pass a BufferedOutput or another Symfony output implementation.
    */
-  public function __construct(OutputInterface|null $output = null)
-  {
+  public function __construct(OutputInterface|null $output = null) {
     $this->output = $output ?? new ConsoleOutput();
   }
 
@@ -41,8 +40,7 @@ final class JsonConsoleOutput
    *
    * @throws JsonException If the payload cannot be encoded as JSON.
    */
-  public function renderSuccess(mixed $data): void
-  {
+  public function renderSuccess(mixed $data): void {
     $this->write($this->output, $data);
   }
 
@@ -51,8 +49,7 @@ final class JsonConsoleOutput
    *
    * @throws JsonException If the warning cannot be encoded as JSON.
    */
-  public function renderWarning(string $message): void
-  {
+  public function renderWarning(string $message): void {
     $this->write(
         $this->errorOutput(),
         ['kind' => 'warning', 'message' => $message],
@@ -66,8 +63,7 @@ final class JsonConsoleOutput
    *
    * @throws JsonException If the envelope cannot be encoded as JSON.
    */
-  public function renderError(array $envelope): void
-  {
+  public function renderError(array $envelope): void {
     $this->write($this->errorOutput(), $envelope);
   }
 
@@ -75,8 +71,7 @@ final class JsonConsoleOutput
    * Returns the configured error stream, or the main stream when no separate
    * error stream is available (for example, with BufferedOutput in a test).
    */
-  private function errorOutput(): OutputInterface
-  {
+  private function errorOutput(): OutputInterface {
     return $this->output instanceof ConsoleOutputInterface ? $this->output->getErrorOutput() : $this->output;
   }
 
@@ -89,8 +84,7 @@ final class JsonConsoleOutput
    *
    * @throws JsonException If the payload cannot be encoded as JSON.
    */
-  private function write(OutputInterface $output, mixed $data): void
-  {
+  private function write(OutputInterface $output, mixed $data): void {
     $output->write(
         json_encode(
             $data,

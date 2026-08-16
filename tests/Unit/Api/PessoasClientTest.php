@@ -43,8 +43,7 @@ final class PessoasClientTest extends TestCase
 
   private const array ENV_VARS = ['CA_CLIENT_ID', 'CA_CLIENT_SECRET', 'CA_API_BASE_URL', 'CA_CLI_TOKEN_PATH'];
 
-  protected function setUp(): void
-  {
+  protected function setUp(): void {
     foreach (self::ENV_VARS as $var) {
       $this->originalEnv[$var] = getenv($var);
       putenv($var);
@@ -66,8 +65,7 @@ final class PessoasClientTest extends TestCase
     );
   }
 
-  protected function tearDown(): void
-  {
+  protected function tearDown(): void {
     $dir = dirname($this->tokenPath);
     if (is_dir($dir)) {
       array_map('unlink', glob($dir . '/*') ?: []);
@@ -80,8 +78,7 @@ final class PessoasClientTest extends TestCase
   }
 
   /** @return array<string, array{callable(PessoasClient): mixed, string, string}> */
-  public static function endpointProvider(): array
-  {
+  public static function endpointProvider(): array {
     return [
       'lista pessoas' => [
         static fn (PessoasClient $c) => $c->listPessoas(),
@@ -138,8 +135,7 @@ final class PessoasClientTest extends TestCase
 
   /** @param callable(PessoasClient): mixed $call */
   #[DataProvider('endpointProvider')]
-  public function testAllPeopleEndpointsUseTheDocumentedPaths(callable $call, string $method, string $path): void
-  {
+  public function testAllPeopleEndpointsUseTheDocumentedPaths(callable $call, string $method, string $path): void {
     $captured = null;
     $client   = $this->clientRecording($captured);
 
@@ -150,8 +146,7 @@ final class PessoasClientTest extends TestCase
     self::assertSame('https://api-v2.contaazul.com' . $path, strtok($captured['url'], '?'));
   }
 
-  public function testListSendsPaginationAndFilters(): void
-  {
+  public function testListSendsPaginationAndFilters(): void {
     $captured = null;
     $client   = $this->clientRecording($captured);
 
@@ -165,8 +160,7 @@ final class PessoasClientTest extends TestCase
     self::assertSame('Cliente', $query['tipo_perfil'] ?? null);
   }
 
-  public function testWritesSendJsonPayload(): void
-  {
+  public function testWritesSendJsonPayload(): void {
     $captured = null;
     $client   = $this->clientRecording($captured);
 
@@ -177,8 +171,7 @@ final class PessoasClientTest extends TestCase
   }
 
   /** @param array<string, mixed>|null $captured */
-  private function clientRecording(array|null &$captured): PessoasClient
-  {
+  private function clientRecording(array|null &$captured): PessoasClient {
     $http = new MockHttpClient(
         static function (string $method, string $url, array $options) use (&$captured) {
           $captured = [

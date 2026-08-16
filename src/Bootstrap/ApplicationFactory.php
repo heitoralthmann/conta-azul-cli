@@ -39,8 +39,7 @@ final class ApplicationFactory
    * Configuration and adapter construction deliberately remain here: this
    * composition root is the only place that needs to know concrete classes.
    */
-  public function build(): ApplicationComponents
-  {
+  public function build(): ApplicationComponents {
     $config       = $this->loadConfiguration();
     $redactor     = new Redactor();
     $this->logger = new Logger($redactor);
@@ -86,14 +85,12 @@ final class ApplicationFactory
   }
 
   /** Returns the logger created before a later adapter fails to initialize. */
-  public function logger(): Logger|null
-  {
+  public function logger(): Logger|null {
     return $this->logger;
   }
 
   /** Loads configuration through the dedicated environment boundary. */
-  private function loadConfiguration(): Configuration
-  {
+  private function loadConfiguration(): Configuration {
     return (new EnvironmentConfigurationLoader())->load();
   }
 }

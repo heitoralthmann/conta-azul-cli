@@ -42,8 +42,7 @@ final class ListCommand extends Command
   }
 
   /** Declares due-date and shared pagination options. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this
           ->addOption(
               'data-vencimento-de',
@@ -61,8 +60,7 @@ final class ListCommand extends Command
   }
 
   /** Resolves dates, lists payables, and renders output or an error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $deRaw  = $input->getOption('data-vencimento-de');

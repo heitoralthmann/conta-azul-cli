@@ -18,8 +18,7 @@ final class RetryPolicy
   /**
    * Reports whether a failed HTTP response may be replayed.
    */
-  public function shouldRetryResponse(string $method, int $statusCode, int $attempt): bool
-  {
+  public function shouldRetryResponse(string $method, int $statusCode, int $attempt): bool {
     if ($attempt >= self::MAX_ATTEMPTS) {
       return false;
     }
@@ -32,16 +31,14 @@ final class RetryPolicy
   /**
    * Reports whether a transport exception may be retried.
    */
-  public function shouldRetryTransport(string $method, int $attempt): bool
-  {
+  public function shouldRetryTransport(string $method, int $attempt): bool {
     return ! $this->isWrite($method) && $attempt < self::MAX_ATTEMPTS;
   }
 
   /**
    * Selects Retry-After when supplied, otherwise the documented backoff.
    */
-  public function delay(int $attempt, float|null $retryAfter = null): float
-  {
+  public function delay(int $attempt, float|null $retryAfter = null): float {
     if ($retryAfter !== null) {
       return $retryAfter;
     }
@@ -52,8 +49,7 @@ final class RetryPolicy
   /**
    * Identifies methods whose request may have been applied and must not be replayed.
    */
-  private function isWrite(string $method): bool
-  {
+  private function isWrite(string $method): bool {
     return in_array(strtoupper($method), ['POST', 'PUT', 'PATCH', 'DELETE'], true);
   }
 }

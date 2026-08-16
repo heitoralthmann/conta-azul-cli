@@ -22,8 +22,7 @@ use const PHP_URL_QUERY;
 final class LoginServiceTest extends TestCase
 {
   /** Creates complete test configuration for the OAuth URL builder. */
-  private function config(): Configuration
-  {
+  private function config(): Configuration {
     return Configuration::fromValues(
         [
           'clientId'             => 'client',
@@ -44,35 +43,28 @@ final class LoginServiceTest extends TestCase
   }
 
   /** Ensures the state is generated and persisted as part of the URL. */
-  public function testStartBuildsAuthorizationUrlAndState(): void
-  {
+  public function testStartBuildsAuthorizationUrlAndState(): void {
     $repo  = new class implements TokenRepositoryInterface {
-      public function save(TokenData $token): void
-      {
+      public function save(TokenData $token): void {
       }
 
-      public function load(): TokenData|null
-      {
+      public function load(): TokenData|null {
         return null;
       }
 
-      public function delete(): void
-      {
+      public function delete(): void {
       }
 
-      public function getPath(): string
-      {
+      public function getPath(): string {
         return sys_get_temp_dir() . '/tokens.json';
       }
     };
     $oauth = new class implements OAuthGatewayInterface {
-      public function exchangeCode(string $code): TokenData
-      {
+      public function exchangeCode(string $code): TokenData {
         throw new LogicException();
       }
 
-      public function refresh(string $refreshToken): TokenData
-      {
+      public function refresh(string $refreshToken): TokenData {
         throw new LogicException();
       }
     };

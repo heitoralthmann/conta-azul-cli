@@ -23,8 +23,7 @@ use function rtrim;
 final class HomeDirectory
 {
   /** Returns the home directory, or null when the platform gives us nothing. */
-  public static function resolve(): string|null
-  {
+  public static function resolve(): string|null {
     foreach (['HOME', 'USERPROFILE'] as $variable) {
       $value = getenv($variable);
       if (is_string($value) && $value !== '') {
@@ -50,8 +49,7 @@ final class HomeDirectory
   }
 
   /** Removes trailing separators while preserving a root path. */
-  private static function normalize(string $path): string
-  {
+  private static function normalize(string $path): string {
     $trimmed = rtrim($path, '/\\');
 
     return $trimmed === '' ? $path : $trimmed;

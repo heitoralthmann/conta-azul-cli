@@ -32,8 +32,7 @@ final class ContaAzulApplication extends Application
   private Throwable|null $bootstrapError = null;
 
   /** Builds the application and registers feature modules from the factory. */
-  public function __construct()
-  {
+  public function __construct() {
     parent::__construct('ca', '0.1.0');
 
     $factory = new ApplicationFactory();
@@ -50,14 +49,12 @@ final class ContaAzulApplication extends Application
   }
 
   /** Suppresses Symfony's default text exception rendering. */
-  protected function doRenderThrowable(Throwable $e, OutputInterface $output): void
-  {
+  protected function doRenderThrowable(Throwable $e, OutputInterface $output): void {
     // Commands handle their own error output via ErrorEnvelope.
   }
 
   /** Runs the CLI while preserving structured bootstrap error behavior. */
-  public function run(InputInterface|null $input = null, OutputInterface|null $output = null): int
-  {
+  public function run(InputInterface|null $input = null, OutputInterface|null $output = null): int {
     if ($input === null) {
       $rawArgv = $_SERVER['argv'] ?? [];
       $argv    = array_values(array_filter(is_array($rawArgv) ? $rawArgv : [], 'is_string'));
@@ -95,8 +92,7 @@ final class ContaAzulApplication extends Application
   /**
    * Discovery and help remain available when bootstrap failed.
    */
-  private function isAlwaysAvailableCommand(InputInterface $input): bool
-  {
+  private function isAlwaysAvailableCommand(InputInterface $input): bool {
     $name = $input->getFirstArgument();
 
     return $name === null
@@ -105,8 +101,7 @@ final class ContaAzulApplication extends Application
   }
 
   /** Adds the CLI-only debug option to Symfony's global definition. */
-  protected function getDefaultInputDefinition(): InputDefinition
-  {
+  protected function getDefaultInputDefinition(): InputDefinition {
     $definition = parent::getDefaultInputDefinition();
     $definition->addOption(
         new InputOption(
@@ -121,8 +116,7 @@ final class ContaAzulApplication extends Application
   }
 
   /** @param list<string> $argv */
-  private function buildInput(array $argv): ArgvInput
-  {
+  private function buildInput(array $argv): ArgvInput {
     // Merge two-word command names (e.g. "auth login") arriving as
     // separate argv tokens into one Symfony command token.
     if (

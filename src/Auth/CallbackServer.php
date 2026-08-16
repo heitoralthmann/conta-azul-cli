@@ -63,8 +63,7 @@ final class CallbackServer
   }
 
   /** Waits until a callback with the expected CSRF state is received. */
-  public function waitForCallback(string $expectedState): string
-  {
+  public function waitForCallback(string $expectedState): string {
     $errno  = null;
     $errstr = null;
     $server = $this->openServer($errno, $errstr);
@@ -97,8 +96,7 @@ final class CallbackServer
    *
    * @param resource $server
    */
-  private function acceptUntilCallback(mixed $server, string $expectedState): string
-  {
+  private function acceptUntilCallback(mixed $server, string $expectedState): string {
     $deadline = microtime(true) + $this->timeoutSeconds;
 
     while (true) {
@@ -154,8 +152,7 @@ final class CallbackServer
    *
    * @param resource $conn
    */
-  private function readRequestLine(mixed $conn): string|null
-  {
+  private function readRequestLine(mixed $conn): string|null {
     stream_set_timeout($conn, self::CONNECTION_READ_TIMEOUT);
 
     $buffer = '';
@@ -179,8 +176,7 @@ final class CallbackServer
   }
 
   /** Extracts and validates the authorization code from a callback query. */
-  private function extractCode(string $query, string $expectedState): string
-  {
+  private function extractCode(string $query, string $expectedState): string {
     /** @var array<string, mixed> $params */
     $params = [];
     parse_str($query, $params);
@@ -214,8 +210,7 @@ final class CallbackServer
    *
    * @param resource $conn
    */
-  private function respond(mixed $conn, string $status, string $body): void
-  {
+  private function respond(mixed $conn, string $status, string $body): void {
     // Silenced: the client may have already dropped the connection (e.g. a
     // speculative preconnect), and a failed write here is not actionable —
     // the caller has nothing further to send.
@@ -228,8 +223,7 @@ final class CallbackServer
   }
 
   /** @return resource|false */
-  private function openServer(int|null &$errno, string|null &$errstr): mixed
-  {
+  private function openServer(int|null &$errno, string|null &$errstr): mixed {
     // Silenced: bind/listen failures (e.g. port already in use) are reported
     // through $errno/$errstr and handled by the caller, so the PHP warning
     // would only be noise duplicating that.

@@ -62,16 +62,14 @@ final class ApiClientSupport
    *
    * @return array<mixed>
    */
-  public function request(string $method, string $path, array $options = []): array
-  {
+  public function request(string $method, string $path, array $options = []): array {
     return $this->transport->request($method, $path, $options);
   }
 
   /**
    * Returns the correlation identifier attached to transport requests.
    */
-  public function getCorrelationId(): string
-  {
+  public function getCorrelationId(): string {
     return $this->transport->getCorrelationId();
   }
 
@@ -80,8 +78,7 @@ final class ApiClientSupport
    *
    * @return array<mixed>
    */
-  public function pollProtocol(string $protocolId, int $timeoutSeconds = 60): array
-  {
+  public function pollProtocol(string $protocolId, int $timeoutSeconds = 60): array {
     return $this->poller->poll($protocolId, $timeoutSeconds);
   }
 
@@ -92,8 +89,7 @@ final class ApiClientSupport
    *
    * @return array<mixed>
    */
-  public function handleAsyncResponse(array $response, int $pollTimeout = 60, bool $noWait = false): array
-  {
+  public function handleAsyncResponse(array $response, int $pollTimeout = 60, bool $noWait = false): array {
     $rawProtocolId = $response['protocolId'] ?? '';
     $protocolId    = is_string($rawProtocolId) ? $rawProtocolId : '';
 

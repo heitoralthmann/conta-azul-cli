@@ -30,13 +30,11 @@ final class Logger
   private const int MAX_FILES  = 3;
 
   /** Creates a logger that redacts sensitive values before persistence. */
-  public function __construct(private readonly Redactor $redactor)
-  {
+  public function __construct(private readonly Redactor $redactor) {
   }
 
   /** Enables file logging and rotates an oversized existing log. */
-  public function enable(): void
-  {
+  public function enable(): void {
     // Logging is best-effort: an unresolvable home must not break the run,
     // so it degrades to the system temp directory instead of throwing.
     $home     = HomeDirectory::resolve() ?? sys_get_temp_dir();
@@ -51,8 +49,7 @@ final class Logger
   }
 
   /** Reports whether logging has been enabled for this process. */
-  public function isEnabled(): bool
-  {
+  public function isEnabled(): bool {
     return $this->enabled;
   }
 
@@ -61,8 +58,7 @@ final class Logger
    *
    * @param array<mixed> $context Values associated with the event.
    */
-  public function log(string $level, string $message, array $context = [], string $correlationId = ''): void
-  {
+  public function log(string $level, string $message, array $context = [], string $correlationId = ''): void {
     if (! $this->enabled || $this->logPath === null) {
       return;
     }
@@ -82,8 +78,7 @@ final class Logger
   }
 
   /** Moves older log files aside when the active file exceeds its limit. */
-  private function rotate(): void
-  {
+  private function rotate(): void {
     if ($this->logPath === null || ! file_exists($this->logPath)) {
       return;
     }

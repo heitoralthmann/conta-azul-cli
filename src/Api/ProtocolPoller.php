@@ -36,8 +36,7 @@ final class ProtocolPoller
    *
    * @throws CliException with a known protocol id for resumable failures.
    */
-  public function poll(string $protocolId, int $timeoutSeconds = 60): array
-  {
+  public function poll(string $protocolId, int $timeoutSeconds = 60): array {
     $start        = time();
     $sleepSeconds = self::INITIAL_SLEEP;
 

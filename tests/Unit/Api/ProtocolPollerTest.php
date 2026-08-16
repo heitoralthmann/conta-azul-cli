@@ -14,8 +14,7 @@ use PHPUnit\Framework\TestCase;
 final class ProtocolPollerTest extends TestCase
 {
   /** Successful polling returns nested data and applies exponential delays. */
-  public function testPollReturnsSuccessPayload(): void
-  {
+  public function testPollReturnsSuccessPayload(): void {
     $sleeper = new RecordingSleeper();
     $poller  = new ProtocolPoller(
         new QueueTransport(
@@ -32,8 +31,7 @@ final class ProtocolPollerTest extends TestCase
   }
 
   /** Polling failures preserve the protocol id so callers can resume later. */
-  public function testPollWrapsTransientFailureWithKnownProtocolId(): void
-  {
+  public function testPollWrapsTransientFailureWithKnownProtocolId(): void {
     $transport = new class implements ApiTransportInterface {
       /**
        * Always reports a resumable server failure.
@@ -43,14 +41,12 @@ final class ProtocolPollerTest extends TestCase
        * @return array<mixed>
        */
       // phpcs:ignore Squiz.Commenting.FunctionComment.InvalidNoReturn -- always throws by design, never returns.
-      public function request(string $method, string $path, array $options = []): array
-      {
+      public function request(string $method, string $path, array $options = []): array {
         throw new CliException(ErrorKind::ServerError, true, 'temporary', 500, null, 'correlation-test');
       }
 
       /** Returns the correlation id attached to the transport. */
-      public function getCorrelationId(): string
-      {
+      public function getCorrelationId(): string {
         return 'correlation-test';
       }
     };

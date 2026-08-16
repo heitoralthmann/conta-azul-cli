@@ -38,14 +38,12 @@ final class ResourceJsonCommand extends Command
   }
 
   /** Declares the JSON payload option accepted by the operation. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this->addOption('json', null, InputOption::VALUE_REQUIRED, $this->jsonDescription);
   }
 
   /** Parses input, invokes the operation, and renders its result. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $this->jsonRenderer->render(($this->operation)(JsonPayload::object($input->getOption('json'))));

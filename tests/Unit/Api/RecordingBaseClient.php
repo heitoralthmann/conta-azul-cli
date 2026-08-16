@@ -12,8 +12,7 @@ final class RecordingBaseClient extends BaseClient
   /** @var list<float> */
   public array $sleeps = [];
 
-  protected function sleep(float $seconds): void
-  {
+  protected function sleep(float $seconds): void {
     $this->sleeps[] = $seconds;
   }
 }

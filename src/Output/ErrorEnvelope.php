@@ -21,8 +21,7 @@ final class ErrorEnvelope
    *
    * @param OutputInterface|null $output Symfony output used for stderr.
    */
-  public function __construct(OutputInterface|null $output = null)
-  {
+  public function __construct(OutputInterface|null $output = null) {
     $this->output = new JsonConsoleOutput($output);
   }
 
@@ -31,8 +30,7 @@ final class ErrorEnvelope
    *
    * @throws JsonException If the envelope cannot be encoded as JSON.
    */
-  public function renderToStderr(CliException $e): void
-  {
+  public function renderToStderr(CliException $e): void {
     $this->output->renderError(
         [
           'kind'           => $e->kind->value,
@@ -50,8 +48,7 @@ final class ErrorEnvelope
    *
    * @throws JsonException If the envelope cannot be encoded as JSON.
    */
-  public function renderGenericToStderr(string $message, string $correlationId): void
-  {
+  public function renderGenericToStderr(string $message, string $correlationId): void {
     $this->output->renderError(
         [
           'kind'           => ErrorKind::ServerError->value,

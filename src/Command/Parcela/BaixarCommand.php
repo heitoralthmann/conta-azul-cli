@@ -39,8 +39,7 @@ final class BaixarCommand extends Command
   }
 
   /** Declares payment fields and asynchronous completion options. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this
           ->addArgument('id', InputArgument::REQUIRED, 'ID da parcela')
           ->addOption('valor', null, InputOption::VALUE_REQUIRED, 'Valor da baixa (ex: 100.50)')
@@ -49,8 +48,7 @@ final class BaixarCommand extends Command
   }
 
   /** Validates payment input, invokes the API, and renders its result. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $rawId = $input->getArgument('id');

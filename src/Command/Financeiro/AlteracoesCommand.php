@@ -42,8 +42,7 @@ final class AlteracoesCommand extends Command
   }
 
   /** Declares optional ISO-8601 interval boundaries. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this
           ->addOption(
               'data-inicio',
@@ -60,8 +59,7 @@ final class AlteracoesCommand extends Command
   }
 
   /** Resolves the interval, warns about defaults, and fetches changes. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $inicioRaw = $input->getOption('data-inicio');

@@ -12,8 +12,7 @@ use Symfony\Component\Console\Command\Command;
 final class CommandExecutor
 {
   /** Creates an executor backed by the shared error renderer. */
-  public function __construct(private readonly ErrorEnvelope $errorEnvelope)
-  {
+  public function __construct(private readonly ErrorEnvelope $errorEnvelope) {
   }
 
   /**
@@ -21,8 +20,7 @@ final class CommandExecutor
    *
    * @param callable(): void $operation Operation that may throw a CliException
    */
-  public function execute(callable $operation): int
-  {
+  public function execute(callable $operation): int {
     try {
       $operation();
 

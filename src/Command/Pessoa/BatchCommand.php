@@ -46,14 +46,12 @@ final class BatchCommand extends Command
   }
 
   /** Declares the JSON payload option for the bulk operation. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this->addOption('json', null, InputOption::VALUE_REQUIRED, 'Payload JSON com a lista de uuids');
   }
 
   /** Parses the payload, executes the selected operation, and renders output. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $payload = JsonPayload::object($input->getOption('json'));

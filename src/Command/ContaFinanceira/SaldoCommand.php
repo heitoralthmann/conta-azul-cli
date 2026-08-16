@@ -37,14 +37,12 @@ final class SaldoCommand extends Command
   }
 
   /** Declares the required account identifier option. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this->addOption('id', null, InputOption::VALUE_REQUIRED, 'ID da conta financeira');
   }
 
   /** Validates the identifier, fetches the balance, and renders the result. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $id = $input->getOption('id');

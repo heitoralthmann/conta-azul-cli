@@ -32,23 +32,20 @@ final class EnvironmentConfigurationLoaderTest extends TestCase
     'CA_CALLBACK_TIMEOUT',
   ];
 
-  protected function setUp(): void
-  {
+  protected function setUp(): void {
     foreach (self::ENVIRONMENT_VARIABLES as $variable) {
       $this->originalEnv[$variable] = getenv($variable);
       putenv($variable);
     }
   }
 
-  protected function tearDown(): void
-  {
+  protected function tearDown(): void {
     foreach ($this->originalEnv as $variable => $value) {
       putenv($value === false ? $variable : $variable . '=' . $value);
     }
   }
 
-  public function testLoadsEnvironmentIntoConfigurationValueObject(): void
-  {
+  public function testLoadsEnvironmentIntoConfigurationValueObject(): void {
     putenv('CA_CLIENT_ID=client-id');
     putenv('CA_CLIENT_SECRET=client-secret');
     putenv('CA_SCOPE=finance');
@@ -61,8 +58,7 @@ final class EnvironmentConfigurationLoaderTest extends TestCase
     self::assertSame('finance', $configuration->getScope());
   }
 
-  public function testConfigurationCanBeCreatedWithoutEnvironmentAccess(): void
-  {
+  public function testConfigurationCanBeCreatedWithoutEnvironmentAccess(): void {
     $configuration = Configuration::fromValues(
         [
           'clientId' => 'client-id',

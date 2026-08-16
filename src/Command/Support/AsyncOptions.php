@@ -26,8 +26,7 @@ final readonly class AsyncOptions
   }
 
   /** Adds the shared asynchronous options to a command definition. */
-  public static function configure(Command $command): void
-  {
+  public static function configure(Command $command): void {
     $command
           ->addOption(
               'poll-timeout',
@@ -45,8 +44,7 @@ final readonly class AsyncOptions
   }
 
   /** Creates options from the values supplied to a Symfony command. */
-  public static function fromInput(InputInterface $input): self
-  {
+  public static function fromInput(InputInterface $input): self {
     $pollTimeoutRaw = $input->hasOption('poll-timeout') ? $input->getOption('poll-timeout') : null;
     $pollTimeout    = is_numeric($pollTimeoutRaw) ? (int) $pollTimeoutRaw : self::DEFAULT_POLL_TIMEOUT;
 
@@ -56,14 +54,12 @@ final readonly class AsyncOptions
   }
 
   /** Returns the maximum number of seconds to wait for completion. */
-  public function pollTimeout(): int
-  {
+  public function pollTimeout(): int {
     return $this->pollTimeout;
   }
 
   /** Returns whether the command should skip protocol polling. */
-  public function noWait(): bool
-  {
+  public function noWait(): bool {
     return $this->noWait;
   }
 }

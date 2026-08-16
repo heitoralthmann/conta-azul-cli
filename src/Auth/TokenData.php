@@ -37,8 +37,7 @@ final class TokenData
    *
    * @param array<string, mixed> $data
    */
-  public static function fromArray(array $data): self
-  {
+  public static function fromArray(array $data): self {
     return new self(
         accessToken: self::str($data['access_token'] ?? ''),
         accessTokenExpiresAt: new DateTimeImmutable(self::str($data['access_token_expires_at'] ?? '')),
@@ -53,8 +52,7 @@ final class TokenData
    *
    * @param array<string, mixed> $response
    */
-  public static function fromOAuthResponse(array $response): self
-  {
+  public static function fromOAuthResponse(array $response): self {
     $expiresIn = is_numeric($response['expires_in'] ?? null) ? (int) $response['expires_in'] : 3600;
     $now       = new DateTimeImmutable('now', new DateTimeZone('UTC'));
     $expiresAt = $now->modify('+' . $expiresIn . ' seconds');
@@ -73,8 +71,7 @@ final class TokenData
    *
    * @return array<string, string>
    */
-  public function toArray(): array
-  {
+  public function toArray(): array {
     return [
       'access_token'              => $this->accessToken,
       'access_token_expires_at'   => $this->accessTokenExpiresAt->format(DateTimeInterface::ATOM),
@@ -85,16 +82,14 @@ final class TokenData
   }
 
   /** Returns whether the access token expires within the safety threshold. */
-  public function isExpiringSoon(int $thresholdSeconds = 60): bool
-  {
+  public function isExpiringSoon(int $thresholdSeconds = 60): bool {
     $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
 
     return $this->accessTokenExpiresAt->getTimestamp() - $now->getTimestamp() < $thresholdSeconds;
   }
 
   /** Converts an untrusted persisted value to a string safely. */
-  private static function str(mixed $value): string
-  {
+  private static function str(mixed $value): string {
     return is_string($value) ? $value : '';
   }
 }

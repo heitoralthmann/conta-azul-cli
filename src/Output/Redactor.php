@@ -29,8 +29,7 @@ final class Redactor
    *
    * @return array<string|int, mixed>
    */
-  public function redact(array $data): array
-  {
+  public function redact(array $data): array {
     $result = [];
     foreach ($data as $key => $value) {
       if (in_array(strtolower((string) $key), self::SENSITIVE_KEYS, true)) {
@@ -46,8 +45,7 @@ final class Redactor
   }
 
   /** Redacts credential fields embedded in a JSON-like string. */
-  public function redactString(string $value): string
-  {
+  public function redactString(string $value): string {
     foreach (self::SENSITIVE_KEYS as $key) {
       $value = (string) preg_replace(
           '/(\"' . preg_quote($key, '/') . '\"\s*:\s*\")[^\"]*(\")/',

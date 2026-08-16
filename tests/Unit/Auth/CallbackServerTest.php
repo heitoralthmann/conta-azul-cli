@@ -28,8 +28,7 @@ final class CallbackServerTest extends TestCase
   /** @var list<resource> */
   private array $processes = [];
 
-  protected function tearDown(): void
-  {
+  protected function tearDown(): void {
     // Silenced: the spawned process may have already exited on its own by
     // the time cleanup runs, and terminating/closing an already-finished
     // process resource is not an error worth surfacing here.
@@ -43,8 +42,7 @@ final class CallbackServerTest extends TestCase
     $this->processes = [];
   }
 
-  public function testReturnsCodeFromCallbackRequest(): void
-  {
+  public function testReturnsCodeFromCallbackRequest(): void {
     $port = $this->freePort();
     $this->spawnClient($port, ["GET /callback?code=abc123&state=st-1 HTTP/1.1\r\nHost: localhost\r\n\r\n"]);
 
@@ -59,8 +57,7 @@ final class CallbackServerTest extends TestCase
    * them. Serving only the first connection meant the login stalled on the
    * silent one while the real callback waited unaccepted.
    */
-  public function testIgnoresSilentConnectionAndServesTheRealCallback(): void
-  {
+  public function testIgnoresSilentConnectionAndServesTheRealCallback(): void {
     $port = $this->freePort();
     $this->spawnClient(
         $port,
@@ -83,8 +80,7 @@ final class CallbackServerTest extends TestCase
   }
 
   /** A real browser request runs well past a kilobyte of headers. */
-  public function testHandlesRequestLargerThanASingleReadBuffer(): void
-  {
+  public function testHandlesRequestLargerThanASingleReadBuffer(): void {
     $port    = $this->freePort();
     $padding = str_repeat('X-Padding: ' . str_repeat('a', 200) . "\r\n", 40);
     $this->spawnClient(
@@ -97,8 +93,7 @@ final class CallbackServerTest extends TestCase
     self::assertSame('big-headers', $server->waitForCallback('st-3'));
   }
 
-  public function testSkipsNonCallbackRequests(): void
-  {
+  public function testSkipsNonCallbackRequests(): void {
     $port = $this->freePort();
     $this->spawnClient(
         $port,
@@ -113,8 +108,7 @@ final class CallbackServerTest extends TestCase
     self::assertSame('after-favicon', $server->waitForCallback('st-4'));
   }
 
-  public function testRejectsMismatchedState(): void
-  {
+  public function testRejectsMismatchedState(): void {
     $port = $this->freePort();
     $this->spawnClient($port, ["GET /callback?code=abc&state=wrong HTTP/1.1\r\nHost: localhost\r\n\r\n"]);
 
@@ -125,8 +119,7 @@ final class CallbackServerTest extends TestCase
     $server->waitForCallback('st-5');
   }
 
-  public function testReportsProviderErrorWhenNoCodeIsReturned(): void
-  {
+  public function testReportsProviderErrorWhenNoCodeIsReturned(): void {
     $port = $this->freePort();
     $this->spawnClient($port, ["GET /callback?error=access_denied&state=st-6 HTTP/1.1\r\nHost: localhost\r\n\r\n"]);
 
@@ -137,8 +130,7 @@ final class CallbackServerTest extends TestCase
     $server->waitForCallback('st-6');
   }
 
-  public function testTimesOutWhenNothingEverArrives(): void
-  {
+  public function testTimesOutWhenNothingEverArrives(): void {
     $server = new CallbackServer(port: $this->freePort(), timeoutSeconds: 1);
 
     $this->expectException(CliException::class);
@@ -146,8 +138,7 @@ final class CallbackServerTest extends TestCase
     $server->waitForCallback('st-7');
   }
 
-  private function freePort(): int
-  {
+  private function freePort(): int {
     $probe = stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr);
     self::assertIsResource($probe, 'não foi possível reservar uma porta livre: ' . $errstr);
     $name = stream_socket_get_name($probe, false);
@@ -164,8 +155,7 @@ final class CallbackServerTest extends TestCase
    *
    * @param list<string|null> $connections
    */
-  private function spawnClient(int $port, array $connections): void
-  {
+  private function spawnClient(int $port, array $connections): void {
     $script = sprintf(
         '$conns = %s;
             $open = [];

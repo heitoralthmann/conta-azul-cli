@@ -34,14 +34,12 @@ final class CreateCommand extends Command
   }
 
   /** Declares the JSON payload option. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this->addOption('json', null, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
   }
 
   /** Parses the payload, creates the person, and renders output or an error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $this->jsonRenderer->render($this->client->createPessoa(JsonPayload::object($input->getOption('json'))));

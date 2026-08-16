@@ -40,8 +40,7 @@ final class FinanceiroCommandModule implements CommandModuleInterface
   }
 
   /** @return list<Command> */
-  public function commands(): array
-  {
+  public function commands(): array {
     return [
       new ContaAReceberListCommand(
           $this->client,

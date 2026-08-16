@@ -30,14 +30,12 @@ final class TokenStore implements TokenRepositoryInterface
   private string $tokenPath;
 
   /** Creates a store using the configured token file path. */
-  public function __construct(Configuration $config)
-  {
+  public function __construct(Configuration $config) {
     $this->tokenPath = $config->getTokenPath();
   }
 
   /** Persists a token atomically enough for concurrent CLI invocations. */
-  public function save(TokenData $token): void
-  {
+  public function save(TokenData $token): void {
     $dir = dirname($this->tokenPath);
     if (! is_dir($dir)) {
       mkdir($dir, 0700, true);
@@ -55,8 +53,7 @@ final class TokenStore implements TokenRepositoryInterface
   }
 
   /** Loads a token, treating missing, empty, and corrupt files as absent. */
-  public function load(): TokenData|null
-  {
+  public function load(): TokenData|null {
     if (! file_exists($this->tokenPath)) {
       return null;
     }
@@ -82,8 +79,7 @@ final class TokenStore implements TokenRepositoryInterface
   }
 
   /** Deletes the token file when it exists. */
-  public function delete(): void
-  {
+  public function delete(): void {
     if (! file_exists($this->tokenPath)) {
       return;
     }
@@ -92,8 +88,7 @@ final class TokenStore implements TokenRepositoryInterface
   }
 
   /** Returns the path used by this store, for lock coordination. */
-  public function getPath(): string
-  {
+  public function getPath(): string {
     return $this->tokenPath;
   }
 }

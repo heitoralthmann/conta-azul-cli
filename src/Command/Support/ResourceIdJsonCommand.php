@@ -42,16 +42,14 @@ final class ResourceIdJsonCommand extends Command
   }
 
   /** Declares the identifier argument and JSON payload option. */
-  protected function configure(): void
-  {
+  protected function configure(): void {
     $this
           ->addArgument('id', InputArgument::REQUIRED, $this->argumentDescription)
           ->addOption('json', null, InputOption::VALUE_REQUIRED, $this->jsonDescription);
   }
 
   /** Parses input, invokes the operation, and renders its result. */
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $id = $input->getArgument('id');

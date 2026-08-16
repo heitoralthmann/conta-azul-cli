@@ -32,8 +32,7 @@ final class OAuthClient implements OAuthGatewayInterface
   }
 
   /** Exchanges an authorization code for a token. */
-  public function exchangeCode(string $code): TokenData
-  {
+  public function exchangeCode(string $code): TokenData {
     return $this->requestToken(
         [
           'grant_type'   => 'authorization_code',
@@ -44,8 +43,7 @@ final class OAuthClient implements OAuthGatewayInterface
   }
 
   /** Exchanges a refresh token for a new (possibly rotated) token. */
-  public function refresh(string $refreshToken): TokenData
-  {
+  public function refresh(string $refreshToken): TokenData {
     return $this->requestToken(
         [
           'grant_type'    => 'refresh_token',
@@ -55,8 +53,7 @@ final class OAuthClient implements OAuthGatewayInterface
   }
 
   /** @param array<string, string> $body */
-  private function requestToken(array $body): TokenData
-  {
+  private function requestToken(array $body): TokenData {
     $isCodeExchange = ($body['grant_type'] ?? '') === 'authorization_code';
 
     $credentials = base64_encode(
@@ -131,8 +128,7 @@ final class OAuthClient implements OAuthGatewayInterface
    * login itself looks perfectly healthy. That cost us a long debugging
    * session, so when the hosts disagree the error says so outright.
    */
-  private function endpointMismatchHint(): string
-  {
+  private function endpointMismatchHint(): string {
     $authorizeHost = parse_url($this->config->getAuthorizeUrl(), PHP_URL_HOST);
     $tokenHost     = parse_url($this->config->getTokenUrl(), PHP_URL_HOST);
 
@@ -149,8 +145,7 @@ final class OAuthClient implements OAuthGatewayInterface
    * distinguishes an expired code from a redirect_uri mismatch, so it is
    * carried into the envelope instead of being swallowed.
    */
-  private function formatDetail(string $errorCode, string $detail, int $status): string
-  {
+  private function formatDetail(string $errorCode, string $detail, int $status): string {
     $parts = array_filter([$errorCode, $detail]);
     if ($parts === []) {
       return sprintf(' (HTTP %d, sem detalhe do provedor)', $status);

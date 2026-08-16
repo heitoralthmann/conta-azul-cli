@@ -21,8 +21,7 @@ use const LOCK_UN;
 final class FileTokenLock implements TokenLockInterface
 {
   /** @param string $tokenPath Path to the token file being protected. */
-  public function __construct(private readonly string $tokenPath)
-  {
+  public function __construct(private readonly string $tokenPath) {
   }
 
   /**
@@ -34,8 +33,7 @@ final class FileTokenLock implements TokenLockInterface
    *
    * @template T
    */
-  public function synchronized(callable $operation): mixed
-  {
+  public function synchronized(callable $operation): mixed {
     $lockFile = $this->tokenPath . '.lock';
     $lockDir  = dirname($lockFile);
     if (! is_dir($lockDir)) {

@@ -24,8 +24,7 @@ final class EnvironmentConfigurationLoader
    * @throws ConfigException When a required value is missing or a home path
    *                         cannot be resolved.
    */
-  public function load(): Configuration
-  {
+  public function load(): Configuration {
     return new Configuration($this->read());
   }
 
@@ -51,8 +50,7 @@ final class EnvironmentConfigurationLoader
    * @throws ConfigException When a required value is missing or a home path
    *                         cannot be resolved.
    */
-  public function read(): array
-  {
+  public function read(): array {
     $authBaseUrl = rtrim($this->getEnv('CA_AUTH_BASE_URL', 'https://auth.contaazul.com'), '/');
 
     return [
@@ -79,8 +77,7 @@ final class EnvironmentConfigurationLoader
    *
    * @throws ConfigException When the variable is absent or empty.
    */
-  private function requireEnv(string $name): string
-  {
+  private function requireEnv(string $name): string {
     $value = getenv($name);
     if ($value === false || $value === '') {
       throw new ConfigException(
@@ -95,8 +92,7 @@ final class EnvironmentConfigurationLoader
   /**
    * Returns an environment variable or its default when absent or empty.
    */
-  private function getEnv(string $name, string $default): string
-  {
+  private function getEnv(string $name, string $default): string {
     $value = getenv($name);
 
     return $value !== false && $value !== '' ? $value : $default;
@@ -105,8 +101,7 @@ final class EnvironmentConfigurationLoader
   /**
    * Returns a nullable environment variable, treating empty as absent.
    */
-  private function nullableEnv(string $name): string|null
-  {
+  private function nullableEnv(string $name): string|null {
     $value = getenv($name);
 
     return $value !== false && $value !== '' ? $value : null;
@@ -117,8 +112,7 @@ final class EnvironmentConfigurationLoader
    *
    * @throws ConfigException When the home directory cannot be determined.
    */
-  private function nullableExpandedEnv(string $name): string|null
-  {
+  private function nullableExpandedEnv(string $name): string|null {
     $value = $this->nullableEnv($name);
 
     return $value === null ? null : $this->expandHome($value);
@@ -127,8 +121,7 @@ final class EnvironmentConfigurationLoader
   /**
    * Reads the callback timeout, falling back to five minutes when invalid.
    */
-  private function callbackTimeout(): int
-  {
+  private function callbackTimeout(): int {
     $timeout = $this->getEnv('CA_CALLBACK_TIMEOUT', '300');
 
     return ctype_digit($timeout) && (int) $timeout > 0 ? (int) $timeout : 300;
@@ -139,8 +132,7 @@ final class EnvironmentConfigurationLoader
    *
    * @throws ConfigException When the home directory cannot be determined.
    */
-  private function expandHome(string $path): string
-  {
+  private function expandHome(string $path): string {
     if (! str_starts_with($path, '~/')) {
       return $path;
     }

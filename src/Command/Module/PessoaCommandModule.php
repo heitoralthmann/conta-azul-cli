@@ -32,8 +32,7 @@ final class PessoaCommandModule implements CommandModuleInterface
   }
 
   /** @return list<Command> */
-  public function commands(): array
-  {
+  public function commands(): array {
     return [
       new PessoaListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
       new PessoaCreateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
