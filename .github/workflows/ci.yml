@@ -44,9 +44,13 @@ jobs:
         run: composer audit
 
       # Static analysis and style don't vary by runner, so one is enough.
-      - name: Run PHPStan
+      - name: Run PHPStan (src, level max)
         if: matrix.os == 'ubuntu-latest' && matrix.php == '8.3'
         run: vendor/bin/phpstan analyse src/ --level=max --no-progress
+
+      - name: Run PHPStan (tests, level 6)
+        if: matrix.os == 'ubuntu-latest' && matrix.php == '8.3'
+        run: vendor/bin/phpstan analyse tests/ --level=6 --no-progress
 
       # composer lint also covers bin/ca (piped through STDIN, see composer.json),
       # which a direct phpcs invocation would silently skip.
