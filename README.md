@@ -6,6 +6,8 @@ Cada invocação é de curta duração: faz uma chamada, escreve JSON compacto e
 
 O consumidor primário é um **agente**, não um humano. Por isso a saída é JSON compacto, o exit code é binário e os erros vêm em envelope estruturado com um campo `kind` estável.
 
+> **Projeto não oficial.** Este CLI não é mantido, endossado ou afiliado à Conta Azul. É um cliente de terceiros para a API pública da Conta Azul.
+
 ---
 
 ## Requisitos
@@ -28,11 +30,11 @@ composer install
 
 ### PHAR
 
-Baixe o `ca.phar` da página de releases do GitHub:
+Baixe o `conta-azul-cli.phar` da página de releases do GitHub:
 
 ```bash
-chmod +x ca.phar
-mv ca.phar /usr/local/bin/ca
+chmod +x conta-azul-cli.phar
+mv conta-azul-cli.phar /usr/local/bin/ca
 ```
 
 > Distribuição via `composer global require` está prevista, mas o pacote ainda não foi publicado no Packagist.
@@ -313,4 +315,4 @@ Superfície **humana** em pt-BR: README, `--help`, descrições, campo `message`
 
 ## Licença
 
-MIT
+Apache 2.0. Veja [LICENSE](LICENSE).
