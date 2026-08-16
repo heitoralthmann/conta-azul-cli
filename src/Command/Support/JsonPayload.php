@@ -7,11 +7,18 @@ namespace ContaAzulCli\Command\Support;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\ErrorKind;
 
+/** Parses the JSON object accepted by commands that write API resources. */
 final class JsonPayload
 {
 
 
-    /** @return array<string, mixed> */
+    /**
+     * Decodes a command option and rejects missing, malformed, or list JSON.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws CliException when the option is missing or is not a JSON object
+     */
     public static function object(mixed $value): array {
         if (!is_string($value) || $value === '') {
             throw new CliException(ErrorKind::ClientError, FALSE, 'A opção --json é obrigatória.');

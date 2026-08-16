@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace ContaAzulCli\Command\ContaAPagar;
 
 use ContaAzulCli\Api\FinanceiroClient;
+use ContaAzulCli\Command\Support\AsyncOptions;
+use ContaAzulCli\Command\Support\JsonPayload;
 use ContaAzulCli\Error\CliException;
-use ContaAzulCli\Error\ErrorKind;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -31,34 +32,19 @@ final class CreateCommand extends Command
 
     protected function configure(): void {
         $this
-            ->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da conta a pagar')
-            ->addOption('poll-timeout', NULL, InputOption::VALUE_REQUIRED, 'Timeout de polling em segundos', '60')
-            ->addOption('no-wait', NULL, InputOption::VALUE_NONE, 'Retorna imediatamente sem aguardar confirmação assíncrona');
+            ->addOption('json', NULL, InputOption::VALUE_REQUIRED, 'Payload JSON da conta a pagar');
+        AsyncOptions::configure($this);
     }
 
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
-            $jsonOption = $input->getOption('json');
-            if (!is_string($jsonOption) || $jsonOption === '') {
-                throw new CliException(ErrorKind::ClientError, FALSE, 'A opção --json é obrigatória.');
-            }
+            $payload = JsonPayload::object($input->getOption('json'));
+            $asyncOptions = AsyncOptions::fromInput($input);
 
-            try {
-                $decoded = json_decode($jsonOption, TRUE, 512, JSON_THROW_ON_ERROR);
-            } catch (\JsonException $e) {
-                throw new CliException(ErrorKind::ClientError, FALSE, 'JSON inválido: ' . $e->getMessage(), previous: $e);
-            }
-            if (!is_array($decoded)) {
-                throw new CliException(ErrorKind::ClientError, FALSE, 'JSON deve ser um objeto.');
-            }
-            /** @var array<string, mixed> $decoded */
-
-            $pollTimeoutRaw = $input->getOption('poll-timeout');
-            $pollTimeout    = is_numeric($pollTimeoutRaw) ? (int) $pollTimeoutRaw : 60;
-            $noWait         = (bool) $input->getOption('no-wait');
-
-            $this->jsonRenderer->render($this->client->createContaAPagar($decoded, $pollTimeout, $noWait));
+            $this->jsonRenderer->render(
+              $this->client->createContaAPagar($payload, $asyncOptions->pollTimeout(), $asyncOptions->noWait()),
+            );
 
             return Command::SUCCESS;
         } catch (CliException $e) {

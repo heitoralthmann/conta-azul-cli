@@ -37,9 +37,7 @@ final class ResourceListCommand extends Command
 
 
     protected function configure(): void {
-        $this
-            ->addOption('pagina', NULL, InputOption::VALUE_REQUIRED, 'Número da página', '1')
-            ->addOption('tamanho-pagina', NULL, InputOption::VALUE_REQUIRED, 'Itens por página', '50');
+        PaginationOptions::configure($this);
 
         foreach ($this->filterOptions as $option => $queryName) {
             $this->addOption($option, NULL, InputOption::VALUE_REQUIRED, "Filtro {$queryName}");
@@ -49,11 +47,7 @@ final class ResourceListCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
-            $paginaRaw = $input->getOption('pagina');
-            $tamanhoPaginaRaw = $input->getOption('tamanho-pagina');
-            $pagina = is_numeric($paginaRaw) ? (int) $paginaRaw : 1;
-            $tamanhoPagina = is_numeric($tamanhoPaginaRaw) ? (int) $tamanhoPaginaRaw : 50;
-            $this->paginationValidator->validatePageSize($tamanhoPagina);
+            $pagination = PaginationOptions::fromInput($input, $this->paginationValidator);
 
             $filters = [];
             foreach ($this->filterOptions as $option => $queryName) {
@@ -63,7 +57,7 @@ final class ResourceListCommand extends Command
                 }
             }
 
-            $this->jsonRenderer->render(($this->list)($pagina, $tamanhoPagina, $filters));
+            $this->jsonRenderer->render(($this->list)($pagination->page(), $pagination->pageSize(), $filters));
 
             return Command::SUCCESS;
         } catch (CliException $e) {

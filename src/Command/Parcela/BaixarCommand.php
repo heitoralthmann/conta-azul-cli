@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ContaAzulCli\Command\Parcela;
 
 use ContaAzulCli\Api\FinanceiroClient;
+use ContaAzulCli\Command\Support\AsyncOptions;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -33,9 +34,8 @@ final class BaixarCommand extends Command
         $this
             ->addArgument('id', InputArgument::REQUIRED, 'ID da parcela')
             ->addOption('valor', NULL, InputOption::VALUE_REQUIRED, 'Valor da baixa (ex: 100.50)')
-            ->addOption('data', NULL, InputOption::VALUE_REQUIRED, 'Data da baixa no formato YYYY-MM-DD')
-            ->addOption('poll-timeout', NULL, InputOption::VALUE_REQUIRED, 'Timeout de polling em segundos', '60')
-            ->addOption('no-wait', NULL, InputOption::VALUE_NONE, 'Retorna imediatamente sem aguardar confirmação assíncrona');
+            ->addOption('data', NULL, InputOption::VALUE_REQUIRED, 'Data da baixa no formato YYYY-MM-DD');
+        AsyncOptions::configure($this);
     }
 
 
@@ -67,11 +67,11 @@ final class BaixarCommand extends Command
                 'data'  => $dataOption,
             ];
 
-            $pollTimeoutRaw = $input->getOption('poll-timeout');
-            $pollTimeout    = is_numeric($pollTimeoutRaw) ? (int) $pollTimeoutRaw : 60;
-            $noWait         = (bool) $input->getOption('no-wait');
+            $asyncOptions = AsyncOptions::fromInput($input);
 
-            $this->jsonRenderer->render($this->client->baixarParcela($id, $payload, $pollTimeout, $noWait));
+            $this->jsonRenderer->render(
+              $this->client->baixarParcela($id, $payload, $asyncOptions->pollTimeout(), $asyncOptions->noWait()),
+            );
 
             return Command::SUCCESS;
         } catch (CliException $e) {

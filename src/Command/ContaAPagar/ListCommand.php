@@ -6,6 +6,7 @@ namespace ContaAzulCli\Command\ContaAPagar;
 
 use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Api\PaginationValidator;
+use ContaAzulCli\Command\Support\PaginationOptions;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Output\ErrorEnvelope;
@@ -37,9 +38,8 @@ final class ListCommand extends Command
     protected function configure(): void {
         $this
             ->addOption('data-vencimento-de', NULL, InputOption::VALUE_REQUIRED, 'Vencimento inicial (YYYY-MM-DD). Padrão: primeiro dia do mês corrente')
-            ->addOption('data-vencimento-ate', NULL, InputOption::VALUE_REQUIRED, 'Vencimento final (YYYY-MM-DD). Padrão: último dia do mês corrente')
-            ->addOption('pagina', NULL, InputOption::VALUE_REQUIRED, 'Número da página', '1')
-            ->addOption('tamanho-pagina', NULL, InputOption::VALUE_REQUIRED, 'Itens por página', '50');
+            ->addOption('data-vencimento-ate', NULL, InputOption::VALUE_REQUIRED, 'Vencimento final (YYYY-MM-DD). Padrão: último dia do mês corrente');
+        PaginationOptions::configure($this);
     }
 
 
@@ -59,14 +59,10 @@ final class ListCommand extends Command
                 );
             }
 
-            $paginaRaw        = $input->getOption('pagina');
-            $tamanhoPaginaRaw = $input->getOption('tamanho-pagina');
-            $pagina           = is_numeric($paginaRaw) ? (int) $paginaRaw : 1;
-            $tamanhoPagina    = is_numeric($tamanhoPaginaRaw) ? (int) $tamanhoPaginaRaw : 50;
-            $this->paginationValidator->validatePageSize($tamanhoPagina);
+            $pagination = PaginationOptions::fromInput($input, $this->paginationValidator);
 
             $this->jsonRenderer->render(
-              $this->client->listContasAPagar($de, $ate, $pagina, $tamanhoPagina),
+              $this->client->listContasAPagar($de, $ate, $pagination->page(), $pagination->pageSize()),
             );
 
             return Command::SUCCESS;
