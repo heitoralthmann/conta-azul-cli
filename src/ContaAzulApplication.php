@@ -21,9 +21,12 @@ use Throwable;
 use function array_filter;
 use function array_slice;
 use function array_values;
+use function file_get_contents;
 use function in_array;
 use function is_array;
+use function is_file;
 use function str_starts_with;
+use function trim;
 
 /** Symfony Console shell for the Conta Azul CLI. */
 final class ContaAzulApplication extends Application
@@ -33,7 +36,7 @@ final class ContaAzulApplication extends Application
 
   /** Builds the application and registers feature modules from the factory. */
   public function __construct() {
-    parent::__construct('ca', '0.1.0');
+    parent::__construct('ca', self::version());
 
     $factory = new ApplicationFactory();
     try {
@@ -131,5 +134,12 @@ final class ContaAzulApplication extends Application
     }
 
     return new ArgvInput($argv);
+  }
+
+  /** Reads the version from the single-source VERSION file next to the project root. */
+  private static function version(): string {
+    $path = __DIR__ . '/../VERSION';
+
+    return is_file($path) ? trim((string) file_get_contents($path)) : 'unknown';
   }
 }

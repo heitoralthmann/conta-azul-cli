@@ -5,6 +5,6 @@
     "compression": "GZ",
     "chmod": "0755",
     "directories": ["src"],
-    "files": ["composer.json"],
+    "files": ["composer.json", "VERSION"],
     "exclude-composer-files": false
 }
