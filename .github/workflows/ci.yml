@@ -34,6 +34,15 @@ jobs:
       - name: Run tests
         run: vendor/bin/phpunit --no-coverage
 
+      # composer.json/lock and advisory checks are platform-independent, so one runner is enough.
+      - name: Validate composer.json and composer.lock
+        if: matrix.os == 'ubuntu-latest'
+        run: composer validate --strict
+
+      - name: Audit dependencies for known vulnerabilities
+        if: matrix.os == 'ubuntu-latest'
+        run: composer audit
+
       # Static analysis and style are platform-independent, so one runner is enough.
       - name: Run PHPStan
         if: matrix.os == 'ubuntu-latest'
