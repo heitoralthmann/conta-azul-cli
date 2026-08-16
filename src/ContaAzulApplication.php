@@ -7,6 +7,8 @@ namespace ContaAzulCli;
 use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Api\PessoasClient;
+use ContaAzulCli\Api\ProdutosClient;
+use ContaAzulCli\Api\ServicosClient;
 use ContaAzulCli\Auth\AuthManager;
 use ContaAzulCli\Auth\CallbackServer;
 use ContaAzulCli\Auth\OAuthClient;
@@ -23,6 +25,10 @@ use ContaAzulCli\Command\ContaFinanceira\ListCommand as ContaFinanceiraListComma
 use ContaAzulCli\Command\ContaFinanceira\SaldoCommand as ContaFinanceiraSaldoCommand;
 use ContaAzulCli\Command\Financeiro\AlteracoesCommand;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
+use ContaAzulCli\Command\Support\ResourceIdCommand;
+use ContaAzulCli\Command\Support\ResourceIdJsonCommand;
+use ContaAzulCli\Command\Support\ResourceJsonCommand;
+use ContaAzulCli\Command\Support\ResourceListCommand;
 use ContaAzulCli\Command\Parcela\BaixarCommand;
 use ContaAzulCli\Command\Parcela\GetCommand as ParcelaGetCommand;
 use ContaAzulCli\Command\Protocolo\GetCommand as ProtocoloGetCommand;
@@ -86,6 +92,22 @@ final class ContaAzulApplication extends Application
             );
             $client = new FinanceiroClient($config, $authManager, $logger, $redactor, $httpClient);
             $pessoasClient = new PessoasClient($config, $authManager, $logger, $redactor, $httpClient);
+            $produtosClient = new ProdutosClient($config, $authManager, $logger, $redactor, $httpClient);
+            $servicosClient = new ServicosClient($config, $authManager, $logger, $redactor, $httpClient);
+
+            $productFilters = [
+                'busca' => 'busca',
+                'codigo' => 'codigo',
+                'ids' => 'ids',
+                'status' => 'status',
+                'categoria-id' => 'categoria_id',
+            ];
+            $serviceFilters = [
+                'busca' => 'busca',
+                'codigo' => 'codigo',
+                'ids' => 'ids',
+                'status' => 'status',
+            ];
 
             $this->addCommands([
                 new LoginCommand($authManager, $callbackServer, $errorEnvelope),
@@ -112,6 +134,144 @@ final class ContaAzulApplication extends Application
                 new PessoaBatchCommand($pessoasClient, $errorEnvelope, $jsonRenderer, 'pessoa inativar', 'deactivate'),
                 new PessoaBatchCommand($pessoasClient, $errorEnvelope, $jsonRenderer, 'pessoa excluir', 'delete'),
                 new PessoaContaConectadaCommand($pessoasClient, $errorEnvelope, $jsonRenderer),
+                new ResourceListCommand(
+                    'produto list',
+                    'Lista produtos por filtros',
+                    $produtosClient->listProdutos(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    $paginationValidator,
+                    $productFilters,
+                ),
+                new ResourceJsonCommand(
+                    'produto create',
+                    'Cria um produto',
+                    $produtosClient->createProduto(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    'Payload JSON do produto',
+                ),
+                new ResourceIdCommand(
+                    'produto get',
+                    'Busca um produto por ID',
+                    $produtosClient->getProduto(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    'ID do produto',
+                ),
+                new ResourceIdJsonCommand(
+                    'produto update',
+                    'Atualiza parcialmente um produto',
+                    $produtosClient->updateProduto(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    'ID do produto',
+                    'Payload JSON do produto',
+                ),
+                new ResourceIdCommand(
+                    'produto delete',
+                    'Exclui um produto',
+                    $produtosClient->deleteProduto(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    'ID do produto',
+                ),
+                new ResourceListCommand(
+                    'produto categorias',
+                    'Lista categorias de produtos',
+                    $produtosClient->listCategoriasProduto(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    $paginationValidator,
+                    ['busca' => 'busca'],
+                ),
+                new ResourceListCommand(
+                    'produto cest',
+                    'Lista códigos CEST',
+                    $produtosClient->listCest(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    $paginationValidator,
+                    ['busca' => 'busca', 'codigo' => 'codigo'],
+                ),
+                new ResourceListCommand(
+                    'produto ncm',
+                    'Lista códigos NCM',
+                    $produtosClient->listNcm(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    $paginationValidator,
+                    ['busca' => 'busca', 'codigo' => 'codigo'],
+                ),
+                new ResourceListCommand(
+                    'produto unidades-medida',
+                    'Lista unidades de medida',
+                    $produtosClient->listUnidadesMedida(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    $paginationValidator,
+                    ['busca' => 'busca', 'codigo' => 'codigo'],
+                ),
+                new ResourceListCommand(
+                    'produto ecommerce-categorias',
+                    'Lista categorias de ecommerce',
+                    $produtosClient->listCategoriasEcommerce(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    $paginationValidator,
+                    ['busca' => 'busca'],
+                ),
+                new ResourceListCommand(
+                    'produto ecommerce-marcas',
+                    'Lista marcas de ecommerce',
+                    $produtosClient->listMarcasEcommerce(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    $paginationValidator,
+                    ['busca' => 'busca'],
+                ),
+                new ResourceListCommand(
+                    'servico list',
+                    'Lista serviços por filtros',
+                    $servicosClient->listServicos(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    $paginationValidator,
+                    $serviceFilters,
+                ),
+                new ResourceJsonCommand(
+                    'servico create',
+                    'Cria um serviço',
+                    $servicosClient->createServico(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    'Payload JSON do serviço',
+                ),
+                new ResourceIdCommand(
+                    'servico get',
+                    'Busca um serviço por ID',
+                    $servicosClient->getServico(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    'ID do serviço',
+                ),
+                new ResourceIdJsonCommand(
+                    'servico update',
+                    'Atualiza parcialmente um serviço',
+                    $servicosClient->updateServico(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    'ID do serviço',
+                    'Payload JSON do serviço',
+                ),
+                new ResourceJsonCommand(
+                    'servico delete',
+                    'Exclui serviços em lote',
+                    $servicosClient->deleteServicos(...),
+                    $errorEnvelope,
+                    $jsonRenderer,
+                    'Payload JSON com os IDs dos serviços',
+                ),
             ]);
         } catch (\Throwable $e) {
             // Typically CA_CLIENT_ID / CA_CLIENT_SECRET missing, but anything

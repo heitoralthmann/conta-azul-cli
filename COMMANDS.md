@@ -41,6 +41,22 @@ Cada endpoint traz uma marca de confiança:
 | `pessoa inativar` | `POST /v1/pessoas/inativar` | ⚠️ |
 | `pessoa excluir` | `POST /v1/pessoas/excluir` | ⚠️ |
 | `pessoa conta-conectada` | `GET /v1/pessoas/conta-conectada` | ⚠️ |
+| `produto list` | `GET /v1/produtos` | ⚠️ |
+| `produto create` | `POST /v1/produtos` | ⚠️ |
+| `produto get` | `GET /v1/produtos/{id}` | ⚠️ |
+| `produto update` | `PATCH /v1/produtos/{id}` | ⚠️ |
+| `produto delete` | `DELETE /v1/produtos/{id}` | ⚠️ |
+| `produto categorias` | `GET /v1/produtos/categorias` | ⚠️ |
+| `produto cest` | `GET /v1/produtos/cest` | ⚠️ |
+| `produto ncm` | `GET /v1/produtos/ncm` | ⚠️ |
+| `produto unidades-medida` | `GET /v1/produtos/unidades-medida` | ⚠️ |
+| `produto ecommerce-categorias` | `GET /v1/produtos/ecommerce-categorias` | ⚠️ |
+| `produto ecommerce-marcas` | `GET /v1/produtos/ecommerce-marcas` | ⚠️ |
+| `servico list` | `GET /v1/servicos` | ⚠️ |
+| `servico create` | `POST /v1/servicos` | ⚠️ |
+| `servico get` | `GET /v1/servicos/{id}` | ⚠️ |
+| `servico update` | `PATCH /v1/servicos/{id}` | ⚠️ |
+| `servico delete` | `DELETE /v1/servicos` | ⚠️ |
 
 ---
 
@@ -366,6 +382,87 @@ Os payloads de criação e atualização seguem o schema da API e são enviados 
 
 ---
 
+## Produtos
+
+Os payloads de criação e atualização seguem o schema da API e são enviados sem transformação. Use `--json` com um objeto JSON.
+
+### `produto list` ⚠️
+
+`GET /v1/produtos`
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `50` | Itens por página |
+| filtros | não | — | `--busca`, `--codigo`, `--ids`, `--status`, `--categoria-id` |
+
+### `produto create` ⚠️
+
+`POST /v1/produtos`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Objeto JSON do produto |
+
+### `produto get` ⚠️, `produto delete` ⚠️
+
+`GET /v1/produtos/{id}` e `DELETE /v1/produtos/{id}`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | ID do produto |
+
+### `produto update` ⚠️
+
+`PATCH /v1/produtos/{id}` — atualiza apenas os campos enviados.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | ID do produto |
+| `--json` | **sim** | Objeto JSON da atualização |
+
+### Catálogos de produtos ⚠️
+
+Os comandos `produto categorias`, `produto cest`, `produto ncm`, `produto unidades-medida`, `produto ecommerce-categorias` e `produto ecommerce-marcas` consultam, respectivamente, os endpoints `GET /v1/produtos/categorias`, `/cest`, `/ncm`, `/unidades-medida`, `/ecommerce-categorias` e `/ecommerce-marcas`.
+
+Todos aceitam `--pagina`, `--tamanho-pagina` e `--busca`; CEST, NCM e unidades de medida também aceitam `--codigo`.
+
+---
+
+## Serviços
+
+Os payloads seguem o schema da API e são enviados sem transformação.
+
+### `servico list` ⚠️
+
+`GET /v1/servicos`
+
+Aceita `--pagina`, `--tamanho-pagina`, `--busca`, `--codigo`, `--ids` e `--status`.
+
+### `servico create` ⚠️
+
+`POST /v1/servicos`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Objeto JSON do serviço |
+
+### `servico get` ⚠️ e `servico update` ⚠️
+
+`GET /v1/servicos/{id}` e `PATCH /v1/servicos/{id}`.
+
+`servico get` recebe `<id>`. `servico update` recebe `<id>` e `--json` com os campos a atualizar.
+
+### `servico delete` ⚠️
+
+`DELETE /v1/servicos` — exclui serviços em lote.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Objeto JSON com os IDs dos serviços |
+
+---
+
 ## Fora do escopo do CLI
 
 Endpoints que **existem e respondem**, mas ainda não têm comando:
@@ -393,7 +490,7 @@ Duas armadilhas de nomenclatura, confirmadas em produção e responsáveis por p
 1. **O segmento `/financeiro/` só existe em parte dos recursos.** Categorias, centros de custo e contas financeiras ficam na raiz da `v1`.
 2. **A nomenclatura alterna plural e singular:** `categorias`, mas `centro-de-custo` e `conta-financeira`.
 
-Nunca deduza um path da documentação sem exercitá-lo. `tests/Unit/Api/FinanceiroClientTest.php` e `tests/Unit/Api/PessoasClientTest.php` travam os paths e parâmetros dos endpoints — estenda-os junto com qualquer endpoint novo.
+Nunca deduza um path da documentação sem exercitá-lo. `tests/Unit/Api/FinanceiroClientTest.php`, `tests/Unit/Api/PessoasClientTest.php` e `tests/Unit/Api/ProdutosServicosClientTest.php` travam os paths e parâmetros dos endpoints — estenda-os junto com qualquer endpoint novo.
 
 Lista autoritativa de operações: https://developers.contaazul.com/docs/financial-apis-openapi/v1 — o portal bloqueia `curl` e fetch automatizado (403), então abra no navegador.
 

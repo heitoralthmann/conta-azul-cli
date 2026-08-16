@@ -2,9 +2,9 @@
 
 Arquivo de controle: todos os endpoints publicados no [Portal do Desenvolvedor Conta Azul](https://developers.contaazul.com/aboutapis), agrupados por área funcional, com o que o `ca` já implementa marcado.
 
-**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas e a API de **Pessoas**. As demais áreas (Contratos, Produtos, Notas Fiscais, Serviços, Vendas, Orçamentos, Captura) estão listadas por completude.
+**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, as APIs de **Pessoas**, **Produtos** e **Serviços**. As demais áreas (Contratos, Notas Fiscais, Vendas, Orçamentos, Captura) estão listadas por completude.
 
-Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md`, `src/Api/FinanceiroClient.php` e `src/Api/PessoasClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
+Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md`, `src/Api/FinanceiroClient.php`, `src/Api/PessoasClient.php`, `src/Api/ProdutosClient.php` e `src/Api/ServicosClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
 
 ---
 
@@ -84,29 +84,29 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 
 ## 📦 Produtos e Serviços — Produtos
 
-11 endpoints. Fora do escopo do CLI.
+11 endpoints. `src/Api/ProdutosClient.php`.
 
-- [ ] `GET /v1/produtos` — buscar produtos por filtro
-- [ ] `POST /v1/produtos` — criar produto
-- [ ] `GET /v1/produtos/{id}` — buscar produto por id
-- [ ] `PATCH /v1/produtos/{id}` — atualizar produto
-- [ ] `DELETE /v1/produtos/{id}` — excluir produto
-- [ ] `GET /v1/produtos/categorias`
-- [ ] `GET /v1/produtos/cest`
-- [ ] `GET /v1/produtos/ncm`
-- [ ] `GET /v1/produtos/unidades-medida`
-- [ ] `GET /v1/produtos/ecommerce-categorias`
-- [ ] `GET /v1/produtos/ecommerce-marcas`
+- [x] `GET /v1/produtos` — `produto list`
+- [x] `POST /v1/produtos` — `produto create`
+- [x] `GET /v1/produtos/{id}` — `produto get`
+- [x] `PATCH /v1/produtos/{id}` — `produto update`
+- [x] `DELETE /v1/produtos/{id}` — `produto delete`
+- [x] `GET /v1/produtos/categorias` — `produto categorias`
+- [x] `GET /v1/produtos/cest` — `produto cest`
+- [x] `GET /v1/produtos/ncm` — `produto ncm`
+- [x] `GET /v1/produtos/unidades-medida` — `produto unidades-medida`
+- [x] `GET /v1/produtos/ecommerce-categorias` — `produto ecommerce-categorias`
+- [x] `GET /v1/produtos/ecommerce-marcas` — `produto ecommerce-marcas`
 
 ## 📦 Produtos e Serviços — Serviços
 
-5 endpoints. Fora do escopo do CLI.
+5 endpoints. `src/Api/ServicosClient.php`.
 
-- [ ] `GET /v1/servicos` — buscar serviços por filtro
-- [ ] `POST /v1/servicos` — criar serviço
-- [ ] `GET /v1/servicos/{id}` — buscar serviço por id
-- [ ] `PATCH /v1/servicos/{id}` — atualizar serviço
-- [ ] `DELETE /v1/servicos` — excluir serviços em lote
+- [x] `GET /v1/servicos` — `servico list`
+- [x] `POST /v1/servicos` — `servico create`
+- [x] `GET /v1/servicos/{id}` — `servico get`
+- [x] `PATCH /v1/servicos/{id}` — `servico update`
+- [x] `DELETE /v1/servicos` — `servico delete`
 
 ## 🧮 Notas Fiscais
 
@@ -161,10 +161,10 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 | Protocolos | 1 | 1 |
 | Contratos | 0 | 3 |
 | Pessoas / Fornecedores | 10 | 10 |
-| Produtos | 0 | 11 |
-| Serviços | 0 | 5 |
+| Produtos | 11 | 11 |
+| Serviços | 5 | 5 |
 | Notas Fiscais | 0 | 4 |
 | Vendas | 0 | 9 |
 | Orçamentos | 0 | 4 |
 | Captura | 0 | 5 |
-| **Total** | **24** | **72** |
+| **Total** | **40** | **72** |

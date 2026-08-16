@@ -1,6 +1,6 @@
 {
     "name": "contaazul-cli/cli",
-    "description": "CLI PHP/Symfony para a API Conta Azul (família Financeiro)",
+    "description": "CLI PHP/Symfony para as APIs Financeiro, Pessoas, Produtos e Serviços da Conta Azul",
     "type": "project",
     "license": "MIT",
     "require": {
