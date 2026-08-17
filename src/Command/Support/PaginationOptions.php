@@ -56,6 +56,17 @@ final readonly class PaginationOptions
     return new self($page, $pageSize);
   }
 
+  /**
+   * Creates validated pagination options from already-resolved values.
+   *
+   * @throws CliException when the page size is unsupported.
+   */
+  public static function fromValues(int $page, int $pageSize, PaginationValidator $validator): self {
+    $validator->validatePageSize($pageSize);
+
+    return new self($page, $pageSize);
+  }
+
   /** Returns the requested one-based page number. */
   public function page(): int {
     return $this->page;

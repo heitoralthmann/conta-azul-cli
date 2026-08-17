@@ -51,7 +51,7 @@ final class HttpApiTransport implements ApiTransportInterface
    * {@inheritDoc}
    */
   public function request(string $method, string $path, array $options = []): array {
-    $url     = $this->config->getApiBaseUrl() . $path;
+    $url     = $this->config->apiBaseUrl . $path;
     $attempt = 0;
 
     while (true) {

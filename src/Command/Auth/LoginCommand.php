@@ -10,7 +10,6 @@ use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Output\ErrorEnvelope;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /** Runs the browser-based OAuth login flow. */
@@ -32,7 +31,7 @@ final class LoginCommand extends Command
   }
 
   /** Starts OAuth, waits for the local callback, and stores the token. */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
+  public function __invoke(OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($output): void {
           $authUrl = $this->authManager->startLoginFlow();

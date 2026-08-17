@@ -31,7 +31,7 @@ final class TokenStore implements TokenRepositoryInterface
 
   /** Creates a store using the configured token file path. */
   public function __construct(Configuration $config) {
-    $this->tokenPath = $config->getTokenPath();
+    $this->tokenPath = $config->tokenPath;
   }
 
   /** Persists a token atomically enough for concurrent CLI invocations. */

@@ -8,13 +8,9 @@ use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
+use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use function is_string;
 
 /** Fetches one financial installment by identifier. */
 #[AsCommand(name: 'parcela get', description: 'Obtém uma parcela pelo ID')]
@@ -34,17 +30,14 @@ final class GetCommand extends Command
     parent::__construct();
   }
 
-  /** Declares the required installment identifier argument. */
-  protected function configure(): void {
-    $this->addArgument('id', InputArgument::REQUIRED, 'ID da parcela');
-  }
-
   /** Fetches the installment and renders a normalized error on failure. */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
+  public function __invoke(
+      #[Argument(description: 'ID da parcela')]
+      string $id,
+  ): int {
     return $this->commandExecutor->execute(
-        function () use ($input): void {
-          $id = $input->getArgument('id');
-          $this->jsonRenderer->render($this->client->getParcela(is_string($id) ? $id : ''));
+        function () use ($id): void {
+          $this->jsonRenderer->render($this->client->getParcela($id));
         },
     );
   }

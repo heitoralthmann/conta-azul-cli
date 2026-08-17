@@ -10,8 +10,6 @@ use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 /** Fetches the company associated with the connected account. */
 #[AsCommand(name: 'pessoa conta-conectada', description: 'Busca a empresa da conta conectada')]
@@ -32,7 +30,7 @@ final class ContaConectadaCommand extends Command
   }
 
   /** Fetches the connected account and renders output or a normalized error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
+  public function __invoke(): int {
     return $this->commandExecutor->execute(
         function (): void {
           $this->jsonRenderer->render($this->client->getContaConectada());

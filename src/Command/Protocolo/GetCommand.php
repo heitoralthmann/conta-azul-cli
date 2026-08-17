@@ -8,13 +8,9 @@ use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
+use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use function is_string;
 
 /** Retrieves the status of an asynchronous operation by protocol ID. */
 #[AsCommand(name: 'protocolo get', description: 'Consulta o status de uma escrita assíncrona pelo protocol ID')]
@@ -34,17 +30,14 @@ final class GetCommand extends Command
     parent::__construct();
   }
 
-  /** Declares the required protocol identifier argument. */
-  protected function configure(): void {
-    $this->addArgument('id', InputArgument::REQUIRED, 'Protocol ID retornado pela operação assíncrona');
-  }
-
   /** Fetches protocol status and renders output or a normalized error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
+  public function __invoke(
+      #[Argument(description: 'Protocol ID retornado pela operação assíncrona')]
+      string $id,
+  ): int {
     return $this->commandExecutor->execute(
-        function () use ($input): void {
-          $id = $input->getArgument('id');
-          $this->jsonRenderer->render($this->client->getProtocolo(is_string($id) ? $id : ''));
+        function () use ($id): void {
+          $this->jsonRenderer->render($this->client->getProtocolo($id));
         },
     );
   }

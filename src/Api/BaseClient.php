@@ -8,6 +8,7 @@ use ContaAzulCli\Auth\AuthManager;
 use ContaAzulCli\Config\Configuration;
 use ContaAzulCli\Output\Logger;
 use ContaAzulCli\Output\Redactor;
+use Deprecated;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 use function is_string;
@@ -32,6 +33,7 @@ class BaseClient
    * The callback sleeper preserves the protected sleep seam used by legacy
    * tests and by callers that need deterministic retry behavior.
    */
+  #[Deprecated(message: 'Migrated away from; kept for backward compatibility only. See ApiClientSupport.')]
   public function __construct(
       Configuration $config,
       AuthManager $authManager,

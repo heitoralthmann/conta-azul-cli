@@ -11,9 +11,8 @@ use ContaAzulCli\Command\Support\PaginationOptions;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 /** Lists cost centers with shared pagination options. */
 #[AsCommand(name: 'centro-de-custo list', description: 'Lista centros de custo')]
@@ -34,16 +33,16 @@ final class ListCommand extends Command
     parent::__construct();
   }
 
-  /** Declares the shared pagination options. */
-  protected function configure(): void {
-    PaginationOptions::configure($this);
-  }
-
   /** Lists cost centers and renders output or a normalized error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
+  public function __invoke(
+      #[Option(description: 'Número da página')]
+      int $pagina = 1,
+      #[Option(name: 'tamanho-pagina', description: 'Itens por página')]
+      int $tamanhoPagina = 50,
+  ): int {
     return $this->commandExecutor->execute(
-        function () use ($input): void {
-          $pagination = PaginationOptions::fromInput($input, $this->paginationValidator);
+        function () use ($pagina, $tamanhoPagina): void {
+          $pagination = PaginationOptions::fromValues($pagina, $tamanhoPagina, $this->paginationValidator);
 
           $this->jsonRenderer->render($this->client->listCentrosDeCusto($pagination->page(), $pagination->pageSize()));
         },

@@ -53,9 +53,9 @@ final class EnvironmentConfigurationLoaderTest extends TestCase
     $configuration = (new EnvironmentConfigurationLoader())->load();
 
     self::assertInstanceOf(Configuration::class, $configuration);
-    self::assertSame('client-id', $configuration->getClientId());
-    self::assertSame('client-secret', $configuration->getClientSecret());
-    self::assertSame('finance', $configuration->getScope());
+    self::assertSame('client-id', $configuration->clientId);
+    self::assertSame('client-secret', $configuration->clientSecret);
+    self::assertSame('finance', $configuration->scope);
   }
 
   public function testConfigurationCanBeCreatedWithoutEnvironmentAccess(): void {
@@ -77,7 +77,7 @@ final class EnvironmentConfigurationLoaderTest extends TestCase
         ],
     );
 
-    self::assertSame('https://api.example.test', $configuration->getApiBaseUrl());
-    self::assertSame(30, $configuration->getCallbackTimeout());
+    self::assertSame('https://api.example.test', $configuration->apiBaseUrl);
+    self::assertSame(30, $configuration->callbackTimeout);
   }
 }

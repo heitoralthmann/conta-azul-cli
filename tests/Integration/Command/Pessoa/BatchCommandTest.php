@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ContaAzulCli\Tests\Integration\Command\Pessoa;
 
 use ContaAzulCli\Command\Pessoa\BatchCommand;
+use ContaAzulCli\Command\Pessoa\BatchOperation;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
@@ -16,18 +17,17 @@ use function json_decode;
 /** Covers the three bulk operations PessoaCommandModule wires this class to. */
 final class BatchCommandTest extends CommandTestCase
 {
-  /** @return array<string, array{'activate'|'deactivate'|'delete', string}> */
+  /** @return array<string, array{BatchOperation, string}> */
   public static function operations(): array {
     return [
-      'ativar' => ['activate', 'pessoa ativar'],
-      'inativar' => ['deactivate', 'pessoa inativar'],
-      'excluir' => ['delete', 'pessoa excluir'],
+      'ativar' => [BatchOperation::Activate, 'pessoa ativar'],
+      'inativar' => [BatchOperation::Deactivate, 'pessoa inativar'],
+      'excluir' => [BatchOperation::Delete, 'pessoa excluir'],
     ];
   }
 
-  /** @param 'activate'|'deactivate'|'delete' $operation */
   #[DataProvider('operations')]
-  public function testExecutesTheSelectedBulkOperation(string $operation, string $name): void {
+  public function testExecutesTheSelectedBulkOperation(BatchOperation $operation, string $name): void {
     $output  = $this->newOutput();
     $command = new BatchCommand(
         $this->pessoasClient([$this->jsonResponse(['sucesso' => ['p-1', 'p-2']])]),
@@ -51,7 +51,7 @@ final class BatchCommandTest extends CommandTestCase
         new ErrorEnvelope($output),
         new JsonRenderer($output),
         'pessoa ativar',
-        'activate',
+        BatchOperation::Activate,
     );
 
     $tester = $this->runCommand($command);

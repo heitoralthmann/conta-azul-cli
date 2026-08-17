@@ -11,12 +11,8 @@ use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use ContaAzulCli\Output\WarningEnvelope;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use function is_string;
 
 /** Lists financial event changes for reconciliation. */
 #[AsCommand(
@@ -41,34 +37,25 @@ final class AlteracoesCommand extends Command
     parent::__construct();
   }
 
-  /** Declares optional ISO-8601 interval boundaries. */
-  protected function configure(): void {
-    $this
-          ->addOption(
-              'data-inicio',
-              null,
-              InputOption::VALUE_REQUIRED,
-              'Início em ISO 8601 sem timezone (ex: 2026-08-01T00:00:00). Padrão: início do mês corrente',
-          )
-          ->addOption(
-              'data-fim',
-              null,
-              InputOption::VALUE_REQUIRED,
-              'Fim em ISO 8601 sem timezone (ex: 2026-08-31T23:59:59). Padrão: fim do mês corrente',
-          );
-  }
-
   /** Resolves the interval, warns about defaults, and fetches changes. */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
+  public function __invoke(
+      #[Option(
+          name: 'data-inicio',
+          description: 'Início em ISO 8601 sem timezone (ex: 2026-08-01T00:00:00). Padrão: início do mês corrente',
+      )]
+      string|null $dataInicio = null,
+      #[Option(
+          name: 'data-fim',
+          description: 'Fim em ISO 8601 sem timezone (ex: 2026-08-31T23:59:59). Padrão: fim do mês corrente',
+      )]
+      string|null $dataFim = null,
+  ): int {
     return $this->commandExecutor->execute(
-        function () use ($input): void {
-          $inicioRaw = $input->getOption('data-inicio');
-          $fimRaw    = $input->getOption('data-fim');
+        function () use ($dataInicio, $dataFim): void {
+          $inicio = $dataInicio !== null && $dataInicio !== '' ? $dataInicio : $this->periodoPadrao->primeiroInstante();
+          $fim    = $dataFim !== null && $dataFim !== ''       ? $dataFim    : $this->periodoPadrao->ultimoInstante();
 
-          $inicio = is_string($inicioRaw) && $inicioRaw !== '' ? $inicioRaw : $this->periodoPadrao->primeiroInstante();
-          $fim    = is_string($fimRaw) && $fimRaw !== '' ? $fimRaw : $this->periodoPadrao->ultimoInstante();
-
-          if ($inicio !== $inicioRaw || $fim !== $fimRaw) {
+          if ($inicio !== $dataInicio || $fim !== $dataFim) {
               $this->warningEnvelope->renderToStderr(
                   'Intervalo não informado por completo; usando ' . $inicio . ' a ' . $fim . '. '
                       . 'Use --data-inicio e --data-fim para definir outro.',

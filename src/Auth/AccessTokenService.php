@@ -56,7 +56,7 @@ final class AccessTokenService implements AccessTokenServiceInterface
 
   /** Resolves a token while the caller holds the refresh lock. */
   private function resolveToken(): string {
-    $bootstrap = $this->config->getBootstrapRefreshToken();
+    $bootstrap = $this->config->bootstrapRefreshToken;
     if ($bootstrap !== null) {
       $token = $this->oauthGateway->refresh($bootstrap);
       $this->tokenRepository->save($token);

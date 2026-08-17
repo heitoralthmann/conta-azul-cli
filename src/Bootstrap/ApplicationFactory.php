@@ -55,9 +55,9 @@ final class ApplicationFactory
     $oauthClient    = new OAuthClient($httpClient, $config);
     $authManager    = new AuthManager($tokenStore, $oauthClient, $config);
     $callbackServer = new CallbackServer(
-        timeoutSeconds: $config->getCallbackTimeout(),
-        certFile: $config->getCallbackCertFile(),
-        keyFile: $config->getCallbackKeyFile(),
+        timeoutSeconds: $config->callbackTimeout,
+        certFile: $config->callbackCertFile,
+        keyFile: $config->callbackKeyFile,
     );
 
     $financeiroClient = new FinanceiroClient($config, $authManager, $this->logger, $redactor, $httpClient);

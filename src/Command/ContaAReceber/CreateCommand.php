@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace ContaAzulCli\Command\ContaAReceber;
 
 use ContaAzulCli\Api\FinanceiroClient;
-use ContaAzulCli\Command\Support\AsyncOptions;
 use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Command\Support\JsonPayload;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 
 /** Creates a receivable from JSON and optionally waits for completion. */
 #[AsCommand(name: 'conta-a-receber create', description: 'Cria uma conta a receber')]
@@ -34,23 +31,20 @@ final class CreateCommand extends Command
     parent::__construct();
   }
 
-  /** Declares the JSON payload and asynchronous options. */
-  protected function configure(): void {
-    $this
-          ->addOption('json', null, InputOption::VALUE_REQUIRED, 'Payload JSON da conta a receber');
-    AsyncOptions::configure($this);
-  }
-
   /** Creates the receivable and renders output or a normalized error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
+  public function __invoke(
+      #[Option(description: 'Payload JSON da conta a receber')]
+      string|null $json = null,
+      #[Option(name: 'poll-timeout', description: 'Timeout de polling em segundos')]
+      int $pollTimeout = 60,
+      #[Option(name: 'no-wait', description: 'Retorna imediatamente sem aguardar confirmação assíncrona')]
+      bool $noWait = false,
+  ): int {
     return $this->commandExecutor->execute(
-        function () use ($input): void {
-          $payload      = JsonPayload::object($input->getOption('json'));
-          $asyncOptions = AsyncOptions::fromInput($input);
+        function () use ($json, $pollTimeout, $noWait): void {
+          $payload = JsonPayload::object($json);
 
-          $this->jsonRenderer->render(
-              $this->client->createContaAReceber($payload, $asyncOptions->pollTimeout(), $asyncOptions->noWait()),
-          );
+          $this->jsonRenderer->render($this->client->createContaAReceber($payload, $pollTimeout, $noWait));
         },
     );
   }

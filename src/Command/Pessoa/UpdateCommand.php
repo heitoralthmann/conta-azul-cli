@@ -9,14 +9,10 @@ use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Command\Support\JsonPayload;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
+use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use function is_string;
 
 /** Replaces a person using a JSON payload. */
 #[AsCommand(name: 'pessoa update', description: 'Atualiza integralmente uma pessoa')]
@@ -36,24 +32,16 @@ final class UpdateCommand extends Command
     parent::__construct();
   }
 
-  /** Declares the person identifier and JSON payload options. */
-  protected function configure(): void {
-    $this
-          ->addArgument('id', InputArgument::REQUIRED, 'ID da pessoa')
-          ->addOption('json', null, InputOption::VALUE_REQUIRED, 'Payload JSON da pessoa');
-  }
-
   /** Parses input, updates the person, and renders output or an error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
+  public function __invoke(
+      #[Argument(description: 'ID da pessoa')]
+      string $id,
+      #[Option(description: 'Payload JSON da pessoa')]
+      string|null $json = null,
+  ): int {
     return $this->commandExecutor->execute(
-        function () use ($input): void {
-          $id = $input->getArgument('id');
-          $this->jsonRenderer->render(
-              $this->client->updatePessoa(
-                  is_string($id) ? $id : '',
-                  JsonPayload::object($input->getOption('json')),
-              ),
-          );
+        function () use ($id, $json): void {
+          $this->jsonRenderer->render($this->client->updatePessoa($id, JsonPayload::object($json)));
         },
     );
   }

@@ -10,35 +10,49 @@ namespace ContaAzulCli\Config;
  * The preferred construction path is {@see EnvironmentConfigurationLoader}.
  * The no-argument constructor remains supported for existing integrations and
  * delegates environment access to that loader.
+ *
+ * @property-read string $clientId OAuth client identifier.
+ * @property-read string $clientSecret OAuth client secret.
+ * @property-read string $redirectUri OAuth redirect URI.
+ * @property-read string|null $scope Optional OAuth scope.
+ * @property-read string $apiBaseUrl Conta Azul API base URL, without a trailing slash.
+ * @property-read string $authBaseUrl OAuth authorization server base URL, without a trailing slash.
+ * @property-read string $authorizeUrl Complete OAuth authorization endpoint URL.
+ * @property-read string $tokenUrl Complete OAuth token endpoint URL.
+ * @property-read string $tokenPath Expanded local token file path.
+ * @property-read string|null $bootstrapRefreshToken Optional bootstrap refresh token.
+ * @property-read string|null $callbackCertFile Optional TLS callback certificate path.
+ * @property-read string|null $callbackKeyFile Optional TLS callback private key path.
+ * @property-read int $callbackTimeout Callback server timeout in seconds.
  */
 final class Configuration
 {
   /** Client identifier used for OAuth requests. */
-  private readonly string $clientId;
+  public readonly string $clientId;
   /** Client secret used for OAuth requests. */
-  private readonly string $clientSecret;
+  public readonly string $clientSecret;
   /** OAuth redirect URI. */
-  private readonly string $redirectUri;
+  public readonly string $redirectUri;
   /** Optional OAuth scope. */
-  private readonly string|null $scope;
+  public readonly string|null $scope;
   /** Conta Azul API base URL. */
-  private readonly string $apiBaseUrl;
+  public readonly string $apiBaseUrl;
   /** OAuth authorization server base URL. */
-  private readonly string $authBaseUrl;
+  public readonly string $authBaseUrl;
   /** OAuth authorization endpoint URL. */
-  private readonly string $authorizeUrl;
+  public readonly string $authorizeUrl;
   /** OAuth token endpoint URL. */
-  private readonly string $tokenUrl;
+  public readonly string $tokenUrl;
   /** File path used to persist tokens. */
-  private readonly string $tokenPath;
+  public readonly string $tokenPath;
   /** Optional bootstrap refresh token. */
-  private readonly string|null $bootstrapRefreshToken;
+  public readonly string|null $bootstrapRefreshToken;
   /** Optional callback TLS certificate path. */
-  private readonly string|null $callbackCertFile;
+  public readonly string|null $callbackCertFile;
   /** Optional callback TLS key path. */
-  private readonly string|null $callbackKeyFile;
+  public readonly string|null $callbackKeyFile;
   /** Callback server timeout in seconds. */
-  private readonly int $callbackTimeout;
+  public readonly int $callbackTimeout;
 
   /**
    * Creates a configuration value object from normalized values.
@@ -119,70 +133,5 @@ final class Configuration
    */
   public static function fromValues(array $values): self {
     return new self($values);
-  }
-
-  /** Returns the OAuth client identifier. */
-  public function getClientId(): string {
-    return $this->clientId;
-  }
-
-  /** Returns the OAuth client secret. */
-  public function getClientSecret(): string {
-    return $this->clientSecret;
-  }
-
-  /** Returns the OAuth redirect URI. */
-  public function getRedirectUri(): string {
-    return $this->redirectUri;
-  }
-
-  /** Returns the Conta Azul API base URL without a trailing slash. */
-  public function getApiBaseUrl(): string {
-    return $this->apiBaseUrl;
-  }
-
-  /** Returns the OAuth service base URL without a trailing slash. */
-  public function getAuthBaseUrl(): string {
-    return $this->authBaseUrl;
-  }
-
-  /** Returns the complete OAuth authorization endpoint URL. */
-  public function getAuthorizeUrl(): string {
-    return $this->authorizeUrl;
-  }
-
-  /** Returns the complete OAuth token endpoint URL. */
-  public function getTokenUrl(): string {
-    return $this->tokenUrl;
-  }
-
-  /** Returns the expanded local token file path. */
-  public function getTokenPath(): string {
-    return $this->tokenPath;
-  }
-
-  /** Returns the optional bootstrap refresh token. */
-  public function getBootstrapRefreshToken(): string|null {
-    return $this->bootstrapRefreshToken;
-  }
-
-  /** Returns the optional OAuth scope. */
-  public function getScope(): string|null {
-    return $this->scope;
-  }
-
-  /** Returns the optional TLS callback certificate path. */
-  public function getCallbackCertFile(): string|null {
-    return $this->callbackCertFile;
-  }
-
-  /** Returns the optional TLS callback private key path. */
-  public function getCallbackKeyFile(): string|null {
-    return $this->callbackKeyFile;
-  }
-
-  /** Returns the callback server timeout in seconds. */
-  public function getCallbackTimeout(): int {
-    return $this->callbackTimeout;
   }
 }

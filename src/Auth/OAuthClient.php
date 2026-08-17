@@ -37,7 +37,7 @@ final class OAuthClient implements OAuthGatewayInterface
         [
           'grant_type'   => 'authorization_code',
           'code'         => $code,
-          'redirect_uri' => $this->config->getRedirectUri(),
+          'redirect_uri' => $this->config->redirectUri,
         ],
     );
   }
@@ -57,13 +57,13 @@ final class OAuthClient implements OAuthGatewayInterface
     $isCodeExchange = ($body['grant_type'] ?? '') === 'authorization_code';
 
     $credentials = base64_encode(
-        $this->config->getClientId() . ':' . $this->config->getClientSecret(),
+        $this->config->clientId . ':' . $this->config->clientSecret,
     );
 
     try {
       $response = $this->httpClient->request(
           'POST',
-          $this->config->getTokenUrl(),
+          $this->config->tokenUrl,
           [
             'headers' => [
               'Authorization' => 'Basic ' . $credentials,
@@ -129,8 +129,8 @@ final class OAuthClient implements OAuthGatewayInterface
    * session, so when the hosts disagree the error says so outright.
    */
   private function endpointMismatchHint(): string {
-    $authorizeHost = parse_url($this->config->getAuthorizeUrl(), PHP_URL_HOST);
-    $tokenHost     = parse_url($this->config->getTokenUrl(), PHP_URL_HOST);
+    $authorizeHost = parse_url($this->config->authorizeUrl, PHP_URL_HOST);
+    $tokenHost     = parse_url($this->config->tokenUrl, PHP_URL_HOST);
 
     if (! is_string($authorizeHost) || ! is_string($tokenHost) || $authorizeHost === $tokenHost) {
       return '';

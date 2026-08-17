@@ -60,16 +60,16 @@ final class ProtocolPoller
       }
 
       $rawStatus = $data['status'] ?? '';
-      $status    = is_string($rawStatus) ? $rawStatus : '';
+      $status    = is_string($rawStatus) ? ProtocolStatus::tryFrom($rawStatus) : null;
 
-      if ($status === 'SUCCESS') {
+      if ($status === ProtocolStatus::Success) {
         /** @var array<mixed> $payload */
         $payload = is_array($data['data'] ?? null) ? $data['data'] : $data;
 
         return $payload;
       }
 
-      if ($status === 'ERROR') {
+      if ($status === ProtocolStatus::Error) {
         throw new CliException(
             ErrorKind::ServerError,
             false,

@@ -11,12 +11,8 @@ use ContaAzulCli\Command\Support\PaginationOptions;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use function is_string;
 
 /** Lists people with pagination and API filter options. */
 #[AsCommand(name: 'pessoa list', description: 'Lista pessoas por filtros')]
@@ -37,68 +33,107 @@ final class ListCommand extends Command
     parent::__construct();
   }
 
-  /** Declares person filters and shared pagination options. */
-  protected function configure(): void {
-    $this
-          ->addOption('tipo-ordenacao', null, InputOption::VALUE_REQUIRED, 'Campo de ordenação')
-          ->addOption('ordem-ordenacao', null, InputOption::VALUE_REQUIRED, 'Direção da ordenação')
-          ->addOption('busca', null, InputOption::VALUE_REQUIRED, 'Busca por nome ou documento')
-          ->addOption('ids', null, InputOption::VALUE_REQUIRED, 'IDs das pessoas')
-          ->addOption('documentos', null, InputOption::VALUE_REQUIRED, 'Documentos das pessoas')
-          ->addOption('paises', null, InputOption::VALUE_REQUIRED, 'Países das pessoas')
-          ->addOption('cidades', null, InputOption::VALUE_REQUIRED, 'Cidades das pessoas')
-          ->addOption('ufs', null, InputOption::VALUE_REQUIRED, 'UFs das pessoas')
-          ->addOption('codigos-pessoa', null, InputOption::VALUE_REQUIRED, 'Códigos das pessoas')
-          ->addOption('emails', null, InputOption::VALUE_REQUIRED, 'Emails das pessoas')
-          ->addOption('tipos-pessoa', null, InputOption::VALUE_REQUIRED, 'Tipos de pessoa')
-          ->addOption('nomes', null, InputOption::VALUE_REQUIRED, 'Nomes das pessoas')
-          ->addOption('telefones', null, InputOption::VALUE_REQUIRED, 'Telefones das pessoas')
-          ->addOption('data-criacao-inicio', null, InputOption::VALUE_REQUIRED, 'Data inicial de criação')
-          ->addOption('data-criacao-fim', null, InputOption::VALUE_REQUIRED, 'Data final de criação')
-          ->addOption('data-alteracao-de', null, InputOption::VALUE_REQUIRED, 'Data inicial de alteração')
-          ->addOption('data-alteracao-ate', null, InputOption::VALUE_REQUIRED, 'Data final de alteração')
-          ->addOption('tipo-perfil', null, InputOption::VALUE_REQUIRED, 'Perfil da pessoa')
-          ->addOption('com-endereco', null, InputOption::VALUE_NONE, 'Retorna apenas pessoas com endereço');
-    PaginationOptions::configure($this);
-  }
-
   /** Collects filters, lists people, and renders output or an error. */
-  protected function execute(InputInterface $input, OutputInterface $output): int {
+  public function __invoke(
+      #[Option(description: 'Campo de ordenação')]
+      string|null $tipoOrdenacao = null,
+      #[Option(description: 'Direção da ordenação')]
+      string|null $ordemOrdenacao = null,
+      #[Option(description: 'Busca por nome ou documento')]
+      string|null $busca = null,
+      #[Option(description: 'IDs das pessoas')]
+      string|null $ids = null,
+      #[Option(description: 'Documentos das pessoas')]
+      string|null $documentos = null,
+      #[Option(description: 'Países das pessoas')]
+      string|null $paises = null,
+      #[Option(description: 'Cidades das pessoas')]
+      string|null $cidades = null,
+      #[Option(description: 'UFs das pessoas')]
+      string|null $ufs = null,
+      #[Option(name: 'codigos-pessoa', description: 'Códigos das pessoas')]
+      string|null $codigosPessoa = null,
+      #[Option(description: 'Emails das pessoas')]
+      string|null $emails = null,
+      #[Option(name: 'tipos-pessoa', description: 'Tipos de pessoa')]
+      string|null $tiposPessoa = null,
+      #[Option(description: 'Nomes das pessoas')]
+      string|null $nomes = null,
+      #[Option(description: 'Telefones das pessoas')]
+      string|null $telefones = null,
+      #[Option(name: 'data-criacao-inicio', description: 'Data inicial de criação')]
+      string|null $dataCriacaoInicio = null,
+      #[Option(name: 'data-criacao-fim', description: 'Data final de criação')]
+      string|null $dataCriacaoFim = null,
+      #[Option(name: 'data-alteracao-de', description: 'Data inicial de alteração')]
+      string|null $dataAlteracaoDe = null,
+      #[Option(name: 'data-alteracao-ate', description: 'Data final de alteração')]
+      string|null $dataAlteracaoAte = null,
+      #[Option(name: 'tipo-perfil', description: 'Perfil da pessoa')]
+      string|null $tipoPerfil = null,
+      #[Option(name: 'com-endereco', description: 'Retorna apenas pessoas com endereço')]
+      bool $comEndereco = false,
+      #[Option(description: 'Número da página')]
+      int $pagina = 1,
+      #[Option(name: 'tamanho-pagina', description: 'Itens por página')]
+      int $tamanhoPagina = 50,
+  ): int {
     return $this->commandExecutor->execute(
-        function () use ($input): void {
-          $pagination = PaginationOptions::fromInput($input, $this->paginationValidator);
+        function () use (
+            $tipoOrdenacao,
+            $ordemOrdenacao,
+            $busca,
+            $ids,
+            $documentos,
+            $paises,
+            $cidades,
+            $ufs,
+            $codigosPessoa,
+            $emails,
+            $tiposPessoa,
+            $nomes,
+            $telefones,
+            $dataCriacaoInicio,
+            $dataCriacaoFim,
+            $dataAlteracaoDe,
+            $dataAlteracaoAte,
+            $tipoPerfil,
+            $comEndereco,
+            $pagina,
+            $tamanhoPagina,
+        ): void {
+          $pagination = PaginationOptions::fromValues($pagina, $tamanhoPagina, $this->paginationValidator);
 
           $optionMap = [
-            'tipo-ordenacao'    => 'tipo_ordenacao',
-            'ordem-ordenacao'   => 'ordem_ordenacao',
-            'busca'             => 'busca',
-            'ids'               => 'ids',
-            'documentos'        => 'documentos',
-            'paises'            => 'paises',
-            'cidades'           => 'cidades',
-            'ufs'               => 'ufs',
-            'codigos-pessoa'    => 'codigos_pessoa',
-            'emails'            => 'emails',
-            'tipos-pessoa'      => 'tipos_pessoa',
-            'nomes'             => 'nomes',
-            'telefones'         => 'telefones',
-            'data-criacao-inicio' => 'data_criacao_inicio',
-            'data-criacao-fim'    => 'data_criacao_fim',
-            'data-alteracao-de'   => 'data_alteracao_de',
-            'data-alteracao-ate'  => 'data_alteracao_ate',
-            'tipo-perfil'       => 'tipo_perfil',
+            'tipo_ordenacao' => $tipoOrdenacao,
+            'ordem_ordenacao' => $ordemOrdenacao,
+            'busca' => $busca,
+            'ids' => $ids,
+            'documentos' => $documentos,
+            'paises' => $paises,
+            'cidades' => $cidades,
+            'ufs' => $ufs,
+            'codigos_pessoa' => $codigosPessoa,
+            'emails' => $emails,
+            'tipos_pessoa' => $tiposPessoa,
+            'nomes' => $nomes,
+            'telefones' => $telefones,
+            'data_criacao_inicio' => $dataCriacaoInicio,
+            'data_criacao_fim' => $dataCriacaoFim,
+            'data_alteracao_de' => $dataAlteracaoDe,
+            'data_alteracao_ate' => $dataAlteracaoAte,
+            'tipo_perfil' => $tipoPerfil,
           ];
           $filters   = [];
-          foreach ($optionMap as $option => $queryName) {
-              $value = $input->getOption($option);
-            if (! is_string($value) || $value === '') {
+          foreach ($optionMap as $queryName => $value) {
+            if ($value === null || $value === '') {
                 continue;
             }
 
             $filters[$queryName] = $value;
           }
 
-          if ((bool) $input->getOption('com-endereco')) {
+          if ($comEndereco) {
               $filters['com_endereco'] = true;
           }
 

@@ -1,7 +1,7 @@
 # Conta Azul CLI
 
 [![Tests](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/tests.yml/badge.svg)](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/tests.yml)
-![PHP Version](https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white)
+![PHP Version](https://img.shields.io/badge/PHP-8.4%2B-777BB4?logo=php&logoColor=white)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 
 > **English:** unofficial PHP CLI wrapping the Conta Azul API (Financeiro, Pessoas, Produtos, Serviços) for consumption by AI agents. The Conta Azul API is Brazil-only, so the rest of this documentation is in Portuguese.
@@ -18,7 +18,7 @@ O consumidor primário é um **agente**, não um humano. Por isso a saída é JS
 
 ## Requisitos
 
-- PHP **8.3+** com as extensões `mbstring`, `openssl` e `posix`
+- PHP **8.4+** com as extensões `mbstring`, `openssl` e `posix`
 - Composer
 - Uma aplicação registrada no portal de desenvolvedores da Conta Azul (`client_id` + `client_secret`)
 - Uma conta Conta Azul com **plano elegível para uso da API** (veja [Solução de problemas](#solução-de-problemas))

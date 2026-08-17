@@ -8,6 +8,7 @@ use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Command\CommandModuleInterface;
 use ContaAzulCli\Command\Pessoa\BatchCommand as PessoaBatchCommand;
+use ContaAzulCli\Command\Pessoa\BatchOperation;
 use ContaAzulCli\Command\Pessoa\ContaConectadaCommand as PessoaContaConectadaCommand;
 use ContaAzulCli\Command\Pessoa\CreateCommand as PessoaCreateCommand;
 use ContaAzulCli\Command\Pessoa\GetCommand as PessoaGetCommand;
@@ -40,9 +41,27 @@ final class PessoaCommandModule implements CommandModuleInterface
       new PessoaUpdateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new PessoaPatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new PessoaLegadoCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-      new PessoaBatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, 'pessoa ativar', 'activate'),
-      new PessoaBatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, 'pessoa inativar', 'deactivate'),
-      new PessoaBatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, 'pessoa excluir', 'delete'),
+      new PessoaBatchCommand(
+          $this->client,
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'pessoa ativar',
+          BatchOperation::Activate,
+      ),
+      new PessoaBatchCommand(
+          $this->client,
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'pessoa inativar',
+          BatchOperation::Deactivate,
+      ),
+      new PessoaBatchCommand(
+          $this->client,
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'pessoa excluir',
+          BatchOperation::Delete,
+      ),
       new PessoaContaConectadaCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
     ];
   }

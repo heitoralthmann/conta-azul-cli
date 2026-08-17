@@ -19,17 +19,13 @@ final class BatchCommand extends Command
 {
   private readonly CommandExecutor $commandExecutor;
 
-  /**
-   * Creates a command for a fixed bulk operation.
-   *
-   * @param 'activate'|'deactivate'|'delete' $operation
-   */
+  /** Creates a command for a fixed bulk operation. */
   public function __construct(
       private readonly PessoasClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
       private readonly JsonRenderer $jsonRenderer,
       string $name,
-      private readonly string $operation,
+      private readonly BatchOperation $operation,
       CommandExecutor|null $commandExecutor = null,
   ) {
     $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
@@ -38,9 +34,9 @@ final class BatchCommand extends Command
 
     $this->setDescription(
         match ($operation) {
-          'activate' => 'Ativa pessoas em lote',
-          'deactivate' => 'Inativa pessoas em lote',
-          'delete' => 'Exclui pessoas em lote',
+          BatchOperation::Activate => 'Ativa pessoas em lote',
+          BatchOperation::Deactivate => 'Inativa pessoas em lote',
+          BatchOperation::Delete => 'Exclui pessoas em lote',
         },
     );
   }
@@ -56,9 +52,9 @@ final class BatchCommand extends Command
         function () use ($input): void {
           $payload = JsonPayload::object($input->getOption('json'));
           $result  = match ($this->operation) {
-              'activate' => $this->client->activatePessoas($payload),
-              'deactivate' => $this->client->deactivatePessoas($payload),
-              'delete' => $this->client->deletePessoas($payload),
+              BatchOperation::Activate => $this->client->activatePessoas($payload),
+              BatchOperation::Deactivate => $this->client->deactivatePessoas($payload),
+              BatchOperation::Delete => $this->client->deletePessoas($payload),
           };
             $this->jsonRenderer->render($result);
         },

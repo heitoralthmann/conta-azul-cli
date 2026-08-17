@@ -32,7 +32,7 @@ abstract class CommandTestCase extends TestCase
     $application = new Application();
     $application->setAutoExit(false);
     $application->setCatchExceptions(false);
-    $application->add($command);
+    $application->addCommand($command);
 
     $tester = new CommandTester($command);
     $tester->execute($input, ['decorated' => false]);

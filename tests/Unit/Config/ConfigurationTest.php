@@ -74,7 +74,7 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertSame('https://api-v2.contaazul.com', $config->getApiBaseUrl());
+    self::assertSame('https://api-v2.contaazul.com', $config->apiBaseUrl);
   }
 
   public function testDefaultAuthBaseUrl(): void {
@@ -83,14 +83,14 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertSame('https://auth.contaazul.com', $config->getAuthBaseUrl());
+    self::assertSame('https://auth.contaazul.com', $config->authBaseUrl);
   }
 
   public function testCallbackTimeoutDefaultsToFiveMinutes(): void {
     putenv('CA_CLIENT_ID=id');
     putenv('CA_CLIENT_SECRET=secret');
 
-    self::assertSame(300, (new Configuration())->getCallbackTimeout());
+    self::assertSame(300, (new Configuration())->callbackTimeout);
   }
 
   public function testCallbackTimeoutIsReadFromEnv(): void {
@@ -98,7 +98,7 @@ final class ConfigurationTest extends TestCase
     putenv('CA_CLIENT_SECRET=secret');
     putenv('CA_CALLBACK_TIMEOUT=600');
 
-    self::assertSame(600, (new Configuration())->getCallbackTimeout());
+    self::assertSame(600, (new Configuration())->callbackTimeout);
   }
 
   public function testInvalidCallbackTimeoutFallsBackToTheDefault(): void {
@@ -106,7 +106,7 @@ final class ConfigurationTest extends TestCase
     putenv('CA_CLIENT_SECRET=secret');
     putenv('CA_CALLBACK_TIMEOUT=zero');
 
-    self::assertSame(300, (new Configuration())->getCallbackTimeout());
+    self::assertSame(300, (new Configuration())->callbackTimeout);
   }
 
   public function testZeroCallbackTimeoutFallsBackToTheDefault(): void {
@@ -115,7 +115,7 @@ final class ConfigurationTest extends TestCase
     putenv('CA_CLIENT_SECRET=secret');
     putenv('CA_CALLBACK_TIMEOUT=0');
 
-    self::assertSame(300, (new Configuration())->getCallbackTimeout());
+    self::assertSame(300, (new Configuration())->callbackTimeout);
   }
 
   public function testAuthorizeUrlDefaultsToTheAuthBaseUrl(): void {
@@ -124,7 +124,7 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertSame('https://auth.contaazul.com/oauth2/authorize', $config->getAuthorizeUrl());
+    self::assertSame('https://auth.contaazul.com/oauth2/authorize', $config->authorizeUrl);
   }
 
   public function testAuthorizeUrlDefaultFollowsACustomAuthBaseUrl(): void {
@@ -134,7 +134,7 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertSame('https://auth.example.test/oauth2/authorize', $config->getAuthorizeUrl());
+    self::assertSame('https://auth.example.test/oauth2/authorize', $config->authorizeUrl);
   }
 
   public function testAuthorizeUrlCanBeOverriddenWholesale(): void {
@@ -146,8 +146,8 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertSame('https://login.contaazul.com/#/oauth/authorize', $config->getAuthorizeUrl());
-    self::assertSame('https://auth.contaazul.com', $config->getAuthBaseUrl(), 'Token endpoint must stay independent.');
+    self::assertSame('https://login.contaazul.com/#/oauth/authorize', $config->authorizeUrl);
+    self::assertSame('https://auth.contaazul.com', $config->authBaseUrl, 'Token endpoint must stay independent.');
   }
 
   public function testTildeInTokenPathIsExpanded(): void {
@@ -158,7 +158,7 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertSame($home . '/my-tokens.json', $config->getTokenPath());
+    self::assertSame($home . '/my-tokens.json', $config->tokenPath);
   }
 
   public function testBootstrapRefreshTokenIsNullWhenNotSet(): void {
@@ -167,7 +167,7 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertNull($config->getBootstrapRefreshToken());
+    self::assertNull($config->bootstrapRefreshToken);
   }
 
   public function testBootstrapRefreshTokenIsReadFromEnv(): void {
@@ -177,7 +177,7 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertSame('my-refresh-token', $config->getBootstrapRefreshToken());
+    self::assertSame('my-refresh-token', $config->bootstrapRefreshToken);
   }
 
   public function testScopeIsNullWhenNotSet(): void {
@@ -186,7 +186,7 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertNull($config->getScope());
+    self::assertNull($config->scope);
   }
 
   public function testScopeIsReadFromEnv(): void {
@@ -196,7 +196,7 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertSame('sales', $config->getScope());
+    self::assertSame('sales', $config->scope);
   }
 
   public function testCallbackCertAndKeyAreNullWhenNotSet(): void {
@@ -205,8 +205,8 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertNull($config->getCallbackCertFile());
-    self::assertNull($config->getCallbackKeyFile());
+    self::assertNull($config->callbackCertFile);
+    self::assertNull($config->callbackKeyFile);
   }
 
   public function testCallbackCertAndKeyAreReadFromEnv(): void {
@@ -217,8 +217,8 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertSame('/tmp/cert.pem', $config->getCallbackCertFile());
-    self::assertSame('/tmp/key.pem', $config->getCallbackKeyFile());
+    self::assertSame('/tmp/cert.pem', $config->callbackCertFile);
+    self::assertSame('/tmp/key.pem', $config->callbackKeyFile);
   }
 
   public function testCallbackCertTildeIsExpanded(): void {
@@ -229,7 +229,7 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertSame($home . '/.certs/cert.pem', $config->getCallbackCertFile());
+    self::assertSame($home . '/.certs/cert.pem', $config->callbackCertFile);
   }
 
   public function testApiBaseUrlTrailingSlashIsStripped(): void {
@@ -239,6 +239,6 @@ final class ConfigurationTest extends TestCase
 
     $config = new Configuration();
 
-    self::assertSame('https://api.example.com', $config->getApiBaseUrl());
+    self::assertSame('https://api.example.com', $config->apiBaseUrl);
   }
 }
