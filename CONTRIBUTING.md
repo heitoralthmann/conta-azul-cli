@@ -19,11 +19,12 @@ composer lint    # phpcs — inclui bin/ca via STDIN, veja composer.json
 composer format  # phpcbf — corrige o que for automaticamente corrigível
 vendor/bin/phpunit --no-coverage
 vendor/bin/phpstan analyse src/ --level=max --memory-limit=1G
+vendor/bin/composer-dependency-analyser
 ```
 
 `composer format` é só para uso local — o CI não corrige nada, só valida.
 Os workflows em `.github/workflows/` (`tests.yml`, `static-analysis.yml`,
-`code-style.yml`, `security.yml`) rodam os outros três em cada PR. Nenhum
+`code-style.yml`, `security.yml`) rodam os outros quatro em cada PR. Nenhum
 aceita regressão: PHPStan está em `level max` sem baseline, e o phpcs não
 tem exceções.
 
@@ -69,6 +70,18 @@ lugar do transporte HTTP real — veja os helpers em
 - Exit code (`Command::SUCCESS` ou `Command::FAILURE`).
 - Que stdout contém **só** o payload JSON de sucesso.
 - Que stderr contém **só** o envelope de erro, com o `kind` esperado.
+
+## Mutation testing
+
+`vendor/bin/infection` mede o quanto os testes realmente pegariam um bug,
+mutando o código e vendo se algum teste quebra. Precisa de `pcov` ou
+`xdebug` local. Não roda automaticamente no CI (mutação re-executa a suíte
+por mutante, o que não escala pra "todo push") — dispare manualmente pela
+aba Actions, workflow "Mutation Testing". Sem gate por enquanto:
+`Auth/LoginCommand` é conhecidamente não coberto por teste de comando (veja
+`tests/Integration/Command/Auth/LogoutCommandTest.php`, que documenta por
+quê), então um `--min-msi` precisaria excluir esse caminho antes de fazer
+sentido.
 
 ## Convenção de commits
 

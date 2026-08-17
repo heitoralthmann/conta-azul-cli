@@ -4,3 +4,6 @@
 .phpunit.cache/
 .phpunit.result.cache
 /.certs/
+/infection.log
+/infection-summary.log
+/.infection.cache/
