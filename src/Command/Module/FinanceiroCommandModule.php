@@ -22,6 +22,7 @@ use ContaAzulCli\Command\Parcela\BaixarCommand;
 use ContaAzulCli\Command\Parcela\GetCommand as ParcelaGetCommand;
 use ContaAzulCli\Command\Protocolo\GetCommand as ProtocoloGetCommand;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
+use ContaAzulCli\Command\Transferencia\ListCommand as TransferenciaListCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use ContaAzulCli\Output\WarningEnvelope;
@@ -71,6 +72,14 @@ final class FinanceiroCommandModule implements CommandModuleInterface
           $this->paginationValidator,
       ),
       new ContaFinanceiraSaldoCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new TransferenciaListCommand(
+          $this->client,
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          $this->paginationValidator,
+          $this->warningEnvelope,
+          $this->periodoPadrao,
+      ),
       new CategoriaListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
       new CategoriaConfiguracaoPadraoCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new CategoriaDreCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),

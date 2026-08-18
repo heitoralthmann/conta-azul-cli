@@ -136,6 +136,11 @@ final class FinanceiroClientTest extends TestCase
         'GET',
         'https://api-v2.contaazul.com/v1/conta-financeira/abc/saldo-atual',
       ],
+      'transferências ficam sob financeiro, no plural'        => [
+        static fn (FinanceiroClient $c) => $c->listTransferencias('2026-08-01', '2026-08-31'),
+        'GET',
+        'https://api-v2.contaazul.com/v1/financeiro/transferencias',
+      ],
     ];
   }
 
@@ -203,6 +208,24 @@ final class FinanceiroClientTest extends TestCase
     self::assertSame('2026-08-01T00:00:00', $query['data_inicio'] ?? null);
     self::assertSame('2026-08-31T23:59:59', $query['data_fim'] ?? null);
     self::assertArrayNotHasKey('desde', $query);
+  }
+
+  /**
+   * Diferente de `getAlteracoes`, as datas de transferências vão em
+   * `YYYY-MM-DD` puro — sem o instante ISO 8601 completo.
+   */
+  public function testListTransferenciasSendsPlainDatesAndPagination(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->listTransferencias('2026-08-01', '2026-08-31', 2, 25);
+
+    self::assertNotNull($captured);
+    parse_str((string) parse_url($captured['url'], PHP_URL_QUERY), $query);
+    self::assertSame('2026-08-01', $query['data_inicio'] ?? null);
+    self::assertSame('2026-08-31', $query['data_fim'] ?? null);
+    self::assertSame('2', $query['pagina'] ?? null);
+    self::assertSame('25', $query['tamanho_pagina'] ?? null);
   }
 
   /** @param array{method: string, url: string}|null $captured */

@@ -19,6 +19,7 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 ## 💰 Financeiro / Cobranças / Baixas
 
 17 endpoints. `src/Api/FinanceiroClient.php`.
+Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a API real em 2026-08-18.
 
 ### Centros de custo
 - [x] `GET /v1/centro-de-custo` — `centro-de-custo list`
@@ -34,7 +35,7 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 - [x] `GET /v1/conta-financeira/{id_conta_financeira}/saldo-atual` — `conta-financeira saldo`
 
 ### Transferências
-- [ ] `GET /v1/financeiro/transferencias`
+- [x] `GET /v1/financeiro/transferencias` — `transferencia list`
 
 ### Contas a receber
 - [x] `POST /v1/financeiro/eventos-financeiros/contas-a-receber` — `conta-a-receber create`
@@ -157,7 +158,7 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 | Área | Implementados | Total |
 |---|---|---|
 | Autenticação | 3 | 3 |
-| Financeiro / Cobranças / Baixas | 12 | 17 |
+| Financeiro / Cobranças / Baixas | 13 | 17 |
 | Protocolos | 1 | 1 |
 | Contratos | 0 | 3 |
 | Pessoas / Fornecedores | 10 | 10 |
@@ -167,4 +168,4 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 | Vendas | 0 | 9 |
 | Orçamentos | 0 | 4 |
 | Captura | 0 | 5 |
-| **Total** | **42** | **72** |
+| **Total** | **43** | **72** |

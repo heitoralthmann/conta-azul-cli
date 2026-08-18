@@ -9,6 +9,13 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-18
+
+### Added
+
+- Comando `transferencia list`, cobrindo o endpoint da sessão de
+  Transferências (`GET /v1/financeiro/transferencias`).
+
 ## [0.2.0] - 2026-08-18
 
 ### Added
@@ -97,6 +104,7 @@ Primeira versão tagueada.
 - `release.yml` corrigido: faltava `permissions: contents: write`, o que
   impedia a publicação do PHAR na release do GitHub.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/heitoralthmann/conta-azul-cli/releases/tag/v0.1.0
