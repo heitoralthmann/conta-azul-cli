@@ -9,6 +9,22 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-08-18
+
+### Added
+
+- Sessão de Orçamentos completa: `orcamento list` (`GET /v1/orcamentos`,
+  filtros opcionais — mesmo recorte de `venda list`, a API não exige
+  intervalo de datas), `orcamento create` (`POST /v1/orcamentos`),
+  `orcamento get` (`GET /v1/orcamentos/{id}`) e `orcamento excluir-lote`
+  (`DELETE /v1/orcamentos`, até 10 uuids por chamada, resposta
+  `204 No Content`). Os filtros de array do endpoint de listagem
+  (`ids_vendedores`, `ids_clientes`, `situacoes`, `numeros` etc.) ficam
+  de fora, mesma lacuna de `venda list`: o comando genérico de listagem
+  só suporta filtros escalares hoje. Paths e schemas conferidos direto
+  no OpenAPI renderizado (o portal bloqueia `WebFetch`), ainda não
+  exercitados contra a API real.
+
 ## [0.8.0] - 2026-08-18
 
 ### Added

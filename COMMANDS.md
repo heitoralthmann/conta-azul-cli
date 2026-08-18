@@ -78,6 +78,10 @@ Cada endpoint traz uma marca de confiança:
 | `venda vendedores` | `GET /v1/venda/vendedores` | ⚠️ |
 | `venda proximo-numero` | `GET /v1/venda/proximo-numero` | ⚠️ |
 | `venda excluir-lote` | `POST /v1/venda/exclusao-lote` | ⚠️ |
+| `orcamento list` | `GET /v1/orcamentos` | ⚠️ |
+| `orcamento create` | `POST /v1/orcamentos` | ⚠️ |
+| `orcamento get` | `GET /v1/orcamentos/{id}` | ⚠️ |
+| `orcamento excluir-lote` | `DELETE /v1/orcamentos` | ⚠️ |
 
 ---
 
@@ -738,12 +742,58 @@ Retorna `{atualizados, ignorados}`.
 
 ---
 
+## Orçamentos
+
+O payload de criação segue o schema da API e é enviado sem transformação. Use `--json` com um objeto JSON.
+
+### `orcamento list` ⚠️
+
+`GET /v1/orcamentos`
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `50` | Itens por página |
+| filtros | não | — | `--termo-busca`, `--data-inicio`, `--data-fim`, `--data-criacao-de`, `--data-criacao-ate`, `--data-alteracao-de`, `--data-alteracao-ate`, `--campo-ordenado-ascendente`, `--campo-ordenado-descendente` (`DATA`, `NUMERO` ou `CLIENTE`) |
+
+O intervalo de datas é opcional — a API não o exige. A API também aceita filtros por array (`ids_vendedores`, `ids_clientes`, `ids_natureza_operacao`, `ids_categorias`, `ids_produtos`, `situacoes`, `origens`, `numeros`, `ids_legado_donos`, `ids_legado_clientes`, `ids_legado_produtos`); eles não estão expostos como opções porque o comando genérico de listagem só suporta filtros escalares hoje. Retorna `{itens[], total_itens}`.
+
+### `orcamento create` ⚠️
+
+`POST /v1/orcamentos` — **escrita síncrona**, sem protocolo.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Payload JSON do orçamento (`data_orcamento`, `data_validade`, `id_cliente` e `itens` são obrigatórios) |
+
+Retorna `{id}` do orçamento criado.
+
+### `orcamento get` ⚠️
+
+`GET /v1/orcamentos/{id}`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid do orçamento |
+
+### `orcamento excluir-lote` ⚠️
+
+`DELETE /v1/orcamentos` — exclui orçamentos em lote.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Payload JSON com `{"ids": [...]}` — de 1 a 10 uuids por chamada |
+
+Resposta `204 No Content` — sem corpo.
+
+---
+
 ## Fora do escopo do CLI
 
 Todos os endpoints da família Financeiro / Cobranças / Baixas e Protocolos já têm
 comando — veja a referência rápida no topo deste arquivo e `API_COVERAGE.md` para
-a lista completa por área (Orçamentos e Captura seguem fora do escopo
-declarado em `ESPECIFICACAO.md`; Contratos, Notas Fiscais e Vendas já foram
+a lista completa por área (Captura segue fora do escopo declarado em
+`ESPECIFICACAO.md`; Contratos, Notas Fiscais, Vendas e Orçamentos já foram
 implementados além do escopo original).
 
 Recursos que **não existem** na API v1 — não procure o comando, não há endpoint:

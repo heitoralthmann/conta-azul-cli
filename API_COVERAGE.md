@@ -2,7 +2,7 @@
 
 Arquivo de controle: todos os endpoints publicados no [Portal do Desenvolvedor Conta Azul](https://developers.contaazul.com/aboutapis), agrupados por área funcional, com o que o `ca` já implementa marcado.
 
-**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais** e **Vendas**. As demais áreas (Orçamentos, Captura) estão listadas por completude.
+**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais**, **Vendas** e **Orçamentos**. A área restante (Captura) está listada por completude.
 
 Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md`, `src/Api/FinanceiroClient.php`, `src/Api/PessoasClient.php`, `src/Api/ProdutosClient.php` e `src/Api/ServicosClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
 
@@ -149,12 +149,20 @@ API real.
 
 ## 📋 Orçamentos
 
-4 endpoints. Fora do escopo do CLI.
+4 endpoints. `src/Api/OrcamentosClient.php`.
+Sessão implementada em 2026-08-18; paths e schemas conferidos direto no
+OpenAPI renderizado (https://developers.contaazul.com/docs/open-api-proposal),
+já que o portal bloqueia `WebFetch`/`curl` — ainda não exercitados contra a
+API real. `orcamento list` só expõe os filtros escalares do endpoint
+(mesmo recorte de `venda list`); os filtros de array (`ids_vendedores`,
+`ids_clientes`, `ids_natureza_operacao`, `ids_categorias`, `ids_produtos`,
+`situacoes`, `origens`, `numeros`, `ids_legado_*`) ficam de fora porque
+`ResourceListCommand`/`PaginationOptions` só suportam opções escalares hoje.
 
-- [ ] `GET /v1/orcamentos` — buscar orçamentos por filtro
-- [ ] `POST /v1/orcamentos` — criar orçamento
-- [ ] `DELETE /v1/orcamentos` — excluir orçamentos em lote
-- [ ] `GET /v1/orcamentos/{id}` — buscar orçamento por id
+- [x] `GET /v1/orcamentos` — `orcamento list`; filtros opcionais (sem intervalo de datas obrigatório)
+- [x] `POST /v1/orcamentos` — `orcamento create`
+- [x] `DELETE /v1/orcamentos` — `orcamento excluir-lote`; aceita de 1 a 10 uuids por chamada, resposta `204 No Content`
+- [x] `GET /v1/orcamentos/{id}` — `orcamento get`
 
 ## 📥 Captura (Developer Platform)
 
@@ -181,6 +189,6 @@ API real.
 | Serviços | 5 | 5 |
 | Notas Fiscais | 4 | 4 |
 | Vendas | 9 | 9 |
-| Orçamentos | 0 | 4 |
+| Orçamentos | 4 | 4 |
 | Captura | 0 | 5 |
-| **Total** | **61** | **72** |
+| **Total** | **65** | **72** |

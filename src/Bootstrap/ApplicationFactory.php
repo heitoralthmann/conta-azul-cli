@@ -7,6 +7,7 @@ namespace ContaAzulCli\Bootstrap;
 use ContaAzulCli\Api\ContratosClient;
 use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Api\NotasFiscaisClient;
+use ContaAzulCli\Api\OrcamentosClient;
 use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Api\ProdutosClient;
@@ -20,6 +21,7 @@ use ContaAzulCli\Command\Module\AuthCommandModule;
 use ContaAzulCli\Command\Module\ContratoCommandModule;
 use ContaAzulCli\Command\Module\FinanceiroCommandModule;
 use ContaAzulCli\Command\Module\NotaFiscalCommandModule;
+use ContaAzulCli\Command\Module\OrcamentoCommandModule;
 use ContaAzulCli\Command\Module\PessoaCommandModule;
 use ContaAzulCli\Command\Module\ProdutoCommandModule;
 use ContaAzulCli\Command\Module\ServicoCommandModule;
@@ -73,6 +75,7 @@ final class ApplicationFactory
     $contratosClient    = new ContratosClient($config, $authManager, $this->logger, $redactor, $httpClient);
     $notasFiscaisClient = new NotasFiscaisClient($config, $authManager, $this->logger, $redactor, $httpClient);
     $vendasClient       = new VendasClient($config, $authManager, $this->logger, $redactor, $httpClient);
+    $orcamentosClient   = new OrcamentosClient($config, $authManager, $this->logger, $redactor, $httpClient);
 
     return new ApplicationComponents(
         $this->logger,
@@ -106,6 +109,7 @@ final class ApplicationFactory
               $periodoPadrao,
           ),
           new VendaCommandModule($vendasClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
+          new OrcamentoCommandModule($orcamentosClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
         ],
     );
   }
