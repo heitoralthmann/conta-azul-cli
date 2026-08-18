@@ -25,19 +25,19 @@ final class AccessTokenServiceTest extends TestCase
   private function config(string|null $bootstrap = null): Configuration {
     return Configuration::fromValues(
         [
-          'clientId'             => 'client',
-          'clientSecret'         => 'secret',
-          'redirectUri'          => 'https://localhost/callback',
-          'scope'                => null,
-          'apiBaseUrl'           => 'https://api.example.test',
-          'authBaseUrl'          => 'https://auth.example.test',
-          'authorizeUrl'         => 'https://auth.example.test/authorize',
-          'tokenUrl'             => 'https://auth.example.test/token',
-          'tokenPath'            => sys_get_temp_dir() . '/tokens.json',
+          'clientId'              => 'client',
+          'clientSecret'          => 'secret',
+          'redirectUri'           => 'https://localhost/callback',
+          'scope'                 => null,
+          'apiBaseUrl'            => 'https://api.example.test',
+          'authBaseUrl'           => 'https://auth.example.test',
+          'authorizeUrl'          => 'https://auth.example.test/authorize',
+          'tokenUrl'              => 'https://auth.example.test/token',
+          'tokenPath'             => sys_get_temp_dir() . '/tokens.json',
           'bootstrapRefreshToken' => $bootstrap,
-          'callbackCertFile'     => null,
-          'callbackKeyFile'      => null,
-          'callbackTimeout'      => 30,
+          'callbackCertFile'      => null,
+          'callbackKeyFile'       => null,
+          'callbackTimeout'       => 30,
         ],
     );
   }

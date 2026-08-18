@@ -81,27 +81,35 @@ final class ProdutosServicosClientTest extends TestCase
   /** @return array<string, array{callable(ProdutosClient): mixed, string, string}> */
   public static function productEndpointProvider(): array {
     return [
-      'lista produtos' => [static fn (ProdutosClient $c) => $c->listProdutos(), 'GET', '/v1/produtos'],
-      'cria produto' => [
+      'lista produtos'                => [static fn (ProdutosClient $c) => $c->listProdutos(), 'GET', '/v1/produtos'],
+      'cria produto'                  => [
         static fn (ProdutosClient $c) => $c->createProduto(['nome' => 'Café']),
         'POST',
         '/v1/produtos',
       ],
-      'busca produto' => [static fn (ProdutosClient $c) => $c->getProduto('p-1'), 'GET', '/v1/produtos/p-1'],
-      'atualiza produto' => [
+      'busca produto'                 => [
+        static fn (ProdutosClient $c) => $c->getProduto('p-1'),
+        'GET',
+        '/v1/produtos/p-1',
+      ],
+      'atualiza produto'              => [
         static fn (ProdutosClient $c) => $c->updateProduto('p-1', ['nome' => 'Café']),
         'PATCH',
         '/v1/produtos/p-1',
       ],
-      'exclui produto' => [static fn (ProdutosClient $c) => $c->deleteProduto('p-1'), 'DELETE', '/v1/produtos/p-1'],
-      'lista categorias' => [
+      'exclui produto'                => [
+        static fn (ProdutosClient $c) => $c->deleteProduto('p-1'),
+        'DELETE',
+        '/v1/produtos/p-1',
+      ],
+      'lista categorias'              => [
         static fn (ProdutosClient $c) => $c->listCategoriasProduto(),
         'GET',
         '/v1/produtos/categorias',
       ],
-      'lista cest' => [static fn (ProdutosClient $c) => $c->listCest(), 'GET', '/v1/produtos/cest'],
-      'lista ncm' => [static fn (ProdutosClient $c) => $c->listNcm(), 'GET', '/v1/produtos/ncm'],
-      'lista unidades de medida' => [
+      'lista cest'                    => [static fn (ProdutosClient $c) => $c->listCest(), 'GET', '/v1/produtos/cest'],
+      'lista ncm'                     => [static fn (ProdutosClient $c) => $c->listNcm(), 'GET', '/v1/produtos/ncm'],
+      'lista unidades de medida'      => [
         static fn (ProdutosClient $c) => $c->listUnidadesMedida(),
         'GET',
         '/v1/produtos/unidades-medida',
@@ -111,7 +119,7 @@ final class ProdutosServicosClientTest extends TestCase
         'GET',
         '/v1/produtos/ecommerce-categorias',
       ],
-      'lista marcas de ecommerce' => [
+      'lista marcas de ecommerce'     => [
         static fn (ProdutosClient $c) => $c->listMarcasEcommerce(),
         'GET',
         '/v1/produtos/ecommerce-marcas',
@@ -133,14 +141,14 @@ final class ProdutosServicosClientTest extends TestCase
   /** @return array<string, array{callable(ServicosClient): mixed, string, string}> */
   public static function serviceEndpointProvider(): array {
     return [
-      'lista serviços' => [static fn (ServicosClient $c) => $c->listServicos(), 'GET', '/v1/servicos'],
-      'cria serviço' => [
+      'lista serviços'          => [static fn (ServicosClient $c) => $c->listServicos(), 'GET', '/v1/servicos'],
+      'cria serviço'            => [
         static fn (ServicosClient $c) => $c->createServico(['nome' => 'Instalação']),
         'POST',
         '/v1/servicos',
       ],
-      'busca serviço' => [static fn (ServicosClient $c) => $c->getServico('s-1'), 'GET', '/v1/servicos/s-1'],
-      'atualiza serviço' => [
+      'busca serviço'           => [static fn (ServicosClient $c) => $c->getServico('s-1'), 'GET', '/v1/servicos/s-1'],
+      'atualiza serviço'        => [
         static fn (ServicosClient $c) => $c->updateServico('s-1', ['nome' => 'Instalação']),
         'PATCH',
         '/v1/servicos/s-1',
@@ -208,8 +216,8 @@ final class ProdutosServicosClientTest extends TestCase
         static function (string $method, string $url, array $options) use (&$captured) {
           $captured = [
             'method' => $method,
-            'url' => $url,
-            'body' => $options['body'] ?? null,
+            'url'    => $url,
+            'body'   => $options['body'] ?? null,
           ];
 
           return new MockResponse('{}', ['http_code' => 200]);

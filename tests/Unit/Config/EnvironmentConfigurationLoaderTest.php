@@ -61,19 +61,19 @@ final class EnvironmentConfigurationLoaderTest extends TestCase
   public function testConfigurationCanBeCreatedWithoutEnvironmentAccess(): void {
     $configuration = Configuration::fromValues(
         [
-          'clientId' => 'client-id',
-          'clientSecret' => 'client-secret',
-          'redirectUri' => 'https://example.test/callback',
-          'scope' => null,
-          'apiBaseUrl' => 'https://api.example.test',
-          'authBaseUrl' => 'https://auth.example.test',
-          'authorizeUrl' => 'https://auth.example.test/authorize',
-          'tokenUrl' => 'https://auth.example.test/token',
-          'tokenPath' => '/tmp/tokens.json',
+          'clientId'              => 'client-id',
+          'clientSecret'          => 'client-secret',
+          'redirectUri'           => 'https://example.test/callback',
+          'scope'                 => null,
+          'apiBaseUrl'            => 'https://api.example.test',
+          'authBaseUrl'           => 'https://auth.example.test',
+          'authorizeUrl'          => 'https://auth.example.test/authorize',
+          'tokenUrl'              => 'https://auth.example.test/token',
+          'tokenPath'             => '/tmp/tokens.json',
           'bootstrapRefreshToken' => null,
-          'callbackCertFile' => null,
-          'callbackKeyFile' => null,
-          'callbackTimeout' => 30,
+          'callbackCertFile'      => null,
+          'callbackKeyFile'       => null,
+          'callbackTimeout'       => 30,
         ],
     );
 

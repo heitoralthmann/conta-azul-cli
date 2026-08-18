@@ -69,7 +69,7 @@ final class OAuthClient implements OAuthGatewayInterface
               'Authorization' => 'Basic ' . $credentials,
               'Content-Type'  => 'application/x-www-form-urlencoded',
             ],
-            'body' => http_build_query($body),
+            'body'    => http_build_query($body),
           ],
       );
       /** @var array<string, mixed> $data */

@@ -80,17 +80,17 @@ final class PessoasClientTest extends TestCase
   /** @return array<string, array{callable(PessoasClient): mixed, string, string}> */
   public static function endpointProvider(): array {
     return [
-      'lista pessoas' => [
+      'lista pessoas'          => [
         static fn (PessoasClient $c) => $c->listPessoas(),
         'GET',
         '/v1/pessoas',
       ],
-      'cria pessoa' => [
+      'cria pessoa'            => [
         static fn (PessoasClient $c) => $c->createPessoa(['nome' => 'Maria']),
         'POST',
         '/v1/pessoas',
       ],
-      'busca por id' => [
+      'busca por id'           => [
         static fn (PessoasClient $c) => $c->getPessoa('p-1'),
         'GET',
         '/v1/pessoas/p-1',
@@ -100,32 +100,32 @@ final class PessoasClientTest extends TestCase
         'PUT',
         '/v1/pessoas/p-1',
       ],
-      'atualiza parcialmente' => [
+      'atualiza parcialmente'  => [
         static fn (PessoasClient $c) => $c->patchPessoa('p-1', ['email' => 'maria@example.test']),
         'PATCH',
         '/v1/pessoas/p-1',
       ],
-      'busca por id legado' => [
+      'busca por id legado'    => [
         static fn (PessoasClient $c) => $c->getPessoaLegado('123'),
         'GET',
         '/v1/pessoas/legado/123',
       ],
-      'ativa em lote' => [
+      'ativa em lote'          => [
         static fn (PessoasClient $c) => $c->activatePessoas(['uuids' => ['p-1']]),
         'POST',
         '/v1/pessoas/ativar',
       ],
-      'inativa em lote' => [
+      'inativa em lote'        => [
         static fn (PessoasClient $c) => $c->deactivatePessoas(['uuids' => ['p-1']]),
         'POST',
         '/v1/pessoas/inativar',
       ],
-      'exclui em lote' => [
+      'exclui em lote'         => [
         static fn (PessoasClient $c) => $c->deletePessoas(['uuids' => ['p-1']]),
         'POST',
         '/v1/pessoas/excluir',
       ],
-      'conta conectada' => [
+      'conta conectada'        => [
         static fn (PessoasClient $c) => $c->getContaConectada(),
         'GET',
         '/v1/pessoas/conta-conectada',
@@ -176,8 +176,8 @@ final class PessoasClientTest extends TestCase
         static function (string $method, string $url, array $options) use (&$captured) {
           $captured = [
             'method' => $method,
-            'url' => $url,
-            'body' => $options['body'] ?? null,
+            'url'    => $url,
+            'body'   => $options['body'] ?? null,
           ];
 
           return new MockResponse('{}', ['http_code' => 200]);

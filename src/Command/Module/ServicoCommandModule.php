@@ -30,9 +30,9 @@ final class ServicoCommandModule implements CommandModuleInterface
   /** @return list<Command> */
   public function commands(): array {
     $filters = [
-      'busca' => 'busca',
+      'busca'  => 'busca',
       'codigo' => 'codigo',
-      'ids' => 'ids',
+      'ids'    => 'ids',
       'status' => 'status',
     ];
 

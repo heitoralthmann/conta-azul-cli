@@ -26,11 +26,11 @@ class DebuggingFunctionsSniff extends ForbiddenFunctionsSniff
   // adding one where the parent has none.
   // phpcs:ignore SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
   public $forbiddenFunctions = [
-    'dump' => null,
-    'error_log' => null,
-    'phpinfo' => null,
-    'print_r' => null,
-    'var_dump' => null,
+    'dump'       => null,
+    'error_log'  => null,
+    'phpinfo'    => null,
+    'print_r'    => null,
+    'var_dump'   => null,
     'var_export' => null,
   ];
 

@@ -134,7 +134,7 @@ final class ProdutosClient
         [
           'query' => array_merge(
               [
-                'pagina' => $pagina,
+                'pagina'         => $pagina,
                 'tamanho_pagina' => $tamanhoPagina,
               ],
               $filters,

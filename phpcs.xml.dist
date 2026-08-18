@@ -66,6 +66,24 @@
   </rule>
 
   <!--
+    Doctrine excludes double-arrow alignment wholesale (its comment says
+    "disable arrow alignment"). This project wants the same vertical
+    alignment for "=>" in multi-line arrays that Generic.Formatting.
+    MultipleStatementAlignment already enforces for "=" in sequential
+    assignments, so re-include just that one error code. A bare
+    <rule ref> here is not enough to undo an <exclude> from a nested
+    standard (Doctrine's own exclude still wins); setting the severity
+    explicitly is what actually re-enables it. KeyNotAligned and
+    ValueNotAligned stay excluded: KeyNotAligned fights this project's
+    2-space Generic.Arrays.ArrayIndent (Doctrine's own comment notes it
+    "uses indentation of only single space"), and ValueNotAligned isn't
+    part of what was asked for.
+  -->
+  <rule ref="Squiz.Arrays.ArrayDeclaration.DoubleArrowNotAligned">
+    <severity>5</severity>
+  </rule>
+
+  <!--
     Doctrine/PSR-12 place a function or method's opening brace on its own
     line (BSD-Allman). This is enforced by Squiz.Functions.
     MultiLineFunctionDeclaration, which for single-line declarations

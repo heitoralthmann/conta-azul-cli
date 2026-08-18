@@ -231,10 +231,10 @@ final class CallbackServer
       $context = stream_context_create(
           [
             'ssl' => [
-              'local_cert'        => $this->certFile,
-              'local_pk'          => $this->keyFile,
-              'verify_peer'       => false,
-              'verify_peer_name'  => false,
+              'local_cert'       => $this->certFile,
+              'local_pk'         => $this->keyFile,
+              'verify_peer'      => false,
+              'verify_peer_name' => false,
             ],
           ],
       );

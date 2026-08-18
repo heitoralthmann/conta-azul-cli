@@ -43,7 +43,7 @@ final class ServicosClient
         [
           'query' => array_merge(
               [
-                'pagina' => $pagina,
+                'pagina'         => $pagina,
                 'tamanho_pagina' => $tamanhoPagina,
               ],
               $filters,

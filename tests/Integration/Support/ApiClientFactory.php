@@ -87,19 +87,19 @@ trait ApiClientFactory
   protected function testConfiguration(): Configuration {
     return Configuration::fromValues(
         [
-          'clientId' => 'test-client-id',
-          'clientSecret' => 'test-client-secret',
-          'redirectUri' => 'https://example.test/callback',
-          'scope' => null,
-          'apiBaseUrl' => 'https://api-v2.contaazul.com',
-          'authBaseUrl' => 'https://auth.contaazul.com',
-          'authorizeUrl' => 'https://auth.contaazul.com/oauth2/authorize',
-          'tokenUrl' => 'https://auth.contaazul.com/oauth2/token',
-          'tokenPath' => '/tmp/ca-cli-tests-unused/tokens.json',
+          'clientId'              => 'test-client-id',
+          'clientSecret'          => 'test-client-secret',
+          'redirectUri'           => 'https://example.test/callback',
+          'scope'                 => null,
+          'apiBaseUrl'            => 'https://api-v2.contaazul.com',
+          'authBaseUrl'           => 'https://auth.contaazul.com',
+          'authorizeUrl'          => 'https://auth.contaazul.com/oauth2/authorize',
+          'tokenUrl'              => 'https://auth.contaazul.com/oauth2/token',
+          'tokenPath'             => '/tmp/ca-cli-tests-unused/tokens.json',
           'bootstrapRefreshToken' => null,
-          'callbackCertFile' => null,
-          'callbackKeyFile' => null,
-          'callbackTimeout' => 300,
+          'callbackCertFile'      => null,
+          'callbackKeyFile'       => null,
+          'callbackTimeout'       => 300,
         ],
     );
   }

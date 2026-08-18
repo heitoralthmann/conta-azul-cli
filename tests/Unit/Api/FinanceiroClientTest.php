@@ -86,22 +86,22 @@ final class FinanceiroClientTest extends TestCase
   /** @return array<string, array{callable(FinanceiroClient): mixed, string, string}> */
   public static function endpointProvider(): array {
     return [
-      'categorias fica na raiz da v1, no plural' => [
+      'categorias fica na raiz da v1, no plural'              => [
         static fn (FinanceiroClient $c) => $c->listCategorias(),
         'GET',
         'https://api-v2.contaazul.com/v1/categorias',
       ],
-      'centro de custo fica na raiz da v1, no singular' => [
+      'centro de custo fica na raiz da v1, no singular'       => [
         static fn (FinanceiroClient $c) => $c->listCentrosDeCusto(),
         'GET',
         'https://api-v2.contaazul.com/v1/centro-de-custo',
       ],
-      'conta financeira fica na raiz da v1, no singular' => [
+      'conta financeira fica na raiz da v1, no singular'      => [
         static fn (FinanceiroClient $c) => $c->listContasFinanceiras(),
         'GET',
         'https://api-v2.contaazul.com/v1/conta-financeira',
       ],
-      'saldo é saldo-atual, não saldo' => [
+      'saldo é saldo-atual, não saldo'                        => [
         static fn (FinanceiroClient $c) => $c->getSaldoContaFinanceira('abc'),
         'GET',
         'https://api-v2.contaazul.com/v1/conta-financeira/abc/saldo-atual',
@@ -111,17 +111,17 @@ final class FinanceiroClientTest extends TestCase
         'GET',
         'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/contas-a-receber/buscar',
       ],
-      'contas a pagar são buscadas sob eventos-financeiros' => [
+      'contas a pagar são buscadas sob eventos-financeiros'   => [
         static fn (FinanceiroClient $c) => $c->listContasAPagar('2026-08-01', '2026-08-31'),
         'GET',
         'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/contas-a-pagar/buscar',
       ],
-      'parcela fica sob eventos-financeiros' => [
+      'parcela fica sob eventos-financeiros'                  => [
         static fn (FinanceiroClient $c) => $c->getParcela('p1'),
         'GET',
         'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/parcelas/p1',
       ],
-      'alteracoes fica sob eventos-financeiros' => [
+      'alteracoes fica sob eventos-financeiros'               => [
         static fn (FinanceiroClient $c) => $c->getAlteracoes('2026-08-01T00:00:00', '2026-08-31T23:59:59'),
         'GET',
         'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/alteracoes',
