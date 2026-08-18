@@ -6,6 +6,7 @@ namespace ContaAzulCli\Api;
 
 use ContaAzulCli\Auth\AuthManager;
 use ContaAzulCli\Config\Configuration;
+use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\HttpErrorMapper;
 use ContaAzulCli\Output\Logger;
 use ContaAzulCli\Output\Redactor;
@@ -16,6 +17,9 @@ use Throwable;
 
 use function array_merge;
 use function is_array;
+use function json_decode;
+
+use const JSON_THROW_ON_ERROR;
 
 /**
  * Authenticated Symfony HTTP adapter with the API's retry and error policy.
@@ -51,6 +55,33 @@ final class HttpApiTransport implements ApiTransportInterface
    * {@inheritDoc}
    */
   public function request(string $method, string $path, array $options = []): array {
+    $response = $this->sendWithRetry($method, $path, $options);
+
+    return $response->getStatusCode() === 204 ? [] : $this->decodeArray($response);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function requestScalar(string $method, string $path, array $options = []): mixed {
+    $response = $this->sendWithRetry($method, $path, $options);
+
+    return $response->getStatusCode() === 204 ? null : $this->decodeScalar($response);
+  }
+
+  public function getCorrelationId(): string {
+    return $this->correlationId;
+  }
+
+  /**
+   * Sends a request, applying auth refresh and retry policy, and returns the
+   * first successful (2xx) response.
+   *
+   * @param array<string, mixed> $options
+   *
+   * @throws CliException when the request cannot succeed.
+   */
+  private function sendWithRetry(string $method, string $path, array $options): ResponseInterface {
     $url     = $this->config->apiBaseUrl . $path;
     $attempt = 0;
 
@@ -78,7 +109,11 @@ final class HttpApiTransport implements ApiTransportInterface
       }
 
       if ($statusCode >= 200 && $statusCode < 300) {
-        return $this->decodeSuccess($response, $statusCode);
+        if ($this->logger->isEnabled()) {
+          $this->logger->log('debug', 'API response', ['status' => $statusCode], $this->correlationId);
+        }
+
+        return $response;
       }
 
       if ($this->retryPolicy->shouldRetryResponse($method, $statusCode, $attempt)) {
@@ -88,10 +123,6 @@ final class HttpApiTransport implements ApiTransportInterface
 
       throw $this->errorMapper->mapResponse($response, $method, $this->correlationId);
     }
-  }
-
-  public function getCorrelationId(): string {
-    return $this->correlationId;
   }
 
   /**
@@ -144,22 +175,17 @@ final class HttpApiTransport implements ApiTransportInterface
     );
   }
 
+  /** @return array<mixed> */
+  private function decodeArray(ResponseInterface $response): array {
+    return $response->toArray();
+  }
+
   /**
-   * Decodes a successful response and preserves the 204 empty-payload contract.
-   *
-   * @return array<mixed>
+   * Decodes a response body of any JSON shape, for endpoints whose payload
+   * is a bare scalar or null rather than an object or array.
    */
-  private function decodeSuccess(ResponseInterface $response, int $statusCode): array {
-    if ($statusCode === 204) {
-      return [];
-    }
-
-    $data = $response->toArray();
-    if ($this->logger->isEnabled()) {
-      $this->logger->log('debug', 'API response', ['status' => $statusCode], $this->correlationId);
-    }
-
-    return $data;
+  private function decodeScalar(ResponseInterface $response): mixed {
+    return json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
   }
 
   /**

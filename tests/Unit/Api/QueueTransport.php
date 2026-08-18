@@ -26,6 +26,11 @@ final class QueueTransport implements ApiTransportInterface
     return array_shift($this->responses) ?? [];
   }
 
+  /** @param array<string, mixed> $options */
+  public function requestScalar(string $method, string $path, array $options = []): mixed {
+    return $this->request($method, $path, $options);
+  }
+
   /** Returns a stable correlation id for generated polling errors. */
   public function getCorrelationId(): string {
     return 'correlation-test';

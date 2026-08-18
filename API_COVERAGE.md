@@ -2,7 +2,7 @@
 
 Arquivo de controle: todos os endpoints publicados no [Portal do Desenvolvedor Conta Azul](https://developers.contaazul.com/aboutapis), agrupados por área funcional, com o que o `ca` já implementa marcado.
 
-**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, as APIs de **Pessoas**, **Produtos** e **Serviços**. As demais áreas (Contratos, Notas Fiscais, Vendas, Orçamentos, Captura) estão listadas por completude.
+**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, as APIs de **Pessoas**, **Produtos**, **Serviços** e **Contratos**. As demais áreas (Notas Fiscais, Vendas, Orçamentos, Captura) estão listadas por completude.
 
 Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md`, `src/Api/FinanceiroClient.php`, `src/Api/PessoasClient.php`, `src/Api/ProdutosClient.php` e `src/Api/ServicosClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
 
@@ -64,11 +64,15 @@ Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a A
 
 ## 📑 Contratos
 
-3 endpoints. Fora do escopo do CLI.
+3 endpoints. `src/Api/ContratosClient.php`.
+Sessão implementada em 2026-08-18; paths e schemas conferidos direto na
+documentação renderizada (https://developers.contaazul.com/docs/contracts-apis-openapi/v1),
+não deduzidos do PDF/YAML — mas, diferente da sessão Financeiro, ainda não
+exercitados contra a API real.
 
-- [ ] `GET /v1/contratos` — buscar contratos por filtro
-- [ ] `POST /v1/contratos` — criar contrato
-- [ ] `GET /v1/contratos/proximo-numero`
+- [x] `GET /v1/contratos` — `contrato list`; exige `data_inicio`/`data_fim`
+- [x] `POST /v1/contratos` — `contrato create`; escrita síncrona (não devolve protocolo)
+- [x] `GET /v1/contratos/proximo-numero` — `contrato proximo-numero`; corpo da resposta é um inteiro solto (ou `null`), não um objeto
 
 ## 👥 Pessoas / Fornecedores
 
@@ -162,7 +166,7 @@ Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a A
 | Autenticação | 3 | 3 |
 | Financeiro / Cobranças / Baixas | 15 | 17 |
 | Protocolos | 1 | 1 |
-| Contratos | 0 | 3 |
+| Contratos | 3 | 3 |
 | Pessoas / Fornecedores | 10 | 10 |
 | Produtos | 11 | 11 |
 | Serviços | 5 | 5 |
@@ -170,4 +174,4 @@ Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a A
 | Vendas | 0 | 9 |
 | Orçamentos | 0 | 4 |
 | Captura | 0 | 5 |
-| **Total** | **45** | **72** |
+| **Total** | **48** | **72** |

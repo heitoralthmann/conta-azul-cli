@@ -9,6 +9,18 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-18
+
+### Added
+
+- Sessão de Contratos completa: `contrato list` (`GET /v1/contratos`),
+  `contrato create` (`POST /v1/contratos`) e `contrato proximo-numero`
+  (`GET /v1/contratos/proximo-numero`). A criação é uma escrita síncrona —
+  diferente das escritas financeiras, não devolve protocolo. A consulta do
+  próximo número devolve um inteiro solto no corpo da resposta, não um
+  objeto; o transporte HTTP ganhou um caminho de decodificação dedicado a
+  esse formato (`ApiTransportInterface::requestScalar`).
+
 ## [0.5.0] - 2026-08-18
 
 ### Added

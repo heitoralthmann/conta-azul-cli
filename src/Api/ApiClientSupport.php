@@ -67,6 +67,15 @@ final class ApiClientSupport
   }
 
   /**
+   * Sends an authenticated request whose response is a bare scalar or null.
+   *
+   * @param array<string, mixed> $options
+   */
+  public function requestScalar(string $method, string $path, array $options = []): mixed {
+    return $this->transport->requestScalar($method, $path, $options);
+  }
+
+  /**
    * Returns the correlation identifier attached to transport requests.
    */
   public function getCorrelationId(): string {

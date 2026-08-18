@@ -36,6 +36,9 @@ Cada endpoint traz uma marca de confiança:
 | `financeiro alteracoes` | `GET /v1/financeiro/eventos-financeiros/alteracoes` | ✅ |
 | `financeiro saldo-inicial` | `GET /v1/financeiro/eventos-financeiros/saldo-inicial` | ⚠️ |
 | `protocolo get` | `GET /v1/protocolo/{id}` | ⚠️ |
+| `contrato list` | `GET /v1/contratos` | ⚠️ |
+| `contrato create` | `POST /v1/contratos` | ⚠️ |
+| `contrato proximo-numero` | `GET /v1/contratos/proximo-numero` | ⚠️ |
 | `pessoa list` | `GET /v1/pessoas` | ⚠️ |
 | `pessoa create` | `POST /v1/pessoas` | ⚠️ |
 | `pessoa get` | `GET /v1/pessoas/{id}` | ⚠️ |
@@ -395,6 +398,45 @@ Retorna `{itens_totais, itens[]}`.
 | `<id>` | **sim** | Argumento posicional. `protocol_id` devolvido por uma escrita |
 
 Consulta o status de uma escrita assíncrona. Não tem opções próprias. É como se retoma uma escrita disparada com no-wait, ou uma que terminou em `poll_timeout_known_id` ou `poll_drop_known_id`.
+
+---
+
+## Contratos
+
+### `contrato list` ⚠️
+
+`GET /v1/contratos`
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--data-inicio` | não¹ | 1º dia do mês corrente | Início do intervalo (`YYYY-MM-DD`) |
+| `--data-fim` | não¹ | último dia do mês corrente | Fim do intervalo (`YYYY-MM-DD`) |
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `10` | Itens por página |
+| `--busca-textual` | não | — | Busca textual pelo nome do contrato |
+| `--cliente-id` | não | — | Filtra pelo ID do cliente |
+| `--campo-ordenado-ascendente` | não | — | `DATA_INICIO` ou `DATA_FIM`; se informado, ignora `--campo-ordenado-descendente` |
+| `--campo-ordenado-descendente` | não | — | `DATA_INICIO` ou `DATA_FIM` |
+
+¹ A API exige o intervalo; o CLI supre com o mês corrente e avisa em stderr.
+
+Retorna `{itens_totais, items[]}`.
+
+### `contrato create` ⚠️
+
+`POST /v1/contratos` — **escrita síncrona**, diferente das escritas financeiras: não devolve protocolo, o `id` do contrato já vem na resposta.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Payload JSON do contrato, repassado à API **verbatim** |
+
+O CLI não valida o conteúdo de `--json`; o schema é o da API (`id_cliente`, `termos`, `condicao_pagamento` e `itens` são obrigatórios). Retorna `{id, id_legado, id_venda}`.
+
+### `contrato proximo-numero` ⚠️
+
+`GET /v1/contratos/proximo-numero`
+
+Sem parâmetros. Retorna o próximo número de contrato disponível como um inteiro solto (ex: `4512645`), não um objeto — diferente de todos os outros comandos de leitura.
 
 ---
 

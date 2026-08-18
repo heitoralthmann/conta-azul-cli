@@ -34,6 +34,15 @@ trait ApiClientOperations
   }
 
   /**
+   * Sends an authenticated request whose response is a bare scalar or null.
+   *
+   * @param array<string, mixed> $options
+   */
+  public function requestScalar(string $method, string $path, array $options = []): mixed {
+    return $this->support->requestScalar($method, $path, $options);
+  }
+
+  /**
    * Polls an asynchronous protocol identifier.
    *
    * @return array<mixed>
