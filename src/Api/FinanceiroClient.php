@@ -165,6 +165,18 @@ final class FinanceiroClient
     return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
   }
 
+  /**
+   * Endpoint não pagina: devolve o array completo de parcelas do evento.
+   *
+   * @return array<mixed>
+   */
+  public function listParcelasByEvento(string $idEvento): array {
+    return $this->support->request(
+        'GET',
+        '/v1/financeiro/eventos-financeiros/' . $idEvento . '/parcelas',
+    );
+  }
+
   // -------------------------------------------------------------------------
   // Contas Financeiras
   // -------------------------------------------------------------------------

@@ -20,6 +20,7 @@ use ContaAzulCli\Command\ContaFinanceira\SaldoCommand as ContaFinanceiraSaldoCom
 use ContaAzulCli\Command\Financeiro\AlteracoesCommand;
 use ContaAzulCli\Command\Parcela\BaixarCommand;
 use ContaAzulCli\Command\Parcela\GetCommand as ParcelaGetCommand;
+use ContaAzulCli\Command\Parcela\ListCommand as ParcelaListCommand;
 use ContaAzulCli\Command\Protocolo\GetCommand as ProtocoloGetCommand;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Command\Transferencia\ListCommand as TransferenciaListCommand;
@@ -65,6 +66,7 @@ final class FinanceiroCommandModule implements CommandModuleInterface
       new ContaAPagarCreateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new ParcelaGetCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new BaixarCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new ParcelaListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new ContaFinanceiraListCommand(
           $this->client,
           $this->errorEnvelope,

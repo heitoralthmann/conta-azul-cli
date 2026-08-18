@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ContaAzulCli\Command\Parcela;
+
+use ContaAzulCli\Api\FinanceiroClient;
+use ContaAzulCli\Command\Support\CommandExecutor;
+use ContaAzulCli\Output\ErrorEnvelope;
+use ContaAzulCli\Output\JsonRenderer;
+use Symfony\Component\Console\Attribute\Argument;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+
+/** Lists the installments belonging to one financial event. */
+#[AsCommand(name: 'parcela list', description: 'Lista as parcelas de um evento financeiro')]
+final class ListCommand extends Command
+{
+  private readonly CommandExecutor $commandExecutor;
+
+  /** Creates the command and its API/output collaborators. */
+  public function __construct(
+      private readonly FinanceiroClient $client,
+      private readonly ErrorEnvelope $errorEnvelope,
+      private readonly JsonRenderer $jsonRenderer,
+      CommandExecutor|null $commandExecutor = null,
+  ) {
+    $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
+
+    parent::__construct();
+  }
+
+  /** Fetches the installments and renders a normalized error on failure. */
+  public function __invoke(
+      #[Argument(description: 'ID do evento financeiro')]
+      string $idEvento,
+  ): int {
+    return $this->commandExecutor->execute(
+        function () use ($idEvento): void {
+          $this->jsonRenderer->render($this->client->listParcelasByEvento($idEvento));
+        },
+    );
+  }
+}

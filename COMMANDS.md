@@ -32,6 +32,7 @@ Cada endpoint traz uma marca de confiança:
 | `conta-a-pagar create` | `POST /v1/financeiro/eventos-financeiros/contas-a-pagar` | ⚠️ |
 | `parcela get` | `GET /v1/financeiro/eventos-financeiros/parcelas/{id}` | ✅ |
 | `parcela baixar` | `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` | ⚠️ |
+| `parcela list` | `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas` | ⚠️ |
 | `financeiro alteracoes` | `GET /v1/financeiro/eventos-financeiros/alteracoes` | ✅ |
 | `protocolo get` | `GET /v1/protocolo/{id}` | ⚠️ |
 | `pessoa list` | `GET /v1/pessoas` | ⚠️ |
@@ -333,6 +334,16 @@ Retorna a parcela com o evento financeiro aninhado em `evento`, incluindo `event
 | `--no-wait` | não | — | Retorna o `protocol_id` na hora |
 
 > Não existe subrecurso `/baixar` na API. A baixa é um `PATCH` na própria parcela.
+
+### `parcela list` ⚠️
+
+`GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id-evento>` | **sim** | Argumento posicional. ID do evento financeiro (`evento.id` aninhado na resposta de `parcela get`) |
+
+Sem paginação: a API devolve o array completo de parcelas do evento. Cada item tem o mesmo formato de `parcela get`.
 
 ---
 
