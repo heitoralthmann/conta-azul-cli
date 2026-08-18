@@ -2,7 +2,7 @@
 
 Arquivo de controle: todos os endpoints publicados no [Portal do Desenvolvedor Conta Azul](https://developers.contaazul.com/aboutapis), agrupados por área funcional, com o que o `ca` já implementa marcado.
 
-**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, as APIs de **Pessoas**, **Produtos**, **Serviços** e **Contratos**. As demais áreas (Notas Fiscais, Vendas, Orçamentos, Captura) estão listadas por completude.
+**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos** e **Notas Fiscais**. As demais áreas (Vendas, Orçamentos, Captura) estão listadas por completude.
 
 Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md`, `src/Api/FinanceiroClient.php`, `src/Api/PessoasClient.php`, `src/Api/ProdutosClient.php` e `src/Api/ServicosClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
 
@@ -117,12 +117,17 @@ exercitados contra a API real.
 
 ## 🧮 Notas Fiscais
 
-4 endpoints. Fora do escopo do CLI (NFS-e ainda "em breve" na própria API, por ora só produtos/NFe).
+4 endpoints. `src/Api/NotasFiscaisClient.php`.
+Sessão implementada em 2026-08-18; paths e schemas conferidos direto na
+documentação renderizada (https://developers.contaazul.com/open-api-docs/open-api-invoice/v1),
+já que o portal bloqueia `WebFetch`/`curl` — ainda não exercitados contra a
+API real. A API só suporta consulta (NFe de produto e NFS-e de serviço) e
+vínculo a MDF-e; não há emissão.
 
-- [ ] `GET /v1/notas-fiscais` — buscar notas fiscais de produtos
-- [ ] `GET /v1/notas-fiscais/{chave}` — buscar nota fiscal por chave
-- [ ] `GET /v1/notas-fiscais-servico` — buscar notas fiscais de serviço
-- [ ] `POST /v1/notas-fiscais/vinculo-mdfe` — vincular MDF-e
+- [x] `GET /v1/notas-fiscais` — `nota-fiscal list`; exige `data_inicial`/`data_final`; retorna só NFe EMITIDA e CORRIGIDA_SUCESSO
+- [x] `GET /v1/notas-fiscais/{chave}` — `nota-fiscal get`; resposta binária (XML ou ZIP), devolvida em base64 para preservar o contrato de stdout em JSON
+- [x] `GET /v1/notas-fiscais-servico` — `nota-fiscal-servico list`; exige `data_competencia_de`/`data_competencia_ate`, com **máximo de 15 dias** de intervalo
+- [x] `POST /v1/notas-fiscais/vinculo-mdfe` — `nota-fiscal vincular-mdfe`; escrita síncrona, resposta `204 No Content`
 
 ## 🛒 Vendas
 
@@ -170,8 +175,8 @@ exercitados contra a API real.
 | Pessoas / Fornecedores | 10 | 10 |
 | Produtos | 11 | 11 |
 | Serviços | 5 | 5 |
-| Notas Fiscais | 0 | 4 |
+| Notas Fiscais | 4 | 4 |
 | Vendas | 0 | 9 |
 | Orçamentos | 0 | 4 |
 | Captura | 0 | 5 |
-| **Total** | **48** | **72** |
+| **Total** | **52** | **72** |

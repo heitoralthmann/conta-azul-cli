@@ -9,6 +9,28 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-08-18
+
+### Added
+
+- Sessão de Notas Fiscais completa: `nota-fiscal list`
+  (`GET /v1/notas-fiscais`, NFe de produto), `nota-fiscal get`
+  (`GET /v1/notas-fiscais/{chave}`), `nota-fiscal vincular-mdfe`
+  (`POST /v1/notas-fiscais/vinculo-mdfe`) e `nota-fiscal-servico list`
+  (`GET /v1/notas-fiscais-servico`, NFS-e de serviço). Paths e schemas
+  conferidos direto na documentação renderizada (o portal bloqueia
+  `WebFetch`), ainda não exercitados contra a API real.
+- `ApiTransportInterface::requestBinary()`, um caminho de transporte
+  dedicado para respostas que não são JSON. `nota-fiscal get` devolve o
+  XML da NF-e (ou um ZIP, quando há carta de correção) em vez de JSON; o
+  conteúdo cru quebraria tanto `request()` quanto `requestScalar()`
+  (ambos tentam decodificar JSON). O comando embrulha o binário em base64
+  dentro do envelope de sempre, preservando o contrato de stdout só-JSON.
+- `PeriodoPadrao::inicioUltimos15Dias()`/`hoje()`. Diferente dos demais
+  endpoints com intervalo obrigatório, `nota-fiscal-servico list` limita
+  o intervalo a 15 dias — usar o default de "mês corrente" dos outros
+  comandos estouraria esse limite quase sempre.
+
 ## [0.6.0] - 2026-08-18
 
 ### Added
@@ -131,7 +153,9 @@ Primeira versão tagueada.
 - `release.yml` corrigido: faltava `permissions: contents: write`, o que
   impedia a publicação do PHAR na release do GitHub.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.2.0...v0.3.0

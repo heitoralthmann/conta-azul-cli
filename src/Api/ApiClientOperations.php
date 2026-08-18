@@ -43,6 +43,17 @@ trait ApiClientOperations
   }
 
   /**
+   * Sends an authenticated request whose response is not JSON.
+   *
+   * @param array<string, mixed> $options
+   *
+   * @return array{content: string, contentType: string}
+   */
+  public function requestBinary(string $method, string $path, array $options = []): array {
+    return $this->support->requestBinary($method, $path, $options);
+  }
+
+  /**
    * Polls an asynchronous protocol identifier.
    *
    * @return array<mixed>

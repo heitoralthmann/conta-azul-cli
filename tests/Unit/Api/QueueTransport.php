@@ -31,6 +31,15 @@ final class QueueTransport implements ApiTransportInterface
     return $this->request($method, $path, $options);
   }
 
+  /**
+   * @param array<string, mixed> $options
+   *
+   * @return array{content: string, contentType: string}
+   */
+  public function requestBinary(string $method, string $path, array $options = []): array {
+    return ['content' => '', 'contentType' => 'application/octet-stream'];
+  }
+
   /** Returns a stable correlation id for generated polling errors. */
   public function getCorrelationId(): string {
     return 'correlation-test';

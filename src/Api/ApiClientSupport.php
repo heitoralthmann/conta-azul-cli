@@ -76,6 +76,17 @@ final class ApiClientSupport
   }
 
   /**
+   * Sends an authenticated request whose response is not JSON.
+   *
+   * @param array<string, mixed> $options
+   *
+   * @return array{content: string, contentType: string}
+   */
+  public function requestBinary(string $method, string $path, array $options = []): array {
+    return $this->transport->requestBinary($method, $path, $options);
+  }
+
+  /**
    * Returns the correlation identifier attached to transport requests.
    */
   public function getCorrelationId(): string {

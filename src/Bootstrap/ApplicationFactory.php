@@ -6,6 +6,7 @@ namespace ContaAzulCli\Bootstrap;
 
 use ContaAzulCli\Api\ContratosClient;
 use ContaAzulCli\Api\FinanceiroClient;
+use ContaAzulCli\Api\NotasFiscaisClient;
 use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Api\ProdutosClient;
@@ -17,6 +18,7 @@ use ContaAzulCli\Auth\TokenStore;
 use ContaAzulCli\Command\Module\AuthCommandModule;
 use ContaAzulCli\Command\Module\ContratoCommandModule;
 use ContaAzulCli\Command\Module\FinanceiroCommandModule;
+use ContaAzulCli\Command\Module\NotaFiscalCommandModule;
 use ContaAzulCli\Command\Module\PessoaCommandModule;
 use ContaAzulCli\Command\Module\ProdutoCommandModule;
 use ContaAzulCli\Command\Module\ServicoCommandModule;
@@ -62,11 +64,12 @@ final class ApplicationFactory
         keyFile: $config->callbackKeyFile,
     );
 
-    $financeiroClient = new FinanceiroClient($config, $authManager, $this->logger, $redactor, $httpClient);
-    $pessoasClient    = new PessoasClient($config, $authManager, $this->logger, $redactor, $httpClient);
-    $produtosClient   = new ProdutosClient($config, $authManager, $this->logger, $redactor, $httpClient);
-    $servicosClient   = new ServicosClient($config, $authManager, $this->logger, $redactor, $httpClient);
-    $contratosClient  = new ContratosClient($config, $authManager, $this->logger, $redactor, $httpClient);
+    $financeiroClient   = new FinanceiroClient($config, $authManager, $this->logger, $redactor, $httpClient);
+    $pessoasClient      = new PessoasClient($config, $authManager, $this->logger, $redactor, $httpClient);
+    $produtosClient     = new ProdutosClient($config, $authManager, $this->logger, $redactor, $httpClient);
+    $servicosClient     = new ServicosClient($config, $authManager, $this->logger, $redactor, $httpClient);
+    $contratosClient    = new ContratosClient($config, $authManager, $this->logger, $redactor, $httpClient);
+    $notasFiscaisClient = new NotasFiscaisClient($config, $authManager, $this->logger, $redactor, $httpClient);
 
     return new ApplicationComponents(
         $this->logger,
@@ -85,6 +88,14 @@ final class ApplicationFactory
           new ServicoCommandModule($servicosClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
           new ContratoCommandModule(
               $contratosClient,
+              $errorEnvelope,
+              $jsonRenderer,
+              $paginationValidator,
+              $warningEnvelope,
+              $periodoPadrao,
+          ),
+          new NotaFiscalCommandModule(
+              $notasFiscaisClient,
               $errorEnvelope,
               $jsonRenderer,
               $paginationValidator,

@@ -36,6 +36,18 @@ interface ApiTransportInterface
   public function requestScalar(string $method, string $path, array $options = []): mixed;
 
   /**
+   * Sends a request and returns its raw response body, for endpoints whose
+   * payload is not JSON (e.g. XML or a binary file).
+   *
+   * @param array<string, mixed> $options Symfony HttpClient request options.
+   *
+   * @return array{content: string, contentType: string}
+   *
+   * @throws CliException when the request cannot succeed.
+   */
+  public function requestBinary(string $method, string $path, array $options = []): array;
+
+  /**
    * Returns the identifier attached to every request in this transport.
    */
   public function getCorrelationId(): string;

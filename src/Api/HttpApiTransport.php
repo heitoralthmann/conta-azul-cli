@@ -69,6 +69,18 @@ final class HttpApiTransport implements ApiTransportInterface
     return $response->getStatusCode() === 204 ? null : $this->decodeScalar($response);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  public function requestBinary(string $method, string $path, array $options = []): array {
+    $response = $this->sendWithRetry($method, $path, $options);
+
+    return [
+      'content'     => $response->getContent(),
+      'contentType' => $this->extractContentType($response),
+    ];
+  }
+
   public function getCorrelationId(): string {
     return $this->correlationId;
   }
@@ -186,6 +198,20 @@ final class HttpApiTransport implements ApiTransportInterface
    */
   private function decodeScalar(ResponseInterface $response): mixed {
     return json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+  }
+
+  /**
+   * Reads the Content-Type response header for a non-JSON payload.
+   */
+  private function extractContentType(ResponseInterface $response): string {
+    try {
+      $headers = $response->getHeaders(false);
+      $values  = $headers['content-type'] ?? [];
+
+      return $values[0] ?? 'application/octet-stream';
+    } catch (Throwable) {
+      return 'application/octet-stream';
+    }
   }
 
   /**

@@ -65,6 +65,10 @@ Cada endpoint traz uma marca de confiança:
 | `servico get` | `GET /v1/servicos/{id}` | ⚠️ |
 | `servico update` | `PATCH /v1/servicos/{id}` | ⚠️ |
 | `servico delete` | `DELETE /v1/servicos` | ⚠️ |
+| `nota-fiscal list` | `GET /v1/notas-fiscais` | ⚠️ |
+| `nota-fiscal get` | `GET /v1/notas-fiscais/{chave}` | ⚠️ |
+| `nota-fiscal vincular-mdfe` | `POST /v1/notas-fiscais/vinculo-mdfe` | ⚠️ |
+| `nota-fiscal-servico list` | `GET /v1/notas-fiscais-servico` | ⚠️ |
 
 ---
 
@@ -139,7 +143,7 @@ Dois formatos, e eles não são intercambiáveis:
 
 > Em `alteracoes`, sufixo `Z` ou offset (`-03:00`) faz a API responder **400**.
 
-Onde há intervalo de datas, a API o **exige**. Omitir as opções não causa erro: o CLI assume o **mês corrente** e avisa em stderr qual recorte aplicou. Informar ambas as opções silencia o aviso.
+Onde há intervalo de datas, a API o **exige**. Omitir as opções não causa erro: o CLI assume o **mês corrente** e avisa em stderr qual recorte aplicou. Informar ambas as opções silencia o aviso. Exceção: `nota-fiscal-servico list`, cujo intervalo é limitado a 15 dias pela API — o default ali são os **últimos 15 dias**, não o mês corrente.
 
 ---
 
@@ -574,12 +578,77 @@ Aceita `--pagina`, `--tamanho-pagina`, `--busca`, `--codigo`, `--ids` e `--statu
 
 ---
 
+## Notas fiscais
+
+A API só suporta **consulta** (NFe de produto emitida e NFS-e de serviço) e vínculo a MDF-e — não há emissão pelo CLI.
+
+### `nota-fiscal list` ⚠️
+
+`GET /v1/notas-fiscais`
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--data-inicial` | não¹ | 1º dia do mês corrente | Início do intervalo (`YYYY-MM-DD`) |
+| `--data-final` | não¹ | último dia do mês corrente | Fim do intervalo (`YYYY-MM-DD`) |
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `10` | Itens por página (`10`, `20`, `50` ou `100`) |
+| `--documento-tomador` | não | — | Filtra pelo documento (CPF/CNPJ) do tomador |
+| `--numero-nota` | não | — | Filtra pelo número da nota fiscal |
+| `--id-venda` | não | — | Filtra pelo ID da venda |
+
+¹ A API exige o intervalo; o CLI supre com o mês corrente e avisa em stderr.
+
+Retorna somente NFe com status `EMITIDA` e `CORRIGIDA_SUCESSO` (outros status "em construção" na própria API).
+
+### `nota-fiscal get` ⚠️
+
+`GET /v1/notas-fiscais/{chave}`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<chave>` | **sim** | Argumento posicional. Chave de acesso da nota fiscal |
+
+A resposta da API é binária (o XML da NF-e ou, quando há carta de correção, um ZIP com o XML da NF-e e o(s) XML(s) da carta de correção), não JSON. Para manter o contrato de stdout do CLI, o comando devolve `{"content_base64", "content_type"}` — decodifique `content_base64` para obter os bytes originais.
+
+### `nota-fiscal vincular-mdfe` ⚠️
+
+`POST /v1/notas-fiscais/vinculo-mdfe` — **escrita síncrona**, resposta `204 No Content` (renderizada como `{}`).
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Payload JSON com `chaves_acesso` (array), `identificador` e, opcionalmente, `status` (`AUTORIZADO`, `ENCERRADO` ou `CANCELADO`) |
+
+### `nota-fiscal-servico list` ⚠️
+
+`GET /v1/notas-fiscais-servico`
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--data-competencia-de` | não¹ | 15 dias atrás | Emissão inicial (`YYYY-MM-DD`) |
+| `--data-competencia-ate` | não¹ | hoje | Emissão final (`YYYY-MM-DD`) |
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `10` | Itens por página (`10`, `20`, `50` ou `100`) |
+| `--ids` | não | — | UUID da nota fiscal de serviço; repetível |
+| `--id-cliente` | não | — | UUID de cliente; repetível |
+| `--numero-venda` | não | — | Filtra pelo número da venda |
+| `--numero-nfse-inicial` / `--numero-nfse-final` | não | — | Intervalo de número da NFS-e |
+| `--numero-rps-inicial` / `--numero-rps-final` | não | — | Intervalo de número do RPS |
+| `--status` | não | — | Status (`PENDENTE`, `EMITIDA`, `CANCELADA`, etc.); repetível |
+| `--tipo-negociacao` | não | — | `VENDA` ou `CONTRATO` |
+
+¹ A API exige o intervalo e o limita a **15 dias**; o CLI supre com os últimos 15 dias (terminando hoje) e avisa em stderr — diferente do mês corrente usado pelos demais comandos de listagem.
+
+Diferente de `nota-fiscal list`, retorna NFS-e em qualquer status.
+
+---
+
 ## Fora do escopo do CLI
 
 Todos os endpoints da família Financeiro / Cobranças / Baixas e Protocolos já têm
 comando — veja a referência rápida no topo deste arquivo e `API_COVERAGE.md` para
-a lista completa por área (Contratos, Notas Fiscais, Vendas, Orçamentos e Captura
-seguem fora do escopo declarado em `ESPECIFICACAO.md`).
+a lista completa por área (Vendas, Orçamentos e Captura seguem fora do escopo
+declarado em `ESPECIFICACAO.md`; Contratos e Notas Fiscais já foram implementados
+além do escopo original).
 
 Recursos que **não existem** na API v1 — não procure o comando, não há endpoint:
 

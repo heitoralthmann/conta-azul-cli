@@ -31,6 +31,20 @@ final class PeriodoPadrao
     return $this->referencia->modify('last day of this month')->format('Y-m-d');
   }
 
+  /**
+   * Início de uma janela de 15 dias terminando hoje. Alguns endpoints limitam
+   * o intervalo de consulta a 15 dias, então o mês corrente não serve de
+   * default para eles.
+   */
+  public function inicioUltimos15Dias(): string {
+    return $this->referencia->modify('-14 days')->format('Y-m-d');
+  }
+
+  /** Retorna a data de referência (hoje, salvo em testes). */
+  public function hoje(): string {
+    return $this->referencia->format('Y-m-d');
+  }
+
   /** A API recusa timezone nestes campos; o formato é ISO 8601 puro. */
   public function primeiroInstante(): string {
     return $this->referencia->modify('first day of this month')->format('Y-m-d\T00:00:00');

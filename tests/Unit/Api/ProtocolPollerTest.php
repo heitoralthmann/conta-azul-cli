@@ -55,6 +55,18 @@ final class ProtocolPollerTest extends TestCase
         throw new CliException(ErrorKind::ServerError, true, 'temporary', 500, null, 'correlation-test');
       }
 
+      /**
+       * Always reports a resumable server failure.
+       *
+       * @param array<string, mixed> $options
+       *
+       * @return array{content: string, contentType: string}
+       */
+      // phpcs:ignore Squiz.Commenting.FunctionComment.InvalidNoReturn -- always throws by design, never returns.
+      public function requestBinary(string $method, string $path, array $options = []): array {
+        throw new CliException(ErrorKind::ServerError, true, 'temporary', 500, null, 'correlation-test');
+      }
+
       /** Returns the correlation id attached to the transport. */
       public function getCorrelationId(): string {
         return 'correlation-test';

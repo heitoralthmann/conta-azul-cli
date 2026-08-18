@@ -6,6 +6,7 @@ namespace ContaAzulCli\Tests\Integration\Support;
 
 use ContaAzulCli\Api\ContratosClient;
 use ContaAzulCli\Api\FinanceiroClient;
+use ContaAzulCli\Api\NotasFiscaisClient;
 use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Api\ProdutosClient;
 use ContaAzulCli\Api\ServicosClient;
@@ -60,6 +61,14 @@ trait ApiClientFactory
   /** @param list<MockResponse> $responses */
   protected function contratosClient(array $responses, string $accessToken = 'test-access-token'): ContratosClient {
     return new ContratosClient(...$this->apiClientDependencies($responses, $accessToken));
+  }
+
+  /** @param list<MockResponse> $responses */
+  protected function notasFiscaisClient(
+      array $responses,
+      string $accessToken = 'test-access-token',
+  ): NotasFiscaisClient {
+    return new NotasFiscaisClient(...$this->apiClientDependencies($responses, $accessToken));
   }
 
   /** A 200 response with a JSON-encoded body. */
