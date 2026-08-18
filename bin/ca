@@ -24,12 +24,12 @@ if ($autoloadFile === null) {
       STDERR,
       json_encode(
           [
-            'kind' => 'client_error',
-            'retryable' => false,
-            'http_status' => null,
-            'protocol_id' => null,
             'correlation_id' => null,
-            'message' => 'Dependências não encontradas. Execute "composer install".',
+            'http_status'    => null,
+            'kind'           => 'client_error',
+            'message'        => 'Dependências não encontradas. Execute "composer install".',
+            'protocol_id'    => null,
+            'retryable'      => false,
           ],
       ) . PHP_EOL,
   );

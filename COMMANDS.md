@@ -20,6 +20,8 @@ Cada endpoint traz uma marca de confiança:
 | `auth login` | OAuth2 (navegador) | ✅ |
 | `auth logout` | — (local) | ✅ |
 | `categoria list` | `GET /v1/categorias` | ✅ |
+| `categoria configuracao-padrao` | `GET /v1/categorias/configuracao-padrao` | ✅ |
+| `categoria dre` | `GET /v1/financeiro/categorias-dre` | ✅ |
 | `centro-de-custo list` | `GET /v1/centro-de-custo` | ✅ |
 | `conta-financeira list` | `GET /v1/conta-financeira` | ✅ |
 | `conta-financeira saldo` | `GET /v1/conta-financeira/{id}/saldo-atual` | ✅ |
@@ -161,6 +163,22 @@ Sem parâmetros. Remove as credenciais locais.
 | `--tamanho-pagina` | não | `50` | Itens por página |
 
 Retorna `{itens_totais, itens[]}`. Cada item traz `id`, `nome`, `tipo` (`RECEITA`/`DESPESA`), `categoria_pai` e `entrada_dre`.
+
+### `categoria configuracao-padrao` ✅
+
+`GET /v1/categorias/configuracao-padrao`
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--sugestao-padrao` / `--no-sugestao-padrao` | não | `--sugestao-padrao` | Inclui (ou omite) a sugestão padrão de categoria em cada item |
+
+Retorna uma lista de de-para entre operação financeira (`tipo_operacao`, ex: `FRETES_RECEBIDOS`, `JUROS_PAGOS`) e a categoria configurada para ela (`id_categoria`, `nome_categoria`). Com `--no-sugestao-padrao`, o campo `sugestao_padrao` de cada item vem `null`.
+
+### `categoria dre` ✅
+
+`GET /v1/financeiro/categorias-dre`
+
+Sem parâmetros. Retorna `{itens[]}` com a estrutura hierárquica da DRE (Demonstração do Resultado do Exercício): cada item traz `descricao`, `codigo`, `subitens[]` e `categorias_financeiras[]` associadas.
 
 ---
 

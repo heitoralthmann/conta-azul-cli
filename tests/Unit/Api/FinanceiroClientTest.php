@@ -91,6 +91,11 @@ final class FinanceiroClientTest extends TestCase
         'GET',
         'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/alteracoes',
       ],
+      'categorias DRE ficam sob financeiro, no plural'        => [
+        static fn (FinanceiroClient $c) => $c->listCategoriasDre(),
+        'GET',
+        'https://api-v2.contaazul.com/v1/financeiro/categorias-dre',
+      ],
       'categorias fica na raiz da v1, no plural'              => [
         static fn (FinanceiroClient $c) => $c->listCategorias(),
         'GET',
@@ -100,6 +105,11 @@ final class FinanceiroClientTest extends TestCase
         static fn (FinanceiroClient $c) => $c->listCentrosDeCusto(),
         'GET',
         'https://api-v2.contaazul.com/v1/centro-de-custo',
+      ],
+      'configuração padrão de categorias'                     => [
+        static fn (FinanceiroClient $c) => $c->getConfiguracaoPadraoCategorias(),
+        'GET',
+        'https://api-v2.contaazul.com/v1/categorias/configuracao-padrao',
       ],
       'conta financeira fica na raiz da v1, no singular'      => [
         static fn (FinanceiroClient $c) => $c->listContasFinanceiras(),
@@ -167,6 +177,18 @@ final class FinanceiroClientTest extends TestCase
     parse_str((string) parse_url($captured['url'], PHP_URL_QUERY), $query);
     self::assertSame('2026-03-01', $query['data_vencimento_de'] ?? null);
     self::assertSame('2026-03-31', $query['data_vencimento_ate'] ?? null);
+  }
+
+  /** A API espera `'true'`/`'false'` literal, não o `1`/vazio do PHP nativo. */
+  public function testSugestaoPadraoIsSentAsLiteralBooleanString(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->getConfiguracaoPadraoCategorias(false);
+
+    self::assertNotNull($captured);
+    parse_str((string) parse_url($captured['url'], PHP_URL_QUERY), $query);
+    self::assertSame('false', $query['sugestao_padrao'] ?? null);
   }
 
   /** A API recusa `desde`; os parâmetros são data_inicio e data_fim. */

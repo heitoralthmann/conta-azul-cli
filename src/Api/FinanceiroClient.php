@@ -200,6 +200,27 @@ final class FinanceiroClient
     );
   }
 
+  /**
+   * `sugestao_padrao` vai como string `'true'`/`'false'`: bool nativo vira
+   * `1`/vazio via `http_build_query` e a API não reconhece esse formato.
+   *
+   * @return array<mixed>
+   */
+  public function getConfiguracaoPadraoCategorias(bool $sugestaoPadrao = true): array {
+    return $this->support->request(
+        'GET',
+        '/v1/categorias/configuracao-padrao',
+        [
+          'query' => ['sugestao_padrao' => $sugestaoPadrao ? 'true' : 'false'],
+        ],
+    );
+  }
+
+  /** @return array<mixed> */
+  public function listCategoriasDre(): array {
+    return $this->support->request('GET', '/v1/financeiro/categorias-dre');
+  }
+
   // -------------------------------------------------------------------------
   // Centros de Custo
   // -------------------------------------------------------------------------

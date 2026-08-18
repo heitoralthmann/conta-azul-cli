@@ -26,8 +26,8 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 
 ### Categorias
 - [x] `GET /v1/categorias` — `categoria list`
-- [ ] `GET /v1/categorias/configuracao-padrao` — de-para padrão de categorias
-- [ ] `GET /v1/financeiro/categorias-dre` — categorias DRE
+- [x] `GET /v1/categorias/configuracao-padrao` — `categoria configuracao-padrao`
+- [x] `GET /v1/financeiro/categorias-dre` — `categoria dre`
 
 ### Contas financeiras
 - [x] `GET /v1/conta-financeira` — `conta-financeira list`
@@ -157,7 +157,7 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 | Área | Implementados | Total |
 |---|---|---|
 | Autenticação | 3 | 3 |
-| Financeiro / Cobranças / Baixas | 10 | 17 |
+| Financeiro / Cobranças / Baixas | 12 | 17 |
 | Protocolos | 1 | 1 |
 | Contratos | 0 | 3 |
 | Pessoas / Fornecedores | 10 | 10 |
@@ -167,4 +167,4 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 | Vendas | 0 | 9 |
 | Orçamentos | 0 | 4 |
 | Captura | 0 | 5 |
-| **Total** | **40** | **72** |
+| **Total** | **42** | **72** |

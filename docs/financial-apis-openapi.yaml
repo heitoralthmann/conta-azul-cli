@@ -22,7 +22,7 @@ paths:
   /v1/categorias:
     get: { summary: "Lista categorias financeiras" }
   /v1/categorias/configuracao-padrao:
-    get: { summary: "De-para padrão de categorias (sem comando no CLI)" }
+    get: { summary: "De-para padrão de categorias" }
   /v1/centro-de-custo:
     get: { summary: "Lista centros de custo" }
   /v1/conta-financeira:
@@ -30,7 +30,7 @@ paths:
   /v1/conta-financeira/{id_conta_financeira}/saldo-atual:
     get: { summary: "Saldo atual da conta financeira" }
   /v1/financeiro/categorias-dre:
-    get: { summary: "Categorias DRE (sem comando no CLI)" }
+    get: { summary: "Categorias DRE" }
   /v1/financeiro/transferencias:
     get: { summary: "Lista transferências; exige data_inicio e data_fim (sem comando no CLI)" }
   /v1/financeiro/eventos-financeiros/contas-a-receber:

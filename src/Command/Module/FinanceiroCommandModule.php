@@ -6,6 +6,8 @@ namespace ContaAzulCli\Command\Module;
 
 use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Api\PaginationValidator;
+use ContaAzulCli\Command\Categoria\ConfiguracaoPadraoCommand as CategoriaConfiguracaoPadraoCommand;
+use ContaAzulCli\Command\Categoria\DreCommand as CategoriaDreCommand;
 use ContaAzulCli\Command\Categoria\ListCommand as CategoriaListCommand;
 use ContaAzulCli\Command\CentroDeCusto\ListCommand as CentroDeCustoListCommand;
 use ContaAzulCli\Command\CommandModuleInterface;
@@ -70,6 +72,8 @@ final class FinanceiroCommandModule implements CommandModuleInterface
       ),
       new ContaFinanceiraSaldoCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new CategoriaListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
+      new CategoriaConfiguracaoPadraoCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new CategoriaDreCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new CentroDeCustoListCommand(
           $this->client,
           $this->errorEnvelope,
