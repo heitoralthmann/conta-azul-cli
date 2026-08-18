@@ -131,6 +131,11 @@ final class FinanceiroClientTest extends TestCase
         'GET',
         'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/parcelas/p1',
       ],
+      'saldo inicial fica sob eventos-financeiros'            => [
+        static fn (FinanceiroClient $c) => $c->listSaldoInicial('2026-08-01T00:00:00', '2026-08-31T23:59:59'),
+        'GET',
+        'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/saldo-inicial',
+      ],
       'saldo é saldo-atual, não saldo'                        => [
         static fn (FinanceiroClient $c) => $c->getSaldoContaFinanceira('abc'),
         'GET',
@@ -208,6 +213,21 @@ final class FinanceiroClientTest extends TestCase
     self::assertSame('2026-08-01T00:00:00', $query['data_inicio'] ?? null);
     self::assertSame('2026-08-31T23:59:59', $query['data_fim'] ?? null);
     self::assertArrayNotHasKey('desde', $query);
+  }
+
+  /** Assim como `getAlteracoes`, o instante ISO 8601 vai sem timezone. */
+  public function testListSaldoInicialSendsDataInicioDataFimAndPagination(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->listSaldoInicial('2026-08-01T00:00:00', '2026-08-31T23:59:59', 2, 25);
+
+    self::assertNotNull($captured);
+    parse_str((string) parse_url($captured['url'], PHP_URL_QUERY), $query);
+    self::assertSame('2026-08-01T00:00:00', $query['data_inicio'] ?? null);
+    self::assertSame('2026-08-31T23:59:59', $query['data_fim'] ?? null);
+    self::assertSame('2', $query['pagina'] ?? null);
+    self::assertSame('25', $query['tamanho_pagina'] ?? null);
   }
 
   /**

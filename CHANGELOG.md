@@ -9,6 +9,13 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-18
+
+### Added
+
+- Comando `financeiro saldo-inicial`, completando a sessão de Eventos
+  financeiros / diversos (`GET /v1/financeiro/eventos-financeiros/saldo-inicial`).
+
 ## [0.4.0] - 2026-08-18
 
 ### Added
@@ -112,7 +119,8 @@ Primeira versão tagueada.
 - `release.yml` corrigido: faltava `permissions: contents: write`, o que
   impedia a publicação do PHAR na release do GitHub.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.1.0...v0.2.0

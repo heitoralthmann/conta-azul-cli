@@ -34,6 +34,7 @@ Cada endpoint traz uma marca de confiança:
 | `parcela baixar` | `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` | ⚠️ |
 | `parcela list` | `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas` | ⚠️ |
 | `financeiro alteracoes` | `GET /v1/financeiro/eventos-financeiros/alteracoes` | ✅ |
+| `financeiro saldo-inicial` | `GET /v1/financeiro/eventos-financeiros/saldo-inicial` | ⚠️ |
 | `protocolo get` | `GET /v1/protocolo/{id}` | ⚠️ |
 | `pessoa list` | `GET /v1/pessoas` | ⚠️ |
 | `pessoa create` | `POST /v1/pessoas` | ⚠️ |
@@ -364,6 +365,23 @@ Feed de alterações no período — o caminho para reconciliar escritas que ter
 
 Retorna `{itens_totais, itens[]}`, onde cada item traz apenas o `id` do evento alterado. Use `parcela get` para hidratar.
 
+### `financeiro saldo-inicial` ⚠️
+
+`GET /v1/financeiro/eventos-financeiros/saldo-inicial`
+
+Saldos iniciais das contas financeiras no período.
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--data-inicio` | não¹ | início do mês corrente | ISO 8601 **sem timezone** |
+| `--data-fim` | não¹ | fim do mês corrente | ISO 8601 **sem timezone** |
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `50` | Itens por página |
+
+¹ A API exige o intervalo; o CLI supre com o mês corrente e avisa em stderr.
+
+Retorna `{itens_totais, itens[]}`.
+
 ---
 
 ## Protocolos
@@ -516,15 +534,10 @@ Aceita `--pagina`, `--tamanho-pagina`, `--busca`, `--codigo`, `--ids` e `--statu
 
 ## Fora do escopo do CLI
 
-Endpoints que **existem e respondem**, mas ainda não têm comando:
-
-| Endpoint | O que faz |
-|---|---|
-| `GET /v1/financeiro/transferencias` | Lista transferências. Exige `data_inicio` e `data_fim`. |
-| `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas` | Parcelas de um evento financeiro. |
-| `GET /v1/financeiro/categorias-dre` | Categorias DRE. |
-| `GET /v1/categorias/configuracao-padrao` | De-para padrão de categorias. |
-| `GET /v1/financeiro/eventos-financeiros/saldo-inicial` | Saldo inicial no período. |
+Todos os endpoints da família Financeiro / Cobranças / Baixas e Protocolos já têm
+comando — veja a referência rápida no topo deste arquivo e `API_COVERAGE.md` para
+a lista completa por área (Contratos, Notas Fiscais, Vendas, Orçamentos e Captura
+seguem fora do escopo declarado em `ESPECIFICACAO.md`).
 
 Recursos que **não existem** na API v1 — não procure o comando, não há endpoint:
 

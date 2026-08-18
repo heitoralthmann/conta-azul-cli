@@ -20,7 +20,8 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 
 17 endpoints. `src/Api/FinanceiroClient.php`.
 Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a API real em 2026-08-18;
-`parcela list` acrescentado em 2026-08-18 (path e schema conferidos direto na doc, endpoint ainda não exercitado contra a API real).
+`parcela list` acrescentado em 2026-08-18 (path e schema conferidos direto na doc, endpoint ainda não exercitado contra a API real);
+`financeiro saldo-inicial` acrescentado em 2026-08-18, completando a sessão (path e query params conferidos direto na doc, endpoint ainda não exercitado contra a API real).
 
 ### Centros de custo
 - [x] `GET /v1/centro-de-custo` — `centro-de-custo list`
@@ -53,7 +54,7 @@ Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a A
 
 ### Eventos financeiros / diversos
 - [x] `GET /v1/financeiro/eventos-financeiros/alteracoes` — `financeiro alteracoes`
-- [ ] `GET /v1/financeiro/eventos-financeiros/saldo-inicial`
+- [x] `GET /v1/financeiro/eventos-financeiros/saldo-inicial` — `financeiro saldo-inicial`
 
 ## 🧾 Protocolos
 
@@ -159,7 +160,7 @@ Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a A
 | Área | Implementados | Total |
 |---|---|---|
 | Autenticação | 3 | 3 |
-| Financeiro / Cobranças / Baixas | 14 | 17 |
+| Financeiro / Cobranças / Baixas | 15 | 17 |
 | Protocolos | 1 | 1 |
 | Contratos | 0 | 3 |
 | Pessoas / Fornecedores | 10 | 10 |
@@ -169,4 +170,4 @@ Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a A
 | Vendas | 0 | 9 |
 | Orçamentos | 0 | 4 |
 | Captura | 0 | 5 |
-| **Total** | **44** | **72** |
+| **Total** | **45** | **72** |

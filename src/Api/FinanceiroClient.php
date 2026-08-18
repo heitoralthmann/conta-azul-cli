@@ -306,6 +306,32 @@ final class FinanceiroClient
     );
   }
 
+  /**
+   * Assim como `getAlteracoes`, as datas vão em ISO 8601 sem timezone
+   * (fuso São Paulo/GMT-3 implícito, conforme a documentação).
+   *
+   * @return array<mixed>
+   */
+  public function listSaldoInicial(
+      string $dataInicio,
+      string $dataFim,
+      int $pagina = 1,
+      int $tamanhoPagina = 50,
+  ): array {
+    return $this->support->request(
+        'GET',
+        '/v1/financeiro/eventos-financeiros/saldo-inicial',
+        [
+          'query' => [
+            'data_fim'       => $dataFim,
+            'data_inicio'    => $dataInicio,
+            'pagina'         => $pagina,
+            'tamanho_pagina' => $tamanhoPagina,
+          ],
+        ],
+    );
+  }
+
   // -------------------------------------------------------------------------
   // Protocolo
   // -------------------------------------------------------------------------

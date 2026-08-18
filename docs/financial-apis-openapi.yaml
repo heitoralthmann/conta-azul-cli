@@ -49,6 +49,6 @@ paths:
   /v1/financeiro/eventos-financeiros/alteracoes:
     get: { summary: "Feed de alterações; params data_inicio e data_fim em ISO 8601 SEM timezone" }
   /v1/financeiro/eventos-financeiros/saldo-inicial:
-    get: { summary: "Saldo inicial no período (sem comando no CLI)" }
+    get: { summary: "Saldo inicial no período; params data_inicio e data_fim em ISO 8601 SEM timezone" }
   /v1/protocolo/{id}:
     get: { summary: "Status de escrita assíncrona — não verificado contra a API real" }
