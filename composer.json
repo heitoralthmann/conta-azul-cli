@@ -51,6 +51,7 @@
         "bin/ca"
     ],
     "scripts": {
+        "test": "phpunit --no-coverage",
         "lint": [
             "@lint:src",
             "@lint:bin"
@@ -65,6 +66,7 @@
         "format:bin": "t=$(mktemp); phpcbf --stdin-path=$PWD/bin/ca.php - < bin/ca > \"$t\"; if [ -s \"$t\" ]; then mv \"$t\" bin/ca; chmod +x bin/ca; else rm -f \"$t\"; fi"
     },
     "scripts-descriptions": {
+        "test": "Runs the PHPUnit test suite.",
         "lint": "Checks coding standards. bin/ca is piped through STDIN under a .php path because PHP_CodeSniffer refuses to lint extensionless files.",
         "format": "Applies the coding standard in place, bin/ca included."
     },
