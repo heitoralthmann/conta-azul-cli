@@ -54,24 +54,24 @@ final class EnvironmentConfigurationLoader
     $authBaseUrl = rtrim($this->getEnv('CA_AUTH_BASE_URL', 'https://auth.contaazul.com'), '/');
 
     return [
-      'clientId'              => $this->requireEnv('CA_CLIENT_ID'),
-      'clientSecret'          => $this->requireEnv('CA_CLIENT_SECRET'),
-      'redirectUri'           => $this->getEnv('CA_REDIRECT_URI', 'http://localhost:9876/callback'),
-      'scope'                 => $this->nullableEnv('CA_SCOPE'),
       'apiBaseUrl'            => rtrim($this->getEnv('CA_API_BASE_URL', 'https://api-v2.contaazul.com'), '/'),
       'authBaseUrl'           => $authBaseUrl,
           // Authorization and token endpoints may intentionally use
           // different hosts and paths in production environments.
       'authorizeUrl'          => $this->getEnv('CA_AUTHORIZE_URL', $authBaseUrl . '/oauth2/authorize'),
-      'tokenUrl'              => $this->getEnv('CA_TOKEN_URL', $authBaseUrl . '/oauth2/token'),
-      'tokenPath'             => $this->expandHome($this->getEnv(
-          'CA_CLI_TOKEN_PATH',
-          '~/.config/conta-azul-cli/tokens.json',
-      )),
       'bootstrapRefreshToken' => $this->nullableEnv('CA_BOOTSTRAP_REFRESH_TOKEN'),
       'callbackCertFile'      => $this->nullableExpandedEnv('CA_CALLBACK_CERT'),
       'callbackKeyFile'       => $this->nullableExpandedEnv('CA_CALLBACK_KEY'),
       'callbackTimeout'       => $this->callbackTimeout(),
+      'clientId'              => $this->requireEnv('CA_CLIENT_ID'),
+      'clientSecret'          => $this->requireEnv('CA_CLIENT_SECRET'),
+      'redirectUri'           => $this->getEnv('CA_REDIRECT_URI', 'http://localhost:9876/callback'),
+      'scope'                 => $this->nullableEnv('CA_SCOPE'),
+      'tokenPath'             => $this->expandHome($this->getEnv(
+          'CA_CLI_TOKEN_PATH',
+          '~/.config/conta-azul-cli/tokens.json',
+      )),
+      'tokenUrl'              => $this->getEnv('CA_TOKEN_URL', $authBaseUrl . '/oauth2/token'),
     ];
   }
 

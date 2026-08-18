@@ -33,12 +33,12 @@ final class ErrorEnvelope
   public function renderToStderr(CliException $e): void {
     $this->output->renderError(
         [
-          'kind'           => $e->kind->value,
-          'retryable'      => $e->retryable,
-          'http_status'    => $e->httpStatus,
-          'protocol_id'    => $e->protocolId,
           'correlation_id' => $e->correlationId,
+          'http_status'    => $e->httpStatus,
+          'kind'           => $e->kind->value,
           'message'        => $e->getMessage(),
+          'protocol_id'    => $e->protocolId,
+          'retryable'      => $e->retryable,
         ],
     );
   }
@@ -51,12 +51,12 @@ final class ErrorEnvelope
   public function renderGenericToStderr(string $message, string $correlationId): void {
     $this->output->renderError(
         [
-          'kind'           => ErrorKind::ServerError->value,
-          'retryable'      => false,
-          'http_status'    => null,
-          'protocol_id'    => null,
           'correlation_id' => $correlationId,
+          'http_status'    => null,
+          'kind'           => ErrorKind::ServerError->value,
           'message'        => $message,
+          'protocol_id'    => null,
+          'retryable'      => false,
         ],
     );
   }

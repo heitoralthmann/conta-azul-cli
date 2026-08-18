@@ -107,9 +107,9 @@ final class HttpApiTransport implements ApiTransportInterface
     $headers         = array_merge(
         $existingHeaders,
         [
+          'Accept'           => 'application/json',
           'Authorization'    => 'Bearer ' . $accessToken,
           'X-Correlation-Id' => $this->correlationId,
-          'Accept'           => 'application/json',
         ],
     );
 
@@ -137,8 +137,8 @@ final class HttpApiTransport implements ApiTransportInterface
         'API request',
         [
           'method' => $method,
-          'url'    => $url,
           'query'  => $this->redactor->redact($queryForLog),
+          'url'    => $url,
         ],
         $this->correlationId,
     );

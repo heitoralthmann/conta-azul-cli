@@ -65,11 +65,11 @@ final class Logger
 
     $entry = json_encode(
         [
-          'timestamp'      => gmdate('Y-m-d\TH:i:s\Z'),
-          'level'          => $level,
-          'message'        => $message,
           'context'        => $this->redactor->redact($context),
           'correlation_id' => $correlationId,
+          'level'          => $level,
+          'message'        => $message,
+          'timestamp'      => gmdate('Y-m-d\TH:i:s\Z'),
         ],
         JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
     ) . "\n";

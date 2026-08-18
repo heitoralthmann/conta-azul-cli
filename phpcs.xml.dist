@@ -103,6 +103,15 @@
 
   <rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
 
+  <!--
+    Doctrine does not reference this Slevomat sniff. Multi-line arrays where
+    every item has an explicit key must have those keys in alphabetical
+    order, so a specific property is easy to scan for. Arrays with any
+    unkeyed item (list-style) are left alone, since order is semantically
+    meaningful there.
+  -->
+  <rule ref="SlevomatCodingStandard.Arrays.AlphabeticallySortedByKeys"/>
+
   <!-- Project-specific sniffs with no Doctrine equivalent. -->
 
   <rule ref="Generic.CodeAnalysis.ForLoopShouldBeWhileLoop"/>

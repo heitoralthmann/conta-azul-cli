@@ -34,9 +34,9 @@ final class LoginService
 
     $params = array_filter(
         [
-          'response_type' => 'code',
           'client_id'     => $this->config->clientId,
           'redirect_uri'  => $this->config->redirectUri,
+          'response_type' => 'code',
           'scope'         => $this->config->scope,
           'state'         => $this->pendingState,
         ],

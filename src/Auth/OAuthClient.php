@@ -35,8 +35,8 @@ final class OAuthClient implements OAuthGatewayInterface
   public function exchangeCode(string $code): TokenData {
     return $this->requestToken(
         [
-          'grant_type'   => 'authorization_code',
           'code'         => $code,
+          'grant_type'   => 'authorization_code',
           'redirect_uri' => $this->config->redirectUri,
         ],
     );
@@ -65,11 +65,11 @@ final class OAuthClient implements OAuthGatewayInterface
           'POST',
           $this->config->tokenUrl,
           [
+            'body'    => http_build_query($body),
             'headers' => [
               'Authorization' => 'Basic ' . $credentials,
               'Content-Type'  => 'application/x-www-form-urlencoded',
             ],
-            'body'    => http_build_query($body),
           ],
       );
       /** @var array<string, mixed> $data */

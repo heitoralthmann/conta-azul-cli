@@ -25,19 +25,19 @@ final class LoginServiceTest extends TestCase
   private function config(): Configuration {
     return Configuration::fromValues(
         [
-          'clientId'              => 'client',
-          'clientSecret'          => 'secret',
-          'redirectUri'           => 'https://localhost/callback',
-          'scope'                 => 'sales',
           'apiBaseUrl'            => 'https://api.example.test',
           'authBaseUrl'           => 'https://auth.example.test',
           'authorizeUrl'          => 'https://auth.example.test/authorize',
-          'tokenUrl'              => 'https://auth.example.test/token',
-          'tokenPath'             => sys_get_temp_dir() . '/tokens.json',
           'bootstrapRefreshToken' => null,
           'callbackCertFile'      => null,
           'callbackKeyFile'       => null,
           'callbackTimeout'       => 30,
+          'clientId'              => 'client',
+          'clientSecret'          => 'secret',
+          'redirectUri'           => 'https://localhost/callback',
+          'scope'                 => 'sales',
+          'tokenPath'             => sys_get_temp_dir() . '/tokens.json',
+          'tokenUrl'              => 'https://auth.example.test/token',
         ],
     );
   }

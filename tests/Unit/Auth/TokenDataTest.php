@@ -18,8 +18,8 @@ final class TokenDataTest extends TestCase
     $token  = TokenData::fromOAuthResponse(
         [
           'access_token'  => 'at-123',
-          'refresh_token' => 'rt-456',
           'expires_in'    => 3600,
+          'refresh_token' => 'rt-456',
           'token_type'    => 'Bearer',
         ],
     );
@@ -36,8 +36,8 @@ final class TokenDataTest extends TestCase
     $original = TokenData::fromOAuthResponse(
         [
           'access_token'  => 'at-abc',
-          'refresh_token' => 'rt-def',
           'expires_in'    => 7200,
+          'refresh_token' => 'rt-def',
           'token_type'    => 'Bearer',
         ],
     );

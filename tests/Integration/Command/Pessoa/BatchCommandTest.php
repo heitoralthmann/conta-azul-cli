@@ -21,8 +21,8 @@ final class BatchCommandTest extends CommandTestCase
   public static function operations(): array {
     return [
       'ativar'   => [BatchOperation::Activate, 'pessoa ativar'],
-      'inativar' => [BatchOperation::Deactivate, 'pessoa inativar'],
       'excluir'  => [BatchOperation::Delete, 'pessoa excluir'],
+      'inativar' => [BatchOperation::Deactivate, 'pessoa inativar'],
     ];
   }
 

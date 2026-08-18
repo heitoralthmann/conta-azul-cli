@@ -109,8 +109,8 @@ final class AuthManagerTest extends TestCase
         json_encode(
             [
               'access_token'  => $access,
-              'refresh_token' => $refresh,
               'expires_in'    => 3600,
+              'refresh_token' => $refresh,
             ],
             JSON_THROW_ON_ERROR,
         ),
@@ -251,7 +251,7 @@ final class AuthManagerTest extends TestCase
 
     $url = $this->manager()->startLoginFlow();
 
-    self::assertStringContainsString('?tenant=acme&response_type=code', $url);
+    self::assertStringContainsString('?tenant=acme&client_id=', $url);
   }
 
   public function testCompleteLoginFlowPersistsTheExchangedToken(): void {

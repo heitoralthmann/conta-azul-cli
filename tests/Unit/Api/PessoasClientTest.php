@@ -80,20 +80,10 @@ final class PessoasClientTest extends TestCase
   /** @return array<string, array{callable(PessoasClient): mixed, string, string}> */
   public static function endpointProvider(): array {
     return [
-      'lista pessoas'          => [
-        static fn (PessoasClient $c) => $c->listPessoas(),
-        'GET',
-        '/v1/pessoas',
-      ],
-      'cria pessoa'            => [
-        static fn (PessoasClient $c) => $c->createPessoa(['nome' => 'Maria']),
+      'ativa em lote'          => [
+        static fn (PessoasClient $c) => $c->activatePessoas(['uuids' => ['p-1']]),
         'POST',
-        '/v1/pessoas',
-      ],
-      'busca por id'           => [
-        static fn (PessoasClient $c) => $c->getPessoa('p-1'),
-        'GET',
-        '/v1/pessoas/p-1',
+        '/v1/pessoas/ativar',
       ],
       'atualiza integralmente' => [
         static fn (PessoasClient $c) => $c->updatePessoa('p-1', ['nome' => 'Maria']),
@@ -105,30 +95,40 @@ final class PessoasClientTest extends TestCase
         'PATCH',
         '/v1/pessoas/p-1',
       ],
+      'busca por id'           => [
+        static fn (PessoasClient $c) => $c->getPessoa('p-1'),
+        'GET',
+        '/v1/pessoas/p-1',
+      ],
       'busca por id legado'    => [
         static fn (PessoasClient $c) => $c->getPessoaLegado('123'),
         'GET',
         '/v1/pessoas/legado/123',
       ],
-      'ativa em lote'          => [
-        static fn (PessoasClient $c) => $c->activatePessoas(['uuids' => ['p-1']]),
-        'POST',
-        '/v1/pessoas/ativar',
+      'conta conectada'        => [
+        static fn (PessoasClient $c) => $c->getContaConectada(),
+        'GET',
+        '/v1/pessoas/conta-conectada',
       ],
-      'inativa em lote'        => [
-        static fn (PessoasClient $c) => $c->deactivatePessoas(['uuids' => ['p-1']]),
+      'cria pessoa'            => [
+        static fn (PessoasClient $c) => $c->createPessoa(['nome' => 'Maria']),
         'POST',
-        '/v1/pessoas/inativar',
+        '/v1/pessoas',
       ],
       'exclui em lote'         => [
         static fn (PessoasClient $c) => $c->deletePessoas(['uuids' => ['p-1']]),
         'POST',
         '/v1/pessoas/excluir',
       ],
-      'conta conectada'        => [
-        static fn (PessoasClient $c) => $c->getContaConectada(),
+      'inativa em lote'        => [
+        static fn (PessoasClient $c) => $c->deactivatePessoas(['uuids' => ['p-1']]),
+        'POST',
+        '/v1/pessoas/inativar',
+      ],
+      'lista pessoas'          => [
+        static fn (PessoasClient $c) => $c->listPessoas(),
         'GET',
-        '/v1/pessoas/conta-conectada',
+        '/v1/pessoas',
       ],
     ];
   }

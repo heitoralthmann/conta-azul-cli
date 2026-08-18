@@ -31,10 +31,10 @@ final class ProdutoCommandModule implements CommandModuleInterface
   public function commands(): array {
     $filters = [
       'busca'        => 'busca',
+      'categoria-id' => 'categoria_id',
       'codigo'       => 'codigo',
       'ids'          => 'ids',
       'status'       => 'status',
-      'categoria-id' => 'categoria_id',
     ];
 
     return [

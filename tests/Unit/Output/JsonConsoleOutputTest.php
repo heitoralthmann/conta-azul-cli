@@ -41,19 +41,19 @@ final class JsonConsoleOutputTest extends TestCase
   public function testRendersErrorEnvelope(): void {
     $output   = new BufferedOutput();
     $envelope = [
-      'kind'           => 'client_error',
-      'retryable'      => false,
-      'http_status'    => 422,
-      'protocol_id'    => null,
       'correlation_id' => 'corr-1',
+      'http_status'    => 422,
+      'kind'           => 'client_error',
       'message'        => 'Dados inválidos',
+      'protocol_id'    => null,
+      'retryable'      => false,
     ];
 
     (new JsonConsoleOutput($output))->renderError($envelope);
 
     self::assertSame(
-        '{"kind":"client_error","retryable":false,"http_status":422,"protocol_id":null,'
-            . "\"correlation_id\":\"corr-1\",\"message\":\"Dados inválidos\"}\n",
+        '{"correlation_id":"corr-1","http_status":422,"kind":"client_error","message":"Dados inválidos",'
+            . "\"protocol_id\":null,\"retryable\":false}\n",
         $output->fetch(),
     );
   }

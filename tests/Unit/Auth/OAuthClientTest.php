@@ -135,8 +135,8 @@ final class OAuthClientTest extends TestCase
               json_encode(
                   [
                     'access_token'  => 'access-2',
-                    'refresh_token' => 'refresh-2-rotated',
                     'expires_in'    => 3600,
+                    'refresh_token' => 'refresh-2-rotated',
                   ],
                   JSON_THROW_ON_ERROR,
               ),

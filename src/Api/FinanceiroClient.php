@@ -65,8 +65,8 @@ final class FinanceiroClient
         [
           'query' => array_merge(
               [
-                'data_vencimento_de'  => $dataVencimentoDe,
                 'data_vencimento_ate' => $dataVencimentoAte,
+                'data_vencimento_de'  => $dataVencimentoDe,
                 'pagina'              => $pagina,
                 'tamanho_pagina'      => $tamanhoPagina,
               ],
@@ -113,8 +113,8 @@ final class FinanceiroClient
         [
           'query' => array_merge(
               [
-                'data_vencimento_de'  => $dataVencimentoDe,
                 'data_vencimento_ate' => $dataVencimentoAte,
+                'data_vencimento_de'  => $dataVencimentoDe,
                 'pagina'              => $pagina,
                 'tamanho_pagina'      => $tamanhoPagina,
               ],
@@ -234,8 +234,8 @@ final class FinanceiroClient
         [
           'query' => array_merge(
               [
-                'data_inicio' => $dataInicio,
                 'data_fim'    => $dataFim,
+                'data_inicio' => $dataInicio,
               ],
               $filters,
           ),

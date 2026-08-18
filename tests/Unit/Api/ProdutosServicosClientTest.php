@@ -81,21 +81,20 @@ final class ProdutosServicosClientTest extends TestCase
   /** @return array<string, array{callable(ProdutosClient): mixed, string, string}> */
   public static function productEndpointProvider(): array {
     return [
-      'lista produtos'                => [static fn (ProdutosClient $c) => $c->listProdutos(), 'GET', '/v1/produtos'],
-      'cria produto'                  => [
-        static fn (ProdutosClient $c) => $c->createProduto(['nome' => 'Café']),
-        'POST',
-        '/v1/produtos',
+      'atualiza produto'              => [
+        static fn (ProdutosClient $c) => $c->updateProduto('p-1', ['nome' => 'Café']),
+        'PATCH',
+        '/v1/produtos/p-1',
       ],
       'busca produto'                 => [
         static fn (ProdutosClient $c) => $c->getProduto('p-1'),
         'GET',
         '/v1/produtos/p-1',
       ],
-      'atualiza produto'              => [
-        static fn (ProdutosClient $c) => $c->updateProduto('p-1', ['nome' => 'Café']),
-        'PATCH',
-        '/v1/produtos/p-1',
+      'cria produto'                  => [
+        static fn (ProdutosClient $c) => $c->createProduto(['nome' => 'Café']),
+        'POST',
+        '/v1/produtos',
       ],
       'exclui produto'                => [
         static fn (ProdutosClient $c) => $c->deleteProduto('p-1'),
@@ -107,22 +106,23 @@ final class ProdutosServicosClientTest extends TestCase
         'GET',
         '/v1/produtos/categorias',
       ],
-      'lista cest'                    => [static fn (ProdutosClient $c) => $c->listCest(), 'GET', '/v1/produtos/cest'],
-      'lista ncm'                     => [static fn (ProdutosClient $c) => $c->listNcm(), 'GET', '/v1/produtos/ncm'],
-      'lista unidades de medida'      => [
-        static fn (ProdutosClient $c) => $c->listUnidadesMedida(),
-        'GET',
-        '/v1/produtos/unidades-medida',
-      ],
       'lista categorias de ecommerce' => [
         static fn (ProdutosClient $c) => $c->listCategoriasEcommerce(),
         'GET',
         '/v1/produtos/ecommerce-categorias',
       ],
+      'lista cest'                    => [static fn (ProdutosClient $c) => $c->listCest(), 'GET', '/v1/produtos/cest'],
       'lista marcas de ecommerce'     => [
         static fn (ProdutosClient $c) => $c->listMarcasEcommerce(),
         'GET',
         '/v1/produtos/ecommerce-marcas',
+      ],
+      'lista ncm'                     => [static fn (ProdutosClient $c) => $c->listNcm(), 'GET', '/v1/produtos/ncm'],
+      'lista produtos'                => [static fn (ProdutosClient $c) => $c->listProdutos(), 'GET', '/v1/produtos'],
+      'lista unidades de medida'      => [
+        static fn (ProdutosClient $c) => $c->listUnidadesMedida(),
+        'GET',
+        '/v1/produtos/unidades-medida',
       ],
     ];
   }
@@ -141,23 +141,23 @@ final class ProdutosServicosClientTest extends TestCase
   /** @return array<string, array{callable(ServicosClient): mixed, string, string}> */
   public static function serviceEndpointProvider(): array {
     return [
-      'lista serviços'          => [static fn (ServicosClient $c) => $c->listServicos(), 'GET', '/v1/servicos'],
-      'cria serviço'            => [
-        static fn (ServicosClient $c) => $c->createServico(['nome' => 'Instalação']),
-        'POST',
-        '/v1/servicos',
-      ],
-      'busca serviço'           => [static fn (ServicosClient $c) => $c->getServico('s-1'), 'GET', '/v1/servicos/s-1'],
       'atualiza serviço'        => [
         static fn (ServicosClient $c) => $c->updateServico('s-1', ['nome' => 'Instalação']),
         'PATCH',
         '/v1/servicos/s-1',
+      ],
+      'busca serviço'           => [static fn (ServicosClient $c) => $c->getServico('s-1'), 'GET', '/v1/servicos/s-1'],
+      'cria serviço'            => [
+        static fn (ServicosClient $c) => $c->createServico(['nome' => 'Instalação']),
+        'POST',
+        '/v1/servicos',
       ],
       'exclui serviços em lote' => [
         static fn (ServicosClient $c) => $c->deleteServicos(['ids' => ['s-1']]),
         'DELETE',
         '/v1/servicos',
       ],
+      'lista serviços'          => [static fn (ServicosClient $c) => $c->listServicos(), 'GET', '/v1/servicos'],
     ];
   }
 

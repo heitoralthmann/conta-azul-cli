@@ -50,8 +50,8 @@ final class RedactorTest extends TestCase
     $result = $this->redactor->redact(
         [
           'user' => [
-            'name'         => 'John',
             'access_token' => 'secret',
+            'name'         => 'John',
           ],
         ],
     );
