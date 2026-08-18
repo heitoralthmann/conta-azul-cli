@@ -9,6 +9,25 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-08-18
+
+### Added
+
+- Sessão de Vendas completa: `venda list` (`GET /v1/venda/busca`,
+  filtros opcionais — diferente de `contrato list`, a API não exige
+  intervalo de datas), `venda create` (`POST /v1/venda`), `venda get`
+  e `venda update` (`GET`/`PUT /v1/venda/{id}` — a API não expõe
+  `PATCH` para vendas), `venda imprimir`
+  (`GET /v1/venda/{id}/imprimir`, PDF binário devolvido em base64,
+  mesmo tratamento de `nota-fiscal get`), `venda itens`
+  (`GET /v1/venda/{id_venda}/itens`), `venda vendedores`
+  (`GET /v1/venda/vendedores`, não pagina), `venda proximo-numero`
+  (`GET /v1/venda/proximo-numero`, inteiro solto ou `null`, mesmo
+  formato de `contrato proximo-numero`) e `venda excluir-lote`
+  (`POST /v1/venda/exclusao-lote`, até 10 uuids por chamada). Paths e
+  schemas conferidos direto na documentação renderizada (o portal
+  bloqueia `WebFetch`), ainda não exercitados contra a API real.
+
 ## [0.7.0] - 2026-08-18
 
 ### Added
@@ -153,7 +172,8 @@ Primeira versão tagueada.
 - `release.yml` corrigido: faltava `permissions: contents: write`, o que
   impedia a publicação do PHAR na release do GitHub.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.4.0...v0.5.0

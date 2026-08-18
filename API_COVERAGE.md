@@ -2,7 +2,7 @@
 
 Arquivo de controle: todos os endpoints publicados no [Portal do Desenvolvedor Conta Azul](https://developers.contaazul.com/aboutapis), agrupados por área funcional, com o que o `ca` já implementa marcado.
 
-**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos** e **Notas Fiscais**. As demais áreas (Vendas, Orçamentos, Captura) estão listadas por completude.
+**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais** e **Vendas**. As demais áreas (Orçamentos, Captura) estão listadas por completude.
 
 Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md`, `src/Api/FinanceiroClient.php`, `src/Api/PessoasClient.php`, `src/Api/ProdutosClient.php` e `src/Api/ServicosClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
 
@@ -131,17 +131,21 @@ vínculo a MDF-e; não há emissão.
 
 ## 🛒 Vendas
 
-9 endpoints. Fora do escopo do CLI.
+9 endpoints. `src/Api/VendasClient.php`.
+Sessão implementada em 2026-08-18; paths e schemas conferidos direto na
+documentação renderizada (https://developers.contaazul.com/docs/sales-apis-openapi/v1),
+já que o portal bloqueia `WebFetch`/`curl` — ainda não exercitados contra a
+API real.
 
-- [ ] `GET /v1/venda/busca` — buscar vendas por filtro
-- [ ] `POST /v1/venda` — criar venda
-- [ ] `GET /v1/venda/{id}` — buscar venda por id
-- [ ] `PUT /v1/venda/{id}` — atualizar venda
-- [ ] `GET /v1/venda/{id}/imprimir` — PDF da venda
-- [ ] `GET /v1/venda/{id_venda}/itens` — itens de uma venda
-- [ ] `GET /v1/venda/vendedores` — listar vendedores
-- [ ] `GET /v1/venda/proximo-numero`
-- [ ] `POST /v1/venda/exclusao-lote` — excluir vendas em lote
+- [x] `GET /v1/venda/busca` — `venda list`; filtros opcionais (sem intervalo de datas obrigatório)
+- [x] `POST /v1/venda` — `venda create`
+- [x] `GET /v1/venda/{id}` — `venda get`; aceita uuid ou id legado
+- [x] `PUT /v1/venda/{id}` — `venda update`; a API não expõe PATCH para vendas
+- [x] `GET /v1/venda/{id}/imprimir` — `venda imprimir`; resposta binária (PDF), devolvida em base64 para preservar o contrato de stdout em JSON
+- [x] `GET /v1/venda/{id_venda}/itens` — `venda itens`
+- [x] `GET /v1/venda/vendedores` — `venda vendedores`; não pagina
+- [x] `GET /v1/venda/proximo-numero` — `venda proximo-numero`; corpo da resposta é um inteiro solto (ou `null`), não um objeto
+- [x] `POST /v1/venda/exclusao-lote` — `venda excluir-lote`; aceita de 1 a 10 uuids por chamada
 
 ## 📋 Orçamentos
 
@@ -176,7 +180,7 @@ vínculo a MDF-e; não há emissão.
 | Produtos | 11 | 11 |
 | Serviços | 5 | 5 |
 | Notas Fiscais | 4 | 4 |
-| Vendas | 0 | 9 |
+| Vendas | 9 | 9 |
 | Orçamentos | 0 | 4 |
 | Captura | 0 | 5 |
-| **Total** | **52** | **72** |
+| **Total** | **61** | **72** |

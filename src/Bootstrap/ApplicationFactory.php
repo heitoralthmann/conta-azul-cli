@@ -11,6 +11,7 @@ use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Api\ProdutosClient;
 use ContaAzulCli\Api\ServicosClient;
+use ContaAzulCli\Api\VendasClient;
 use ContaAzulCli\Auth\AuthManager;
 use ContaAzulCli\Auth\CallbackServer;
 use ContaAzulCli\Auth\OAuthClient;
@@ -22,6 +23,7 @@ use ContaAzulCli\Command\Module\NotaFiscalCommandModule;
 use ContaAzulCli\Command\Module\PessoaCommandModule;
 use ContaAzulCli\Command\Module\ProdutoCommandModule;
 use ContaAzulCli\Command\Module\ServicoCommandModule;
+use ContaAzulCli\Command\Module\VendaCommandModule;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Config\Configuration;
 use ContaAzulCli\Config\EnvironmentConfigurationLoader;
@@ -70,6 +72,7 @@ final class ApplicationFactory
     $servicosClient     = new ServicosClient($config, $authManager, $this->logger, $redactor, $httpClient);
     $contratosClient    = new ContratosClient($config, $authManager, $this->logger, $redactor, $httpClient);
     $notasFiscaisClient = new NotasFiscaisClient($config, $authManager, $this->logger, $redactor, $httpClient);
+    $vendasClient       = new VendasClient($config, $authManager, $this->logger, $redactor, $httpClient);
 
     return new ApplicationComponents(
         $this->logger,
@@ -102,6 +105,7 @@ final class ApplicationFactory
               $warningEnvelope,
               $periodoPadrao,
           ),
+          new VendaCommandModule($vendasClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
         ],
     );
   }

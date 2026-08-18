@@ -69,6 +69,15 @@ Cada endpoint traz uma marca de confiança:
 | `nota-fiscal get` | `GET /v1/notas-fiscais/{chave}` | ⚠️ |
 | `nota-fiscal vincular-mdfe` | `POST /v1/notas-fiscais/vinculo-mdfe` | ⚠️ |
 | `nota-fiscal-servico list` | `GET /v1/notas-fiscais-servico` | ⚠️ |
+| `venda list` | `GET /v1/venda/busca` | ⚠️ |
+| `venda create` | `POST /v1/venda` | ⚠️ |
+| `venda get` | `GET /v1/venda/{id}` | ⚠️ |
+| `venda update` | `PUT /v1/venda/{id}` | ⚠️ |
+| `venda imprimir` | `GET /v1/venda/{id}/imprimir` | ⚠️ |
+| `venda itens` | `GET /v1/venda/{id_venda}/itens` | ⚠️ |
+| `venda vendedores` | `GET /v1/venda/vendedores` | ⚠️ |
+| `venda proximo-numero` | `GET /v1/venda/proximo-numero` | ⚠️ |
+| `venda excluir-lote` | `POST /v1/venda/exclusao-lote` | ⚠️ |
 
 ---
 
@@ -642,13 +651,100 @@ Diferente de `nota-fiscal list`, retorna NFS-e em qualquer status.
 
 ---
 
+## Vendas
+
+Os payloads de criação e atualização seguem o schema da API e são enviados sem transformação. Use `--json` com um objeto JSON.
+
+### `venda list` ⚠️
+
+`GET /v1/venda/busca`
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `50` | Itens por página |
+| filtros | não | — | `--termo-busca`, `--data-inicio`, `--data-fim`, `--data-criacao-de`, `--data-criacao-ate`, `--campo-ordenado-ascendente`, `--campo-ordenado-descendente` (`NUMERO`, `CLIENTE` ou `DATA`), `--totais` (`WAITING_APPROVED`, `APPROVED`, `CANCELED` ou `ALL`) |
+
+Diferente de `contrato list`, o intervalo de datas é opcional — a API não o exige. Retorna `{totais, quantidades, total_itens, itens[]}`.
+
+### `venda create` ⚠️
+
+`POST /v1/venda` — **escrita síncrona**, sem protocolo.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Payload JSON da venda (`id_cliente`, `numero`, `situacao`, `data_venda` e `itens` são obrigatórios) |
+
+### `venda get` ⚠️
+
+`GET /v1/venda/{id}`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid ou id legado da venda |
+
+### `venda update` ⚠️
+
+`PUT /v1/venda/{id}` — **escrita síncrona**; a API não expõe `PATCH` para vendas, então o payload precisa trazer o objeto completo, incluindo `versao`.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid da venda |
+| `--json` | **sim** | Payload JSON completo da venda |
+
+### `venda imprimir` ⚠️
+
+`GET /v1/venda/{id}/imprimir`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid ou id legado da venda |
+
+A resposta da API é um PDF binário, não JSON. Para manter o contrato de stdout do CLI, o comando devolve `{"content_base64", "content_type"}` — decodifique `content_base64` para obter os bytes originais.
+
+### `venda itens` ⚠️
+
+`GET /v1/venda/{id_venda}/itens`
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `<id-venda>` | **sim** | — | Argumento posicional. Uuid da venda |
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `10` | Itens por página |
+
+Retorna `{itens[], itens_totais, totais}`.
+
+### `venda vendedores` ⚠️
+
+`GET /v1/venda/vendedores`
+
+Sem parâmetros e sem paginação: devolve o array completo de vendedores cadastrados (`id`, `nome`, `id_legado`).
+
+### `venda proximo-numero` ⚠️
+
+`GET /v1/venda/proximo-numero`
+
+Sem parâmetros. Retorna o próximo número de venda disponível como um inteiro solto (ou `null`), não um objeto — mesmo formato de `contrato proximo-numero`.
+
+### `venda excluir-lote` ⚠️
+
+`POST /v1/venda/exclusao-lote` — exclui vendas em lote.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Payload JSON com `{"ids": [...]}` — de 1 a 10 uuids por chamada |
+
+Retorna `{atualizados, ignorados}`.
+
+---
+
 ## Fora do escopo do CLI
 
 Todos os endpoints da família Financeiro / Cobranças / Baixas e Protocolos já têm
 comando — veja a referência rápida no topo deste arquivo e `API_COVERAGE.md` para
-a lista completa por área (Vendas, Orçamentos e Captura seguem fora do escopo
-declarado em `ESPECIFICACAO.md`; Contratos e Notas Fiscais já foram implementados
-além do escopo original).
+a lista completa por área (Orçamentos e Captura seguem fora do escopo
+declarado em `ESPECIFICACAO.md`; Contratos, Notas Fiscais e Vendas já foram
+implementados além do escopo original).
 
 Recursos que **não existem** na API v1 — não procure o comando, não há endpoint:
 

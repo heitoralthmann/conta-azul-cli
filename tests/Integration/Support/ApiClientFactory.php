@@ -10,6 +10,7 @@ use ContaAzulCli\Api\NotasFiscaisClient;
 use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Api\ProdutosClient;
 use ContaAzulCli\Api\ServicosClient;
+use ContaAzulCli\Api\VendasClient;
 use ContaAzulCli\Auth\AccessTokenServiceInterface;
 use ContaAzulCli\Auth\AuthManager;
 use ContaAzulCli\Auth\OAuthGatewayInterface;
@@ -69,6 +70,11 @@ trait ApiClientFactory
       string $accessToken = 'test-access-token',
   ): NotasFiscaisClient {
     return new NotasFiscaisClient(...$this->apiClientDependencies($responses, $accessToken));
+  }
+
+  /** @param list<MockResponse> $responses */
+  protected function vendasClient(array $responses, string $accessToken = 'test-access-token'): VendasClient {
+    return new VendasClient(...$this->apiClientDependencies($responses, $accessToken));
   }
 
   /** A 200 response with a JSON-encoded body. */
