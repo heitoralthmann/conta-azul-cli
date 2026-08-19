@@ -41,12 +41,13 @@ final class ListCommand extends Command
   public function __invoke(
       #[Option(
           name: 'data-inicial',
-          description: 'Início do intervalo (YYYY-MM-DD). Padrão: primeiro dia do mês corrente',
+          description: 'Início do intervalo (YYYY-MM-DD). Padrão: 15 dias atrás. '
+              . 'Intervalo máximo aceito pela API: 15 dias',
       )]
       string|null $dataInicial = null,
       #[Option(
           name: 'data-final',
-          description: 'Fim do intervalo (YYYY-MM-DD). Padrão: último dia do mês corrente',
+          description: 'Fim do intervalo (YYYY-MM-DD). Padrão: hoje',
       )]
       string|null $dataFinal = null,
       #[Option(description: 'Número da página')]
@@ -64,15 +65,19 @@ final class ListCommand extends Command
 
     return $this->commandExecutor->execute(
         function () use ($dataInicial, $dataFinal, $pagina, $tamanhoPagina, $filters): void {
-          $inicio = $dataInicial !== null && $dataInicial !== '' ? $dataInicial : $this->periodoPadrao->primeiroDia();
-          $fim    = $dataFinal !== null && $dataFinal !== ''    ? $dataFinal    : $this->periodoPadrao->ultimoDia();
+          $inicio = $dataInicial !== null && $dataInicial !== ''
+              ? $dataInicial
+              : $this->periodoPadrao->inicioUltimos15Dias();
+          $fim    = $dataFinal !== null && $dataFinal !== ''
+              ? $dataFinal
+              : $this->periodoPadrao->hoje();
 
-          // A API exige o intervalo; um default silencioso esconderia o
-          // recorte de quem lê só o stdout.
+          // A API exige o intervalo e limita a 15 dias; um default silencioso
+          // esconderia o recorte de quem lê só o stdout.
           if ($inicio !== $dataInicial || $fim !== $dataFinal) {
               $this->warningEnvelope->renderToStderr(
                   'Intervalo não informado por completo; usando ' . $inicio . ' a ' . $fim . '. '
-                      . 'Use --data-inicial e --data-final para definir outro.',
+                      . 'Use --data-inicial e --data-final para definir outro (máx. 15 dias).',
               );
           }
 

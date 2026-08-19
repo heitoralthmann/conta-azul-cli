@@ -31,7 +31,7 @@ final class ListCommandTest extends CommandTestCase
 
     $tester = $this->runCommand(
         $command,
-        ['--data-inicial' => '2026-08-01', '--data-final' => '2026-08-31'],
+        ['--data-inicial' => '2026-08-02', '--data-final' => '2026-08-16'],
     );
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -39,7 +39,16 @@ final class ListCommandTest extends CommandTestCase
     self::assertSame('', $output->stderr());
   }
 
-  public function testMissingDatesFallsBackToCurrentMonthWithAWarning(): void {
+  /**
+   * The fallback is a 15-day window, not the current month.
+   *
+   * `GET /v1/notas-fiscais` rejects any span wider than 15 days with a 400,
+   * exactly like `GET /v1/notas-fiscais-servico`. The command shipped a
+   * current-month default, so running `nota-fiscal list` with no dates failed
+   * every single time until this was exercised against production on
+   * 2026-08-19.
+   */
+  public function testMissingDatesFallsBackToAFifteenDayWindowWithAWarning(): void {
     $output  = $this->newOutput();
     $command = new ListCommand(
         $this->notasFiscaisClient([$this->jsonResponse(['itens' => []])]),
@@ -57,8 +66,9 @@ final class ListCommandTest extends CommandTestCase
 
     $warning = json_decode($output->stderr(), true);
     self::assertSame('warning', $warning['kind']);
-    self::assertStringContainsString('2026-08-01', $warning['message']);
-    self::assertStringContainsString('2026-08-31', $warning['message']);
+    self::assertStringContainsString('2026-08-02', $warning['message']);
+    self::assertStringContainsString('2026-08-16', $warning['message']);
+    self::assertStringNotContainsString('2026-08-31', $warning['message']);
   }
 
   /**
@@ -81,8 +91,8 @@ final class ListCommandTest extends CommandTestCase
     );
 
     $tester = $this->runCommand($command, [
-      '--data-final'     => '2026-08-31',
-      '--data-inicial'   => '2026-08-01',
+      '--data-final'     => '2026-08-16',
+      '--data-inicial'   => '2026-08-02',
       '--tamanho-pagina' => '200',
     ]);
 
