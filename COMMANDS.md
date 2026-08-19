@@ -29,6 +29,9 @@ Cada endpoint traz uma marca de confiança:
 | `transferencia list` | `GET /v1/financeiro/transferencias` | ✅ |
 | `conta-a-receber list` | `GET /v1/financeiro/eventos-financeiros/contas-a-receber/buscar` | ✅ |
 | `conta-a-receber create` | `POST /v1/financeiro/eventos-financeiros/contas-a-receber` | ⚠️ |
+| `cobranca create` | `POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca` | ⚠️ |
+| `cobranca get` | `GET /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}` | ⚠️ |
+| `cobranca delete` | `DELETE /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}` | ⚠️ |
 | `conta-a-pagar list` | `GET /v1/financeiro/eventos-financeiros/contas-a-pagar/buscar` | ✅ |
 | `conta-a-pagar create` | `POST /v1/financeiro/eventos-financeiros/contas-a-pagar` | ⚠️ |
 | `parcela get` | `GET /v1/financeiro/eventos-financeiros/parcelas/{id}` | ✅ |
@@ -315,6 +318,40 @@ Cada item traz `id`, `status` (`ACQUITTED`, `OVERDUE`, …), `status_traduzido`,
 | `--no-wait` | não | — | Retorna o `protocol_id` na hora, sem aguardar |
 
 O CLI não valida o conteúdo de `--json`; o schema é o da API. A resposta é um protocolo que o CLI acompanha por polling, salvo com `--no-wait`.
+
+---
+
+## Cobranças
+
+Gera cobrança (boleto, PIX ou link de pagamento) para a parcela de uma conta a receber. Spec OpenAPI próprio (`charge-apis-openapi`), separado do núcleo Financeiro.
+
+### `cobranca create` ⚠️
+
+`POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca` — **escrita síncrona**, sem protocolo.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Payload JSON da cobrança (`conta_bancaria`, `descricao_fatura`, `id_parcela`, `data_vencimento` e `tipo` — `LINK_PAGAMENTO`, `PIX_COBRANCA` ou `BOLETO` — obrigatórios) |
+
+O CLI não valida o conteúdo de `--json`; o schema é o da API. Retorna `{id, url, status}`.
+
+### `cobranca get` ⚠️
+
+`GET /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid da cobrança |
+
+### `cobranca delete` ⚠️
+
+`DELETE /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}` — recomendado só para cobrança gerada incorretamente ou a invalidar antes do pagamento.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid da cobrança |
+
+A documentação da API lista resposta `200 OK` sem schema de corpo para este endpoint — diferente da convenção `204 No Content` do resto do CLI. Comportamento real ainda não verificado contra a API.
 
 ---
 
@@ -900,12 +937,11 @@ Resposta `204 No Content` — sem corpo. Uma captura já aceita, ou ainda em pro
 
 A maior parte da API publicada no portal já tem comando — veja a
 referência rápida no topo deste arquivo e `API_COVERAGE.md` para a lista
-completa por área (Contratos, Notas Fiscais, Vendas, Orçamentos e Captura
-foram implementados além do escopo original declarado em
-`ESPECIFICACAO.md`). Duas famílias inteiras seguem fora, descobertas em
-2026-08-19 porque vivem em specs OpenAPI próprios sem link na página
-inicial do portal — **Cobranças** (boleto/PIX sobre contas a receber,
-spec `charge-apis-openapi`) e **Baixas** como recurso dedicado (spec
+completa por área (Contratos, Notas Fiscais, Vendas, Orçamentos, Captura
+e Cobranças foram implementados além do escopo original declarado em
+`ESPECIFICACAO.md`). Uma família inteira segue fora, descoberta em
+2026-08-19 porque vive num spec OpenAPI próprio sem link na página
+inicial do portal — **Baixas** como recurso dedicado (spec
 `acquittance-apis-openapi`; o CLI só cobre a quitação simples via
 `parcela baixar`). Detalhes e paths em `API_COVERAGE.md`, seção
 Financeiro.

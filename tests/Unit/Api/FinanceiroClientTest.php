@@ -211,6 +211,61 @@ final class FinanceiroClientTest extends TestCase
     );
   }
 
+  /**
+   * Path e schema conferidos direto no OpenAPI renderizado
+   * (https://developers.contaazul.com/docs/charge-apis-openapi/v1), spec
+   * próprio de Cobranças; ainda não exercitado contra a API real.
+   */
+  public function testGerarCobrancaUsesTheDocumentedPathAndBody(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $payload = [
+      'conta_bancaria'   => 'conta-1',
+      'data_vencimento'  => '2026-09-01',
+      'descricao_fatura' => 'Fatura #1',
+      'id_parcela'       => 'parcela-1',
+      'tipo'             => 'BOLETO',
+    ];
+    $client->gerarCobranca($payload);
+
+    self::assertNotNull($captured);
+    self::assertSame('POST', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca',
+        strtok($captured['url'], '?'),
+    );
+    self::assertSame($payload, json_decode((string) $captured['body'], true));
+  }
+
+  public function testGetCobrancaUsesTheDocumentedPathAndUrlEncodesTheId(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->getCobranca('cobranca id/1');
+
+    self::assertNotNull($captured);
+    self::assertSame('GET', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/cobranca%20id%2F1',
+        strtok($captured['url'], '?'),
+    );
+  }
+
+  public function testDeleteCobrancaUsesTheDocumentedPath(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->deleteCobranca('cobranca-1');
+
+    self::assertNotNull($captured);
+    self::assertSame('DELETE', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/cobranca-1',
+        strtok($captured['url'], '?'),
+    );
+  }
+
   /** A API espera `'true'`/`'false'` literal, não o `1`/vazio do PHP nativo. */
   public function testSugestaoPadraoIsSentAsLiteralBooleanString(): void {
     $captured = null;

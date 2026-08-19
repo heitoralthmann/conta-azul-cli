@@ -11,6 +11,7 @@ use ContaAzulCli\Output\Redactor;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 use function array_merge;
+use function rawurlencode;
 
 /**
  * Paths conferidos contra a API real em 2026-08-15, não deduzidos da
@@ -89,6 +90,50 @@ final class FinanceiroClient
     );
 
     return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
+  }
+
+  // -------------------------------------------------------------------------
+  // Cobranças
+  // -------------------------------------------------------------------------
+
+  /**
+   * Gera uma cobrança (boleto, PIX ou link de pagamento) para a parcela de
+   * uma conta a receber. Escrita síncrona — a resposta já traz a cobrança
+   * criada, sem protocolo.
+   *
+   * @param array<string, mixed> $payload
+   *
+   * @return array<mixed>
+   */
+  public function gerarCobranca(array $payload): array {
+    return $this->support->request(
+        'POST',
+        '/v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca',
+        ['json' => $payload],
+    );
+  }
+
+  /** @return array<mixed> */
+  public function getCobranca(string $id): array {
+    return $this->support->request(
+        'GET',
+        '/v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/' . rawurlencode($id),
+    );
+  }
+
+  /**
+   * Cancela uma cobrança gerada incorretamente ou que precisa ser invalidada
+   * antes do pagamento. A documentação lista resposta `200 OK` sem schema de
+   * corpo (não `204`, diferente dos demais deletes do CLI) — comportamento
+   * real ainda não exercitado contra a API.
+   *
+   * @return array<mixed>
+   */
+  public function deleteCobranca(string $id): array {
+    return $this->support->request(
+        'DELETE',
+        '/v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/' . rawurlencode($id),
+    );
   }
 
   // -------------------------------------------------------------------------

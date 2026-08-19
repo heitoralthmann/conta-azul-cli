@@ -2,11 +2,11 @@
 
 Arquivo de controle: todos os endpoints publicados no [Portal do Desenvolvedor Conta Azul](https://developers.contaazul.com/aboutapis), agrupados por área funcional, com o que o `ca` já implementa marcado.
 
-**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Cobranças + Baixas — as duas últimas só parcialmente, ver abaixo), o recurso de **Protocolos** que ela depende para escritas assíncronas, e as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais**, **Vendas**, **Orçamentos** e **Captura**.
+**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Cobranças + Baixas — a última só parcialmente, ver abaixo), o recurso de **Protocolos** que ela depende para escritas assíncronas, e as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais**, **Vendas**, **Orçamentos** e **Captura**.
 
 Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md`, `src/Api/FinanceiroClient.php`, `src/Api/PessoasClient.php`, `src/Api/ProdutosClient.php` e `src/Api/ServicosClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
 
-**2026-08-19: o levantamento original ficou incompleto.** Uma varredura direta dos specs OpenAPI reais (não só da página `/aboutapis`) achou 3 áreas com endpoints nunca listados aqui: **Contratos** tinha só 3 dos 6 endpoints do spec (corrigido nesta sessão — `contrato get`/`delete`/`encerrar`); **Cobranças** e **Baixas** são specs OpenAPI próprios (`charge-apis-openapi`, `acquittance-apis-openapi`) que não aparecem linkados na página inicial e seguem inteiramente fora do CLI (8 endpoints, ver subseções em Financeiro). Não há garantia de que a superfície completa da API já esteja mapeada — só o que foi ativamente verificado.
+**2026-08-19: o levantamento original ficou incompleto.** Uma varredura direta dos specs OpenAPI reais (não só da página `/aboutapis`) achou 3 áreas com endpoints nunca listados aqui: **Contratos** tinha só 3 dos 6 endpoints do spec (corrigido — `contrato get`/`delete`/`encerrar`); **Cobranças** era um spec OpenAPI próprio (`charge-apis-openapi`) que não aparece linkado na página inicial e não tinha nenhum comando (corrigido — `cobranca create`/`get`/`delete`); **Baixas** (`acquittance-apis-openapi`) segue inteiramente fora do CLI como recurso dedicado, ver subseção em Financeiro. Não há garantia de que a superfície completa da API já esteja mapeada — só o que foi ativamente verificado.
 
 ---
 
@@ -20,12 +20,12 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 
 ## 💰 Financeiro / Cobranças / Baixas
 
-17 endpoints do spec `financial-apis-openapi` (o núcleo de Financeiro). `src/Api/FinanceiroClient.php`.
+20 endpoints: 17 do spec `financial-apis-openapi` (o núcleo de Financeiro) + 3 do spec `charge-apis-openapi` (Cobranças). `src/Api/FinanceiroClient.php`.
 Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a API real em 2026-08-18;
 `parcela list` acrescentado em 2026-08-18 (path e schema conferidos direto na doc, endpoint ainda não exercitado contra a API real);
 `financeiro saldo-inicial` acrescentado em 2026-08-18, completando a sessão (path e query params conferidos direto na doc, endpoint ainda não exercitado contra a API real);
 `centro-de-custo create` acrescentado em 2026-08-18, completando o spec `financial-apis-openapi` — path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/financial-apis-openapi/v1), endpoint ainda não exercitado contra a API real.
-**Cobranças e Baixas são specs OpenAPI próprios** (`charge-apis-openapi`, `acquittance-apis-openapi`), descobertos em 2026-08-19 — não estavam linkados na página `/aboutapis` e nunca tinham sido levantados; ficam listados como subseções abaixo, ainda fora do CLI.
+**Cobranças e Baixas são specs OpenAPI próprios** (`charge-apis-openapi`, `acquittance-apis-openapi`), descobertos em 2026-08-19 — não estavam linkados na página `/aboutapis` e nunca tinham sido levantados. Cobranças foi implementado na sequência (`cobranca create`/`get`/`delete`); Baixas como recurso dedicado segue fora do CLI, listado como subseção abaixo.
 
 ### Centros de custo
 - [x] `GET /v1/centro-de-custo` — `centro-de-custo list`
@@ -47,11 +47,11 @@ Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a A
 - [x] `POST /v1/financeiro/eventos-financeiros/contas-a-receber` — `conta-a-receber create`
 - [x] `GET /v1/financeiro/eventos-financeiros/contas-a-receber/buscar` — `conta-a-receber list`
 
-### Cobranças (spec `charge-apis-openapi`) — fora do CLI
-Gera cobrança (boleto/PIX) para uma conta a receber. Path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/charge-apis-openapi/v1) em 2026-08-19; nunca exercitados contra a API real.
-- [ ] `POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca` — criar uma nova cobrança
-- [ ] `GET /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id_cobranca}` — retornar a cobrança por id
-- [ ] `DELETE /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id_cobranca}` — deletar cobrança por id
+### Cobranças (spec `charge-apis-openapi`)
+Gera cobrança (boleto/PIX/link de pagamento) para a parcela de uma conta a receber. Path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/charge-apis-openapi/v1); ainda não exercitados contra a API real. O DELETE documenta resposta `200 OK` sem schema de corpo — diferente da convenção `204` do resto do CLI; comportamento real não verificado.
+- [x] `POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca` — `cobranca create`; escrita síncrona, sem protocolo
+- [x] `GET /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id_cobranca}` — `cobranca get`
+- [x] `DELETE /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id_cobranca}` — `cobranca delete`
 
 ### Contas a pagar
 - [x] `POST /v1/financeiro/eventos-financeiros/contas-a-pagar` — `conta-a-pagar create`
@@ -218,7 +218,7 @@ prévia.
 | Área | Implementados | Total |
 |---|---|---|
 | Autenticação | 3 | 3 |
-| Financeiro / Cobranças / Baixas | 17 | 25 |
+| Financeiro / Cobranças / Baixas | 20 | 25 |
 | Protocolos | 1 | 1 |
 | Contratos | 6 | 6 |
 | Pessoas / Fornecedores | 10 | 10 |
@@ -228,4 +228,4 @@ prévia.
 | Vendas | 9 | 9 |
 | Orçamentos | 4 | 4 |
 | Captura | 5 | 5 |
-| **Total** | **75** | **83** |
+| **Total** | **78** | **83** |

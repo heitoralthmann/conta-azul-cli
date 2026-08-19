@@ -9,6 +9,26 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-08-19
+
+### Added
+
+- Sessão de Cobranças completa: `cobranca create`
+  (`POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca`,
+  escrita síncrona — gera boleto, PIX ou link de pagamento para a
+  parcela de uma conta a receber), `cobranca get`
+  (`GET .../contas-a-receber/cobranca/{id}`) e `cobranca delete`
+  (`DELETE .../contas-a-receber/cobranca/{id}`, recomendado só para
+  cobrança gerada incorretamente ou a invalidar antes do pagamento — a
+  API documenta resposta `200 OK` sem schema de corpo, diferente da
+  convenção `204` do resto do CLI, comportamento real ainda não
+  verificado). Cobranças é um spec OpenAPI próprio
+  (`charge-apis-openapi`) que não aparecia linkado na página inicial
+  do portal e nunca tinha sido levantado. Paths e schemas conferidos
+  direto no OpenAPI renderizado, ainda não exercitados contra a API
+  real. Resta só **Baixas** como recurso dedicado
+  (`acquittance-apis-openapi`) fora do CLI.
+
 ## [0.12.0] - 2026-08-19
 
 ### Added
@@ -245,7 +265,8 @@ Primeira versão tagueada.
 - `release.yml` corrigido: faltava `permissions: contents: write`, o que
   impedia a publicação do PHAR na release do GitHub.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.9.0...v0.10.0

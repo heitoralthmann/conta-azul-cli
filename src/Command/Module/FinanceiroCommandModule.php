@@ -24,6 +24,7 @@ use ContaAzulCli\Command\Parcela\GetCommand as ParcelaGetCommand;
 use ContaAzulCli\Command\Parcela\ListCommand as ParcelaListCommand;
 use ContaAzulCli\Command\Protocolo\GetCommand as ProtocoloGetCommand;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
+use ContaAzulCli\Command\Support\ResourceIdCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Command\Transferencia\ListCommand as TransferenciaListCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
@@ -57,6 +58,31 @@ final class FinanceiroCommandModule implements CommandModuleInterface
           $this->periodoPadrao,
       ),
       new ContaAReceberCreateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new ResourceJsonCommand(
+          'cobranca create',
+          'Gera uma cobrança (boleto, PIX ou link de pagamento) para uma parcela',
+          $this->client->gerarCobranca(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Payload JSON da cobrança (conta_bancaria, descricao_fatura, id_parcela, '
+              . 'data_vencimento e tipo obrigatórios)',
+      ),
+      new ResourceIdCommand(
+          'cobranca get',
+          'Busca uma cobrança por ID',
+          $this->client->getCobranca(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Uuid da cobrança',
+      ),
+      new ResourceIdCommand(
+          'cobranca delete',
+          'Cancela uma cobrança gerada incorretamente ou a invalidar antes do pagamento',
+          $this->client->deleteCobranca(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Uuid da cobrança',
+      ),
       new ContaAPagarListCommand(
           $this->client,
           $this->errorEnvelope,
