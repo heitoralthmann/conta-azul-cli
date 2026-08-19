@@ -31,6 +31,26 @@ no [README](README.md#contrato-de-saída).
 
 ### Fixed
 
+- **`--tamanho-pagina` era validado com a mesma lista larga em todo
+  endpoint, e três deles não a aceitam.** `PaginationValidator` liberava
+  `10, 20, 50, 100, 200, 500, 1000` para qualquer listagem, mas
+  `GET /v1/servicos`, `/v1/notas-fiscais` e `/v1/notas-fiscais-servico`
+  respondem `400` acima de `100` ("O tamanho da página deve ser um dos
+  seguintes valores: 10, 20, 50 ou 100"). Resultado: `--tamanho-pagina 200`
+  passava na validação local e voltava `400` da API — o oposto do que
+  validar localmente existe para fazer. O validador agora recebe o limite do
+  endpoint (`validatePageSize($size, $maxSize)`), e as três listagens
+  passam `PaginationValidator::CAPPED_MAX_SIZE`; a mensagem de erro lista só
+  os tamanhos que aquele endpoint aceita. Os limites foram **medidos** um a
+  um contra a produção em 2026-08-19, não deduzidos da documentação: as
+  outras listagens (produtos e catálogos, pessoas, vendas, itens de venda,
+  orçamentos, contratos, transferências, contas a pagar/receber, categorias,
+  centros de custo, contas financeiras) aceitam `1000` de verdade e ficaram
+  como estavam — `captura status` foi a única que não deu para medir, por
+  exigir um id de documento real. Os testes de comando constroem o cliente
+  **sem nenhuma resposta enfileirada**, de modo que voltar a não passar o
+  limite falha ao atingir o transporte em vez de passar em silêncio, e há o
+  teste oposto em `venda list` provando que `1000` continua aceito.
 - **`servico list --busca` não filtrava nada.** A API chama esse filtro de
   `busca_textual`, não `busca` (o nome que produtos e pessoas usam para a
   mesma ideia); como a listagem descarta parâmetros desconhecidos em
@@ -178,13 +198,6 @@ no [README](README.md#contrato-de-saída).
   testes de cliente não pegam nome de filtro errado — o cliente repassa
   qualquer chave que recebe —, então quem mexer no `$filters` de um
   `*CommandModule` precisa escrever o teste de módulo que inspeciona a URL.
-- **`--tamanho-pagina` é validado localmente com mais folga do que alguns
-  endpoints aceitam.** O validador do CLI libera até `1000`, mas
-  `servico list` (e, pela documentação, `nota-fiscal list` e
-  `nota-fiscal-servico list`) só admitem `10`, `20`, `50` ou `100`:
-  valores maiores passam pela validação local e voltam 400 da API.
-  Registrado na seção de Paginação, junto com a tabela das quatro
-  convenções diferentes de campo de contagem já confirmadas.
 - Armadilhas do grupo `pessoa` confirmadas em produção: os enums vão
   acentuados como na interface (`Física`/`Jurídica`/`Estrangeira`,
   `Cliente`/`Fornecedor`/`Transportadora`) e não em maiúsculas;

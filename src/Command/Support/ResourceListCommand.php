@@ -22,6 +22,7 @@ final class ResourceListCommand extends Command
   /**
    * @param callable(int, int, array<string, mixed>): array<mixed> $list
    * @param array<string, string>                                  $filterOptions CLI option => query parameter
+   * @param int                                                    $maxPageSize   Largest size this endpoint takes
    */
   public function __construct(
       string $name,
@@ -32,6 +33,7 @@ final class ResourceListCommand extends Command
       private readonly PaginationValidator $paginationValidator,
       private readonly array $filterOptions = [],
       CommandExecutor|null $commandExecutor = null,
+      private readonly int $maxPageSize = PaginationValidator::DEFAULT_MAX_SIZE,
   ) {
     $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
 
@@ -53,7 +55,7 @@ final class ResourceListCommand extends Command
   protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
-          $pagination = PaginationOptions::fromInput($input, $this->paginationValidator);
+          $pagination = PaginationOptions::fromInput($input, $this->paginationValidator, $this->maxPageSize);
 
           $filters = [];
           foreach ($this->filterOptions as $option => $queryName) {

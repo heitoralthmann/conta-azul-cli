@@ -46,6 +46,9 @@ final class ServicoCommandModule implements CommandModuleInterface
           $this->jsonRenderer,
           $this->paginationValidator,
           $filters,
+          null,
+          // GET /v1/servicos devolve 400 acima de 100.
+          PaginationValidator::CAPPED_MAX_SIZE,
       ),
       new ResourceJsonCommand(
           'servico create',

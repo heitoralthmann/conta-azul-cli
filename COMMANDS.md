@@ -185,12 +185,24 @@ Onde há `--pagina` / `--tamanho-pagina`:
 | `--pagina` | `1` | Qualquer inteiro positivo |
 | `--tamanho-pagina` | `50` | **`10`, `20`, `50`, `100`, `200`, `500`, `1000`** — qualquer outro é rejeitado localmente, sem chamar a API |
 
-A resposta traz `itens_totais` para você saber quantas páginas percorrer.
+**Três listagens param em `100`**, e a validação local sabe disso desde
+2026-08-19:
 
-> **A validação local é mais permissiva que alguns endpoints.** O CLI aceita
-> até `1000`, mas `servico list`, `nota-fiscal list` e
-> `nota-fiscal-servico list` só admitem `10`, `20`, `50` ou `100` — passar
-> `200` ou mais neles passa pela validação local e volta 400 da API.
+| Listagem | Máximo |
+|---|---|
+| `servico list`, `nota-fiscal list`, `nota-fiscal-servico list` | `100` |
+| todas as outras | `1000` |
+
+Nessas três, `--tamanho-pagina 200` falha na hora com
+`Valores aceitos: 10, 20, 50, 100`, sem gastar uma ida à API. Antes a
+validação usava a lista larga para todo mundo, então o `200` passava aqui e
+voltava `400` de lá — justamente o que validar localmente deveria evitar.
+
+Os limites foram **medidos** endpoint a endpoint contra a produção, não
+deduzidos: aceitam `1000` as listagens de produtos (e seus catálogos),
+pessoas, vendas, itens de venda, orçamentos, contratos, transferências,
+contas a pagar/receber, categorias, centros de custo e contas financeiras.
+Só `captura status` ficou sem medir, por exigir um id de documento real.
 
 E o nome do campo de contagem **não é o mesmo em todo lugar**:
 

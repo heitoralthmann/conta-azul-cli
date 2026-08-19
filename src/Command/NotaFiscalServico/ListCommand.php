@@ -108,7 +108,12 @@ final class ListCommand extends Command
               );
           }
 
-          $pagination = PaginationOptions::fromValues($pagina, $tamanhoPagina, $this->paginationValidator);
+          $pagination = PaginationOptions::fromValues(
+              $pagina,
+              $tamanhoPagina,
+              $this->paginationValidator,
+              PaginationValidator::CAPPED_MAX_SIZE,
+          );
 
           $this->jsonRenderer->render(
               $this->client->listNotasFiscaisServico(

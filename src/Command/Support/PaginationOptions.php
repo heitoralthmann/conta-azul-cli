@@ -44,14 +44,20 @@ final readonly class PaginationOptions
   /**
    * Creates validated pagination options from a Symfony command input.
    *
+   * @param int $maxPageSize Largest size the target endpoint accepts.
+   *
    * @throws CliException when the page size is unsupported.
    */
-  public static function fromInput(InputInterface $input, PaginationValidator $validator): self {
+  public static function fromInput(
+      InputInterface $input,
+      PaginationValidator $validator,
+      int $maxPageSize = PaginationValidator::DEFAULT_MAX_SIZE,
+  ): self {
     $pageRaw     = $input->hasOption('pagina') ? $input->getOption('pagina') : null;
     $pageSizeRaw = $input->hasOption('tamanho-pagina') ? $input->getOption('tamanho-pagina') : null;
     $page        = is_numeric($pageRaw) ? (int) $pageRaw : self::DEFAULT_PAGE;
     $pageSize    = is_numeric($pageSizeRaw) ? (int) $pageSizeRaw : self::DEFAULT_PAGE_SIZE;
-    $validator->validatePageSize($pageSize);
+    $validator->validatePageSize($pageSize, $maxPageSize);
 
     return new self($page, $pageSize);
   }
@@ -59,10 +65,17 @@ final readonly class PaginationOptions
   /**
    * Creates validated pagination options from already-resolved values.
    *
+   * @param int $maxPageSize Largest size the target endpoint accepts.
+   *
    * @throws CliException when the page size is unsupported.
    */
-  public static function fromValues(int $page, int $pageSize, PaginationValidator $validator): self {
-    $validator->validatePageSize($pageSize);
+  public static function fromValues(
+      int $page,
+      int $pageSize,
+      PaginationValidator $validator,
+      int $maxPageSize = PaginationValidator::DEFAULT_MAX_SIZE,
+  ): self {
+    $validator->validatePageSize($pageSize, $maxPageSize);
 
     return new self($page, $pageSize);
   }
