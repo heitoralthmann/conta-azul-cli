@@ -8,45 +8,23 @@ Convenção de leitura: `obrig.` marca o que falha sem valor; `padrão` é o que
 
 Cada endpoint traz uma marca de confiança:
 
-- **✅ verificado** — exercitado contra a API real e respondeu como documentado. As leituras financeiras foram verificadas em 2026-08-15; os grupos `pessoa`, `produto`, `servico`, `venda`, `orcamento` e `contrato` tiveram o CRUD completo (criar, ler, atualizar, excluir) exercitado em produção em 2026-08-19, e `notas fiscais` — que só tem leitura e uma escrita — foi exercitado por inteiro na mesma data
+- **✅ verificado** — exercitado contra a API real e respondeu como documentado. **Todos os nove grupos** foram verificados entre 2026-08-15 e 2026-08-19, com o CRUD completo onde o grupo tem escrita; o estado por grupo está em [Estado da verificação](#estado-da-verificação)
 - **⚠️ não verificado** — escrito a partir da documentação e **nunca exercitado**. Não leia isso como "provavelmente certo": leia como **não confiável**
 
-> ⚠️ **O que `⚠️` realmente significa, depois da campanha de verificação de
-> 2026-08-19.** A marca não cobre só "a escrita nunca foi disparada". Dos
-> três grupos verificados até agora, **dois tinham filtros que não
-> filtravam nada** — `produto list --codigo` mandava `codigo` onde a API
-> quer `sku`, e `servico list` expunha quatro filtros dos quais só um
-> existia, sob outro nome. Como as listagens **respondem 200 e descartam em
-> silêncio** parâmetro desconhecido (ver "Notas para quem for estender"),
-> esses comandos não davam erro: devolviam a lista inteira como se tudo
-> casasse.
+> ⚠️ **O que `⚠️` realmente significa.** A marca não quer dizer só "a escrita
+> nunca foi disparada". Ela quer dizer **não confiável em todos os eixos**:
+> path, nome de filtro, nome de campo do payload, tipo do id e formato da
+> resposta. Os filtros listados numa seção `⚠️` saíram da documentação, não de
+> uma chamada real.
 >
-> Ou seja: num comando `⚠️`, desconfie de **tudo** — path, nome de filtro,
-> nome de campo do payload, tipo do id e formato da resposta. Os filtros
-> listados nas seções `⚠️` abaixo saíram da documentação, não de uma
-> chamada real.
->
-> Nove grupos verificados depois, **todos tinham pelo menos um defeito**, mas
-> o defeito mudou de lugar: os quatro do meio (`venda`, `orcamento`,
-> `contrato`, `notas fiscais`) não tinham filtro errado nenhum. Erraram em
-> campo obrigatório não documentado, par de campos trocado entre escrita e
-> leitura, contador que não conta, e — em `nota-fiscal list` — um **default
-> que o próprio endpoint recusa**, fazendo o comando sem argumentos falhar
-> sempre.
->
-> E o grupo `financeiro` mostrou que o risco também
-> mora no **código do CLI**, não só nos nomes que ele manda: uma chave de
-> resposta lida errado desligava o polling de toda escrita assíncrona, um
-> `200` de corpo vazio fazia um delete bem-sucedido sair com código `1`, e um
-> comando apontava para um endpoint que existe mas serve para outra coisa —
-> respondendo `200` sem fazer nada do que prometia.
->
-> `captura`, verificado por último, mostrou o defeito que **sobrevive a
-> testes**: a API recusa a codificação de `ids` que a spec dela mesma
-> declara, e como as duas formas coincidem para **um** id, o comando
-> funcionava em todo teste que passasse um id só. O mesmo grupo trouxe a
-> primeira listagem cujo limite de página não é uma lista de valores, e a
-> primeira leitura que **escreve em outro cadastro** sem dizer.
+> Isso não é pessimismo de ofício: a campanha de verificação exercitou os nove
+> grupos do CLI contra a produção e **todos tinham pelo menos um defeito** —
+> filtros que devolviam a coleção inteira fingindo filtrar, campos
+> obrigatórios que a documentação não lista, um comando apontado para o
+> endpoint errado, e um caso que passava em qualquer teste razoável. O
+> apanhado está em
+> [Notas para quem for estender](#notas-para-quem-for-estender), e é leitura
+> obrigatória antes de mexer em qualquer integração.
 
 ---
 
@@ -2147,6 +2125,15 @@ Nunca conclua que um filtro funciona porque a chamada respondeu 200.
 4. **Se falhar, varra nomes** antes de concluir que o filtro não existe:
    singular/plural, prefixos (`id_`, `filtro_`), sufixos (`_textual`,
    `_servico`), inglês, `[]`, repetido e separado por vírgula.
+5. **Se o filtro aceita vários valores, teste com dois.** Não é só o nome
+   que pode estar errado: a *codificação* também. `captura status` manda
+   `ids`, e a vírgula que o OpenAPI declara devolve `400` — a API quer o
+   parâmetro repetido. Com **um** valor as duas formas coincidem, então o
+   defeito sobrevive a todo teste de um valor só.
+6. **Rode o comando sem argumento nenhum.** Um default que o próprio
+   endpoint recusa é invisível para qualquer teste que passe valores
+   explícitos: `nota-fiscal list` falhava `400` em 100% das chamadas sem
+   datas, e ninguém tinha notado porque quem chamava sempre passava datas.
 
 O mesmo ceticismo vale para escrita: **a API valida um campo por vez**, então
 cada `400` revela só o *próximo* campo faltante. Descobrir o payload de um
@@ -2162,37 +2149,62 @@ vazio sai como `[]`, não `{}`). Use:
 tail -5 ~/.cache/conta-azul-cli/log.jsonl
 ```
 
-### Armadilhas de nomenclatura já confirmadas
+### Armadilhas já confirmadas
+
+Vinte e cinco divergências entre a documentação e a API real, todas
+medidas exercitando. Agrupadas pelo tipo de coisa em que você vai
+esbarrar, não pelo grupo de comandos onde apareceram — a armadilha de um
+grupo costuma reaparecer em outro.
+
+#### Onde o recurso mora e como ele se chama
+
+Nada aqui se deduz: nem o path, nem o nome, nem o tipo do id.
 
 1. **O segmento `/financeiro/` só existe em parte dos recursos.** Categorias, centros de custo e contas financeiras ficam na raiz da `v1`.
 2. **A nomenclatura alterna plural e singular:** `categorias`, mas `centro-de-custo` e `conta-financeira`.
-3. **Leitura e escrita usam nomes diferentes para o mesmo dado.** `pessoa` lê `documento` e escreve `cpf`; o SKU de um produto é `codigo` na listagem, `codigo_sku` no detalhe e `sku` na query.
+3. **Um comando pode apontar para o endpoint errado e nunca dar sinal disso.** `parcela baixar` era um `PATCH` na parcela porque alguém concluiu que "não existe subrecurso /baixar". Existe: `POST /parcelas/{id}/baixa`. O endpoint que ele chamava é real, responde `200` e serve para outra coisa — atualizar a parcela. Confira o *propósito* do endpoint na documentação, não só se ele responde.
 4. **O mesmo registro tem dois ids, e comandos do mesmo grupo usam ids diferentes.** `servico get`/`update` querem o uuid; `servico delete` quer o `id_servico` inteiro.
-5. **Enums vão acentuados e capitalizados como na interface** (`Física`, `Cliente`), não em `SCREAMING_SNAKE_CASE`.
-6. **Exclusão não quer dizer a mesma coisa em todo grupo.** `produto delete` faz o `get` passar a 404; `servico delete` é lógico e o `get` continua respondendo 200 com `status` `ATIVO`; `venda excluir-lote` também é lógico e vira `status` `CANCELADO` — mas deixa `situacao` como estava.
-7. **A resposta da escrita não fala a mesma língua que a da leitura.** `venda create` devolve `situacao.nome` em inglês (`IN_PROCESS`) para a venda que `venda get` mostra como `EM_ANDAMENTO`.
-8. **Zero pode ser lido como ausente.** `venda update` exige `versao` e recusa `0` com "campo obrigatório" — justamente o valor que uma venda recém-criada tem.
-9. **Dois campos podem estar simplesmente trocados.** O que `orcamento create` recebe em `observacoes` volta em `observacoes_pagamento` no `orcamento get`, e vice-versa; em `contrato create` a `observacoes` da raiz reaparece em `condicao_pagamento.observacoes_pagamento`. Escreva um valor distinto em cada campo suspeito e leia de volta: é a única forma de enxergar isso.
-10. **O total de uma listagem pode não bater com o que ela devolve.** `orcamento list` responde `total_itens: 157` junto de 158 itens, porque o contador ignora `ORCAMENTO_RECUSADO`. Em `nota-fiscal list` a divergência chega a 100%: o contador soma todos os status, mas só `EMITIDA` e `CORRIGIDA_SUCESSO` vêm em `itens` — há janelas que devolvem `itens: []` com `total_itens: 3`.
-11. **Um id inexistente nem sempre é `404`.** Em `contrato get`, `delete` e `encerrar`, um uuid válido que não existe devolve `500` — e nas escritas o CLI traduz isso para `ambiguous`, sugerindo reconciliar algo que nunca aconteceu.
-12. **O default de um intervalo de datas pode ser inválido para o próprio endpoint.** `nota-fiscal list` limita a janela a 15 dias, mas o CLI mandava o mês corrente — então o comando sem argumentos falhava com `400` em 100% das vezes, e ninguém notou porque quem chamava sempre passava datas. Ao adicionar um default, exercite-o **sem argumento nenhum**.
-13. **Uma escrita pode não ter leitura correspondente.** `nota-fiscal vincular-mdfe` grava um vínculo que nenhum `GET` devolve, que não altera a nota e que repetir nunca acusa duplicata. Sem `GET`, sem efeito colateral observável e sem erro de duplicata, não há como provar a limpeza — só dá para provar o que **não** mudou (o SHA-256 do XML da nota, idêntico antes e depois). Quando um grupo tiver escrita sem leitura, decida antes até onde vale exercitar.
-12. **Um campo obrigatório pode estar aninhado onde você não procuraria.** O número do contrato é `termos.numero`, e a mensagem de erro ("O número do contrato é obrigatório") não diz onde. Se um nome óbvio não resolve, tente dentro de cada sub-objeto do payload antes de concluir que o nome está errado.
-14. **O descarte silencioso não é só da query: vale para o corpo da escrita.** `parcela baixar` mandava `{valor, data}` num `PATCH` que não tem nenhum dos dois campos. Resposta: `200`, `versao` incrementada e **nenhum pagamento registrado**. O mesmo vale para `centro-de-custo create`, onde um `zzz_bogus` no payload produz exatamente o mesmo erro que um campo real ausente — ou seja, **não dá para provar que um campo opcional existe mandando ele junto de um payload inválido**. Só a escrita bem-sucedida seguida de leitura prova.
-15. **Um comando pode apontar para o endpoint errado e nunca dar sinal disso.** `parcela baixar` era um `PATCH` na parcela porque alguém concluiu que "não existe subrecurso /baixar". Existe: `POST /parcelas/{id}/baixa`. O endpoint que ele chamava é real, responde `200` e serve para outra coisa — atualizar a parcela. Confira o *propósito* do endpoint na documentação, não só se ele responde.
-16. **`200` com corpo vazio não é a mesma coisa que `204`.** `cobranca delete` e `baixa delete` respondem `200` sem corpo. Enquanto o CLI tratava o caso vazio só para `204`, o parser estourava, a exceção escapava do `CommandExecutor` (que só pega `CliException`) e **um delete bem-sucedido imprimia a linha de uso do Symfony e saía com código `1`**. Ao integrar um delete, confirme o status *e* o corpo.
-17. **Nem todo campo obrigatório vira `400`.** Falta de `versao` responde **`409`** em `baixa update` e `parcela update`. E em `cobranca create` um payload incompleto responde **`500`**, que o CLI classifica como `ambiguous` e manda reconciliar — reconcilie mesmo: na verificação, nada tinha sido criado.
-18. **Um endpoint pode ter data de corte que a documentação não menciona.** `financeiro saldo-inicial` e `financeiro alteracoes` recusam intervalo maior que **365 dias**. Como o default do CLI é o mês corrente, nenhum teste que passa datas explícitas curtas encontra isso.
-19. **Escrever é fácil; desfazer é que pode não existir.** A API não publica `DELETE` para evento financeiro (contas a receber/pagar) nem para centro de custo — `DELETE`, `PUT` e `PATCH` nesses paths devolvem o `404` genérico de rota inexistente. Antes de criar registro de teste num grupo, **verifique se existe caminho de volta**. Para distinguir "rota não existe" de "id não existe", compare a mensagem: rota inexistente devolve `"message":"Not Found"`; rota real com id desconhecido devolve `"message":"O recurso solicitado não foi encontrado"`. Em `captura` nem essa comparação serve: lá a rota inexistente devolve `404 page not found` em **texto puro**, e as reais devolvem `{"error": "…"}` — um terceiro envelope de erro.
-20. **A codificação de um parâmetro de lista também precisa ser exercitada.** `captura status` manda `ids`, e o OpenAPI publicado declara `explode: false` (vírgula). A API responde `400` a essa forma: ela quer `ids` **repetido**. Com um item só as duas formas são idênticas — então o defeito sobrevive a qualquer teste de um id só, que é exatamente o teste que se escreve primeiro. Ao integrar um parâmetro que aceita vários valores, **teste com dois**.
-21. **A regra de `tamanho_pagina` pode não ser uma lista de valores.** Todas as listagens medidas até então recusavam qualquer coisa fora de `10, 20, 50, …`; `captura status` aceita **qualquer inteiro de 1 a 20**. Validar contra os degraus discretos errava nos dois sentidos ao mesmo tempo — deixava passar `1000` (que a API recusa) e recusava `15` (que ela aceita). Meça a *forma* do limite, não só o teto: mande `15` e veja se passa.
-22. **Uma leitura pode escrever em outro cadastro.** `captura enviar` sobe um arquivo — e, ao terminar a extração, o fornecedor identificado **já existe** no cadastro de pessoas, com `criado_em` do dia. Nenhum aceite foi dado ainda. Ao mapear o efeito colateral de um comando, não pare no recurso que ele nomeia.
-23. **Nem todo id da API é uuid v4.** Os ids da Captura são uuid **v7** (`01a01a96-61f5-7007-…`). Uma validação local de formato que exigisse v4 recusaria id legítimo.
-24. **Idempotência varia entre operações irmãs.** Em `captura`, aceitar duas vezes devolve `200` e não cria segundo lançamento; recusar duas vezes devolve `204` das duas; mas `get` numa captura recusada devolve `404`. Três respostas diferentes para "o recurso já saiu do estado que você esperava".
+5. **Nem todo id da API é uuid v4.** Os ids da Captura são uuid **v7** (`01a01a96-61f5-7007-…`). Uma validação local de formato que exigisse v4 recusaria id legítimo.
+6. **Leitura e escrita usam nomes diferentes para o mesmo dado.** `pessoa` lê `documento` e escreve `cpf`; o SKU de um produto é `codigo` na listagem, `codigo_sku` no detalhe e `sku` na query.
 
-Nunca deduza da documentação **nem o path, nem o nome de um filtro, nem o
-nome de um campo do payload, nem o tipo de um id, nem o formato da
-resposta**, sem exercitar contra a API real.
+#### O que a API engole sem reclamar
+
+A família do descarte silencioso — todo caso em que um `200` esconde que o que você mandou foi ignorado.
+
+7. **O descarte silencioso não é só da query: vale para o corpo da escrita.** `parcela baixar` mandava `{valor, data}` num `PATCH` que não tem nenhum dos dois campos. Resposta: `200`, `versao` incrementada e **nenhum pagamento registrado**. O mesmo vale para `centro-de-custo create`, onde um `zzz_bogus` no payload produz exatamente o mesmo erro que um campo real ausente — ou seja, **não dá para provar que um campo opcional existe mandando ele junto de um payload inválido**. Só a escrita bem-sucedida seguida de leitura prova.
+8. **A codificação de um parâmetro de lista também precisa ser exercitada.** `captura status` manda `ids`, e o OpenAPI publicado declara `explode: false` (vírgula). A API responde `400` a essa forma: ela quer `ids` **repetido**. Com um item só as duas formas são idênticas — então o defeito sobrevive a qualquer teste de um id só, que é exatamente o teste que se escreve primeiro. Ao integrar um parâmetro que aceita vários valores, **teste com dois**.
+9. **A regra de `tamanho_pagina` pode não ser uma lista de valores.** Todas as listagens medidas até então recusavam qualquer coisa fora de `10, 20, 50, …`; `captura status` aceita **qualquer inteiro de 1 a 20**. Validar contra os degraus discretos errava nos dois sentidos ao mesmo tempo — deixava passar `1000` (que a API recusa) e recusava `15` (que ela aceita). Meça a *forma* do limite, não só o teto: mande `15` e veja se passa.
+10. **O default de um intervalo de datas pode ser inválido para o próprio endpoint.** `nota-fiscal list` limita a janela a 15 dias, mas o CLI mandava o mês corrente — então o comando sem argumentos falhava com `400` em 100% das vezes, e ninguém notou porque quem chamava sempre passava datas. Ao adicionar um default, exercite-o **sem argumento nenhum**.
+
+#### O que ela exige na escrita
+
+Descobrir um payload é iterativo, pelo motivo explicado na receita acima. O que esta lista acrescenta é *onde* procurar quando o nome óbvio não resolve.
+
+11. **Enums vão acentuados e capitalizados como na interface** (`Física`, `Cliente`), não em `SCREAMING_SNAKE_CASE`.
+12. **Um campo obrigatório pode estar aninhado onde você não procuraria.** O número do contrato é `termos.numero`, e a mensagem de erro ("O número do contrato é obrigatório") não diz onde. Se um nome óbvio não resolve, tente dentro de cada sub-objeto do payload antes de concluir que o nome está errado.
+13. **Zero pode ser lido como ausente.** `venda update` exige `versao` e recusa `0` com "campo obrigatório" — justamente o valor que uma venda recém-criada tem.
+14. **Nem todo campo obrigatório vira `400`.** Falta de `versao` responde **`409`** em `baixa update` e `parcela update`. E em `cobranca create` um payload incompleto responde **`500`**, que o CLI classifica como `ambiguous` e manda reconciliar — reconcilie mesmo: na verificação, nada tinha sido criado.
+
+#### O que ela devolve
+
+Formato, contador e código de status divergiram da documentação em quase todo grupo.
+
+15. **A resposta da escrita não fala a mesma língua que a da leitura.** `venda create` devolve `situacao.nome` em inglês (`IN_PROCESS`) para a venda que `venda get` mostra como `EM_ANDAMENTO`.
+16. **Dois campos podem estar simplesmente trocados.** O que `orcamento create` recebe em `observacoes` volta em `observacoes_pagamento` no `orcamento get`, e vice-versa; em `contrato create` a `observacoes` da raiz reaparece em `condicao_pagamento.observacoes_pagamento`. Escreva um valor distinto em cada campo suspeito e leia de volta: é a única forma de enxergar isso.
+17. **O total de uma listagem pode não bater com o que ela devolve.** `orcamento list` responde `total_itens: 157` junto de 158 itens, porque o contador ignora `ORCAMENTO_RECUSADO`. Em `nota-fiscal list` a divergência chega a 100%: o contador soma todos os status, mas só `EMITIDA` e `CORRIGIDA_SUCESSO` vêm em `itens` — há janelas que devolvem `itens: []` com `total_itens: 3`.
+18. **Um id inexistente nem sempre é `404`.** Em `contrato get`, `delete` e `encerrar`, um uuid válido que não existe devolve `500` — e nas escritas o CLI traduz isso para `ambiguous`, sugerindo reconciliar algo que nunca aconteceu.
+19. **`200` com corpo vazio não é a mesma coisa que `204`.** `cobranca delete` e `baixa delete` respondem `200` sem corpo. Enquanto o CLI tratava o caso vazio só para `204`, o parser estourava, a exceção escapava do `CommandExecutor` (que só pega `CliException`) e **um delete bem-sucedido imprimia a linha de uso do Symfony e saía com código `1`**. Ao integrar um delete, confirme o status *e* o corpo.
+20. **Um endpoint pode ter data de corte que a documentação não menciona.** `financeiro saldo-inicial` e `financeiro alteracoes` recusam intervalo maior que **365 dias**. Como o default do CLI é o mês corrente, nenhum teste que passa datas explícitas curtas encontra isso.
+
+#### O que fica para trás
+
+Antes de escrever qualquer coisa num grupo novo, saiba se existe caminho de volta.
+
+21. **Exclusão não quer dizer a mesma coisa em todo grupo.** `produto delete` faz o `get` passar a 404; `servico delete` é lógico e o `get` continua respondendo 200 com `status` `ATIVO`; `venda excluir-lote` também é lógico e vira `status` `CANCELADO` — mas deixa `situacao` como estava.
+22. **Uma leitura pode escrever em outro cadastro.** `captura enviar` sobe um arquivo — e, ao terminar a extração, o fornecedor identificado **já existe** no cadastro de pessoas, com `criado_em` do dia. Nenhum aceite foi dado ainda. Ao mapear o efeito colateral de um comando, não pare no recurso que ele nomeia.
+23. **Uma escrita pode não ter leitura correspondente.** `nota-fiscal vincular-mdfe` grava um vínculo que nenhum `GET` devolve, que não altera a nota e que repetir nunca acusa duplicata. Sem `GET`, sem efeito colateral observável e sem erro de duplicata, não há como provar a limpeza — só dá para provar o que **não** mudou (o SHA-256 do XML da nota, idêntico antes e depois). Quando um grupo tiver escrita sem leitura, decida antes até onde vale exercitar.
+24. **Escrever é fácil; desfazer é que pode não existir.** A API não publica `DELETE` para evento financeiro (contas a receber/pagar) nem para centro de custo — `DELETE`, `PUT` e `PATCH` nesses paths devolvem o `404` genérico de rota inexistente. Antes de criar registro de teste num grupo, **verifique se existe caminho de volta**. Para distinguir "rota não existe" de "id não existe", compare a mensagem: rota inexistente devolve `"message":"Not Found"`; rota real com id desconhecido devolve `"message":"O recurso solicitado não foi encontrado"`. Em `captura` nem essa comparação serve: lá a rota inexistente devolve `404 page not found` em **texto puro**, e as reais devolvem `{"error": "…"}` — um terceiro envelope de erro.
+25. **Idempotência varia entre operações irmãs.** Em `captura`, aceitar duas vezes devolve `200` e não cria segundo lançamento; recusar duas vezes devolve `204` das duas; mas `get` numa captura recusada devolve `404`. Três respostas diferentes para "o recurso já saiu do estado que você esperava".
 
 ### Onde travar o que você descobrir
 
@@ -2222,22 +2234,38 @@ qualquer filtro que recebe. Se você mexer em `$filters` num
 | `financeiro` | ✅ 16/16 (2026-08-19) — o grupo com mais defeitos de código da campanha: polling que nunca acontecia, delete que reportava falha ao dar certo, e um comando apontando para o endpoint errado |
 | `captura` | ✅ 5/5 (2026-08-19) — a codificação de `ids` que o OpenAPI declara é recusada pela API, e o único limite de página que não é lista de valores |
 
-`venda list` quebrou a sequência: era o grupo de mais filtros e todos os oito
-existiam. Não conclua daí que dá para confiar na documentação — a mesma
-verificação achou um campo obrigatório que ela não lista
-(`condicao_pagamento`), um `versao` que rejeita o próprio valor do registro,
-e um `id_legado` prometido em `venda vendedores` que não vem na resposta. O
-risco só mudou de lugar.
+Falta um comando: `produto ecommerce-categorias`, que responde `400` sob todo
+parâmetro tentado, inclusive sem nenhum. O path está confirmado, então a
+hipótese que sobra é pré-condição de conta — não erro do CLI.
 
-Os quatro grupos de mais filtros já foram exercitados, e os três últimos
-(`venda`, `orcamento`, `contrato`) não tinham um único filtro errado. O que
-sobrou de risco mudou de lugar: agora está nos **payloads de escrita** e nos
-**formatos de resposta**, onde os três grupos erraram — campo obrigatório
-não documentado, campo aninhado em lugar inesperado, chave de resposta com
-outro nome, contador que não conta, e dois pares de campos que trocam de
-lugar entre escrita e leitura.
+**O que a campanha ensinou, em uma frase: o risco muda de lugar, não some.**
+Os quatro primeiros grupos erraram em **nome de filtro**. Os quatro do meio
+(`venda`, `orcamento`, `contrato`, `notas fiscais`) não tinham um único
+filtro errado e erraram em **payload de escrita e formato de resposta** —
+campo obrigatório não documentado, campo aninhado em lugar inesperado,
+contador que não conta, dois pares de campos que trocam de lugar. `financeiro`
+mostrou que o defeito também mora no **código do CLI**, não só nos nomes que
+ele manda. E `captura` mostrou o pior tipo: um defeito que **passa em
+qualquer teste razoável**, porque a codificação errada de `ids` é
+indistinguível da certa quando há um id só.
 
-Lista autoritativa de operações: https://developers.contaazul.com/docs/financial-apis-openapi/v1 — o portal bloqueia `curl` e fetch automatizado (403), então abra no navegador. Só três specs aparecem linkadas em `/aboutapis` (financial, sales, contracts); produtos, serviços e pessoas **não têm spec pública encontrável** e só se descobrem exercitando.
+Por isso a receita acima não é opcional, e por isso nenhum grupo saiu da
+campanha ileso. Ao verificar o próximo endpoint que aparecer, não pergunte
+"onde é provável que esteja errado" — o histórico diz que é onde você não
+está olhando.
+
+### Onde achar a documentação da API
+
+Lista autoritativa de operações:
+https://developers.contaazul.com/docs/financial-apis-openapi/v1 — o portal
+bloqueia `curl` e fetch automatizado (403), então abra no navegador. Só três
+specs aparecem linkadas em `/aboutapis` (financial, sales, contracts);
+produtos, serviços e pessoas **não têm spec pública encontrável** e só se
+descobrem exercitando.
+
+Para uma página de operação, o caminho é
+`/docs/{slug}/v1` → link da operação → `…/v1/{operationId}`, que traz o
+schema completo e um `curl` de exemplo.
 
 O caminho `/_bundle/open-api-docs/{slug}.json` **voltou a funcionar** — pelo
 menos para `developer-platform-open-api-capture`, cuja spec inteira saiu por

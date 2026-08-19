@@ -57,10 +57,18 @@ ficaram quebrados sem ninguém notar.
 
 Antes de marcar um endpoint como verificado em `COMMANDS.md`, siga a receita
 em [Notas para quem for
-estender](COMMANDS.md#notas-para-quem-for-estender) — baseline, parâmetro de
-controle inexistente, e um valor discriminante por filtro. O mesmo vale para
-nome de campo de payload, tipo de id e formato de resposta: os três já
+estender](COMMANDS.md#notas-para-quem-for-estender): baseline, parâmetro de
+controle inexistente, um valor discriminante por filtro, varredura de nomes
+alternativos, **dois valores** em todo filtro que aceita vários (a
+codificação erra tanto quanto o nome) e uma execução **sem argumento nenhum**
+(um default que o endpoint recusa não aparece de outro jeito). O mesmo vale
+para nome de campo de payload, tipo de id e formato de resposta: os três já
 divergiram da documentação neste projeto.
+
+A campanha de verificação de 2026-08-15 a 2026-08-19 exercitou os nove grupos
+de comandos contra a produção, e **nenhum saiu ileso**. Se você achar que um
+endpoint novo é a exceção, é mais provável que o teste esteja olhando para o
+lugar errado.
 
 ### Acompanhando mudanças na API da Conta Azul
 

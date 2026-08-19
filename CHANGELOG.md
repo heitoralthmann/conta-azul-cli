@@ -9,6 +9,13 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+Concentra a **campanha de verificação de endpoints** (2026-08-15 a
+2026-08-19): os nove grupos de comandos do CLI foram exercitados contra a API
+de produção, um a um, e **todos tinham pelo menos um defeito**. As entradas
+abaixo foram agrupadas por tipo, não por grupo verificado; o histórico por
+grupo, com as armadilhas de cada um, mora em
+[`COMMANDS.md`](COMMANDS.md#notas-para-quem-for-estender).
+
 ### Added
 
 - **`PageSizeRule`.** Descreve a *forma* do limite de página de um endpoint —
@@ -18,7 +25,6 @@ no [README](README.md#contrato-de-saída).
 - **Guarda local de 20 ids em `captura status`.** Acima disso a API responde
   `400` ("O campo 'ids' não pode conter mais de 20 itens"); agora o CLI
   recusa antes da ida à rede, como já fazia com o tamanho de página.
-
 - **`parcela update`.** Expõe `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}`
   pelo que ele é — atualização parcial da parcela (nota, descrição,
   vencimento, `composicao_valor`, método de pagamento, perda, `nsu`, conta
@@ -32,172 +38,6 @@ no [README](README.md#contrato-de-saída).
   recebe a baixa). As opções `--poll-timeout` e `--no-wait` saíram: a escrita
   é síncrona e nunca devolveu protocolo. **Mudança incompatível** para quem
   usava as opções removidas.
-
-### Fixed
-
-- **`captura status` só funcionava com um id.** O cliente mandava os ids
-  juntos num parâmetro só, separados por vírgula, seguindo o `explode: false`
-  do OpenAPI publicado — e é exatamente essa forma que a API recusa com
-  `400` ("O valor informado para o campo 'ids' é inválido"). Ela quer o
-  parâmetro repetido (`ids=a&ids=b`). Como as duas codificações são idênticas
-  para **um** id, todo teste de um id só passava, e a opção que existe para
-  consultar vários documentos de uma vez nunca funcionou. Varridas e
-  descartadas contra a produção: vírgula, espaço, `|`, `;`, JSON e `ids[]=`.
-- **`captura status --tamanho-pagina` era validado contra a regra errada, nos
-  dois sentidos.** Esse endpoint aceita **qualquer inteiro de 1 a 20**, e não
-  os degraus discretos (`10, 20, 50, …`) das demais listagens. Validá-lo com
-  a régua dos outros deixava `--tamanho-pagina 1000` chegar na API e voltar
-  `400`, e recusava localmente `15`, que a API aceita. É o único limite de
-  página do CLI que nunca tinha sido medido, por exigir um id de documento
-  real para chamar o endpoint.
-
-- **Nenhuma escrita assíncrona fazia polling.** O envelope de escrita aceita
-  nomeia o campo `protocolo`; o CLI lia `protocolId`, nunca encontrava, e
-  devolvia o envelope `PENDING` cru como se fosse o resultado final. Na
-  prática `conta-a-receber create` e `conta-a-pagar create` entregavam um
-  protocolo não resolvido, e `--poll-timeout` e `--no-wait` não tinham
-  efeito observável — os dois caminhos faziam a mesma coisa. Agora a escrita
-  é acompanhada até o estado terminal e devolve `evento_financeiro_id`.
-- **Um delete bem-sucedido reportava falha.** `cobranca delete` e
-  `baixa delete` respondem `200` com corpo vazio, não `204`. Como o
-  tratamento de corpo vazio dependia do status ser `204`, o parser estourava
-  uma `JsonException` que escapava do `CommandExecutor` (que só captura
-  `CliException`): o comando imprimia a linha de uso do Symfony em stderr e
-  saía com código `1`, violando o contrato de saída, embora a exclusão
-  tivesse sido aplicada. Corpo vazio agora vira `[]` em qualquer status.
-- **`parcela baixar` respondia sucesso sem registrar pagamento.** Mandava
-  `{valor, data}` num `PATCH` da parcela; nenhum dos dois campos existe no
-  schema desse endpoint, e a API descarta campo desconhecido em silêncio
-  **também no corpo da escrita**. O `409` por falta de `versao` mascarava o
-  problema — o comando falhava antes de conseguir não fazer nada. Ver
-  *Changed*.
-- **`--json '{}'` era recusado como "JSON deve ser um objeto".**
-  `json_decode('{}', true)` devolve `[]`, que `array_is_list()` considera uma
-  lista. O objeto vazio agora chega na API, que é quem sabe dizer quais
-  campos faltam. `[]` e listas continuam recusados localmente.
-
-### Documented
-
-- **Grupo `captura` verificado contra a produção** (5 comandos), encerrando a
-  campanha de verificação — resta só `produto ecommerce-categorias`, que
-  responde `400` sob todo parâmetro tentado. Exercitado com dois recibos em
-  PDF gerados para o teste, um aceito e um recusado. `COMMANDS.md` ganhou:
-  o `201` (não `200`) de `captura enviar`; o `415` com que a API recusa
-  formato não suportado; o fato de que **`captura enviar` cria um fornecedor
-  no cadastro de pessoas** antes de qualquer aceite, reaproveitando o
-  registro em documentos do mesmo CNPJ; que os ids da Captura são uuid **v7**;
-  que este grupo devolve erro num **terceiro envelope** (`{"error": …}`), com
-  rota inexistente caindo no `404 page not found` em texto puro do gateway;
-  que `sugestao_evento_financeiro`, declarado no OpenAPI e documentado aqui,
-  **nunca vem na resposta**; que `--descricao` é escrita sem leitura
-  correspondente; e as três respostas diferentes para "o recurso já mudou de
-  estado" — `aceitar` duas vezes devolve `200` sem criar segundo lançamento,
-  `recusar` duas vezes devolve `204` das duas, e `get` numa captura recusada
-  devolve `404`. Registrado também que **`aceitar` não tem volta** (cria
-  evento financeiro, que a API não deixa apagar) enquanto **`recusar` tem**:
-  recusar todas as capturas tira o documento da listagem, e é o único jeito,
-  já que `DELETE /v1/captura/documentos/{id}` não existe.
-- **`captura status` trata zero como valor, não como ausência.** A API aceita
-  `pagina=0` e `tamanho_pagina=0` com `200` e cai no default (`-1` é que
-  devolve `400`, "deve ser maior ou igual a 1") — ou seja, ela valida o
-  negativo e deixa o zero passar como se não tivesse sido informado. O CLI
-  recusa `--tamanho-pagina 0` de propósito: aceitar em silêncio um valor que
-  não faz o que foi pedido é o mesmo defeito do descarte silencioso.
-- **`pessoa excluir` pode ser recusado, e a mensagem funde dois casos.** Uma
-  pessoa vinculada a qualquer lançamento devolve `400` ("… já foram removidos
-  anteriormente ou estão vinculados a um lançamento …"), sem dizer qual dos
-  dois aconteceu. Documentado depois de esbarrar nisso ao limpar o fornecedor
-  que a Captura criou: aceitar a captura deu a ele um evento financeiro e a
-  exclusão deixou de ser possível. `pessoa inativar` continua funcionando.
-- **Notas obsoletas de "ainda não exercitado" corrigidas.** `API_COVERAGE.md`
-  ainda declarava não verificados os grupos de Notas Fiscais, Vendas,
-  Orçamentos, Cobranças, `parcela list` e `financeiro saldo-inicial`, todos
-  fechados durante a campanha; o mesmo texto sobrevivia nos docblocks de
-  `NotasFiscaisClient`, `FinanceiroClient` e `FinanceiroClientTest`. Em
-  particular, o `200` com corpo vazio de `cobranca delete`/`baixa delete`
-  estava marcado como "comportamento real não verificado" no mesmo commit
-  em que foi corrigido por ter sido verificado.
-- **O caminho `/_bundle/open-api-docs/{slug}.json` voltou a funcionar** — via
-  `fetch()` de dentro da página, já que curl leva 403 —, e por ele saiu a
-  spec inteira da Captura, que não é linkada em `/aboutapis`. Com a ressalva
-  registrada: essa spec **estava errada** sobre a codificação de `ids`.
-- **Grupo `financeiro` verificado contra a produção** (16 comandos), fechando
-  a campanha iniciada em 2026-08-15. `COMMANDS.md` ganhou o payload mínimo
-  real de `conta-a-receber create` — que a documentação oficial erra em dois
-  pontos —, o teto de **365 dias** não documentado de `financeiro
-  saldo-inicial` e `financeiro alteracoes`, os pares de campos que trocam de
-  nome entre escrita e leitura (`detalhe_valor`/`composicao_valor` →
-  `valor_composicao`), os `409` e `500` onde se esperava `400`, e o aviso de
-  que **a API não publica `DELETE` para evento financeiro nem para centro de
-  custo** — o que se cria por lá só sai pela interface web.
-
-### Removed
-
-- **`servico list --codigo`, `--ids` e `--status`.** `GET /v1/servicos`
-  honra **um único filtro**. Nenhum nome testado para os outros três
-  (`codigo`, `codigos`, `codigo_servico`, `sku`, `ids`, `id`, `uuid`,
-  `uuids`, `id_servico`, `status`, `situacao`, `ativo`, `filtro_status`,
-  …) mudou o resultado, nem com valor exclusivo de um único registro.
-  Ordenação também não existe neste endpoint. Mesmo motivo do caso de
-  produtos: devolviam o catálogo inteiro fingindo filtrar.
-- **`produto list --ids` e `produto list --categoria-id`.** Exercitados
-  contra a produção, nenhum dos dois filtrava: `GET /v1/produtos`
-  responde `200` e **ignora em silêncio** todo parâmetro que não
-  reconhece, então as duas opções devolviam o catálogo inteiro como se
-  tudo casasse — pior que não existir. Nenhum nome alternativo
-  (`id`, `uuid`, `uuids`, `produto_id`, `ids[]`, repetido, separado por
-  vírgula, `id_categoria`, `categoria_uuid`, …) surtiu efeito, e um
-  parâmetro propositalmente inexistente se comporta igual, o que
-  confirma o descarte silencioso. Removidas em vez de continuarem
-  anunciando um filtro que não filtra.
-
-### Fixed
-
-- **`--tamanho-pagina` era validado com a mesma lista larga em todo
-  endpoint, e três deles não a aceitam.** `PaginationValidator` liberava
-  `10, 20, 50, 100, 200, 500, 1000` para qualquer listagem, mas
-  `GET /v1/servicos`, `/v1/notas-fiscais` e `/v1/notas-fiscais-servico`
-  respondem `400` acima de `100` ("O tamanho da página deve ser um dos
-  seguintes valores: 10, 20, 50 ou 100"). Resultado: `--tamanho-pagina 200`
-  passava na validação local e voltava `400` da API — o oposto do que
-  validar localmente existe para fazer. O validador agora recebe o limite do
-  endpoint (`validatePageSize($size, $maxSize)`), e as três listagens
-  passam `PaginationValidator::CAPPED_MAX_SIZE`; a mensagem de erro lista só
-  os tamanhos que aquele endpoint aceita. Os limites foram **medidos** um a
-  um contra a produção em 2026-08-19, não deduzidos da documentação: as
-  outras listagens (produtos e catálogos, pessoas, vendas, itens de venda,
-  orçamentos, contratos, transferências, contas a pagar/receber, categorias,
-  centros de custo, contas financeiras) aceitam `1000` de verdade e ficaram
-  como estavam — `captura status` foi a única que não deu para medir, por
-  exigir um id de documento real. Os testes de comando constroem o cliente
-  **sem nenhuma resposta enfileirada**, de modo que voltar a não passar o
-  limite falha ao atingir o transporte em vez de passar em silêncio, e há o
-  teste oposto em `venda list` provando que `1000` continua aceito.
-- **`servico list --busca` não filtrava nada.** A API chama esse filtro de
-  `busca_textual`, não `busca` (o nome que produtos e pessoas usam para a
-  mesma ideia); como a listagem descarta parâmetros desconhecidos em
-  silêncio, o comando devolvia os 26 serviços da conta em vez do único que
-  casava. `--busca` continua sendo o nome na CLI, por consistência com os
-  outros grupos, mas agora vai para a API como `busca_textual`, com teste
-  de módulo travando o mapeamento.
-- **`produto list --codigo` não filtrava nada.** A opção era enviada à
-  API como `codigo`, mas o parâmetro aceito é `sku`; como a listagem
-  descarta parâmetros desconhecidos sem erro, o comando devolvia os 420
-  produtos da conta em vez do único que casava. Agora `--codigo` é
-  mapeado para `sku`, e um teste de módulo trava esse mapeamento.
-- **`nota-fiscal list` sem datas falhava sempre.** `GET /v1/notas-fiscais`
-  limita o intervalo a **15 dias** — a mesma restrição que já era conhecida em
-  `nota-fiscal-servico list` — mas o comando caía no mês corrente quando as
-  datas eram omitidas, e a API respondia `400 {"error":"O período entre
-  data_inicial e data_final não pode ser maior que 15 dias"}`. Ou seja,
-  `ca nota-fiscal list` puro **nunca funcionou**; o defeito passou despercebido
-  porque toda chamada testada até aqui informava as datas. O default agora são
-  os últimos 15 dias, como na listagem de serviço, e o aviso em stderr menciona
-  o teto. O limite foi medido contra a produção: 15 dias de diferença passam,
-  16 respondem `400`.
-
-### Changed
-
 - **Grupo `notas fiscais` verificado contra a produção (2026-08-19).** Os
   quatro comandos foram exercitados e passaram a ✅ em `COMMANDS.md`. As duas
   listagens tiveram **todos os catorze filtros provados um a um** com valor
@@ -325,8 +165,109 @@ no [README](README.md#contrato-de-saída).
   ✅ em `COMMANDS.md`. Nenhuma mudança de código foi necessária: todos
   os paths e payloads já estavam corretos.
 
+### Removed
+
+- **`servico list --codigo`, `--ids` e `--status`.** `GET /v1/servicos`
+  honra **um único filtro**. Nenhum nome testado para os outros três
+  (`codigo`, `codigos`, `codigo_servico`, `sku`, `ids`, `id`, `uuid`,
+  `uuids`, `id_servico`, `status`, `situacao`, `ativo`, `filtro_status`,
+  …) mudou o resultado, nem com valor exclusivo de um único registro.
+  Ordenação também não existe neste endpoint. Mesmo motivo do caso de
+  produtos: devolviam o catálogo inteiro fingindo filtrar.
+- **`produto list --ids` e `produto list --categoria-id`.** Exercitados
+  contra a produção, nenhum dos dois filtrava: `GET /v1/produtos`
+  responde `200` e **ignora em silêncio** todo parâmetro que não
+  reconhece, então as duas opções devolviam o catálogo inteiro como se
+  tudo casasse — pior que não existir. Nenhum nome alternativo
+  (`id`, `uuid`, `uuids`, `produto_id`, `ids[]`, repetido, separado por
+  vírgula, `id_categoria`, `categoria_uuid`, …) surtiu efeito, e um
+  parâmetro propositalmente inexistente se comporta igual, o que
+  confirma o descarte silencioso. Removidas em vez de continuarem
+  anunciando um filtro que não filtra.
+
 ### Fixed
 
+- **`captura status` só funcionava com um id.** O cliente mandava os ids
+  juntos num parâmetro só, separados por vírgula, seguindo o `explode: false`
+  do OpenAPI publicado — e é exatamente essa forma que a API recusa com
+  `400` ("O valor informado para o campo 'ids' é inválido"). Ela quer o
+  parâmetro repetido (`ids=a&ids=b`). Como as duas codificações são idênticas
+  para **um** id, todo teste de um id só passava, e a opção que existe para
+  consultar vários documentos de uma vez nunca funcionou. Varridas e
+  descartadas contra a produção: vírgula, espaço, `|`, `;`, JSON e `ids[]=`.
+- **`captura status --tamanho-pagina` era validado contra a regra errada, nos
+  dois sentidos.** Esse endpoint aceita **qualquer inteiro de 1 a 20**, e não
+  os degraus discretos (`10, 20, 50, …`) das demais listagens. Validá-lo com
+  a régua dos outros deixava `--tamanho-pagina 1000` chegar na API e voltar
+  `400`, e recusava localmente `15`, que a API aceita. É o único limite de
+  página do CLI que nunca tinha sido medido, por exigir um id de documento
+  real para chamar o endpoint.
+- **Nenhuma escrita assíncrona fazia polling.** O envelope de escrita aceita
+  nomeia o campo `protocolo`; o CLI lia `protocolId`, nunca encontrava, e
+  devolvia o envelope `PENDING` cru como se fosse o resultado final. Na
+  prática `conta-a-receber create` e `conta-a-pagar create` entregavam um
+  protocolo não resolvido, e `--poll-timeout` e `--no-wait` não tinham
+  efeito observável — os dois caminhos faziam a mesma coisa. Agora a escrita
+  é acompanhada até o estado terminal e devolve `evento_financeiro_id`.
+- **Um delete bem-sucedido reportava falha.** `cobranca delete` e
+  `baixa delete` respondem `200` com corpo vazio, não `204`. Como o
+  tratamento de corpo vazio dependia do status ser `204`, o parser estourava
+  uma `JsonException` que escapava do `CommandExecutor` (que só captura
+  `CliException`): o comando imprimia a linha de uso do Symfony em stderr e
+  saía com código `1`, violando o contrato de saída, embora a exclusão
+  tivesse sido aplicada. Corpo vazio agora vira `[]` em qualquer status.
+- **`parcela baixar` respondia sucesso sem registrar pagamento.** Mandava
+  `{valor, data}` num `PATCH` da parcela; nenhum dos dois campos existe no
+  schema desse endpoint, e a API descarta campo desconhecido em silêncio
+  **também no corpo da escrita**. O `409` por falta de `versao` mascarava o
+  problema — o comando falhava antes de conseguir não fazer nada. Ver
+  *Changed*.
+- **`--json '{}'` era recusado como "JSON deve ser um objeto".**
+  `json_decode('{}', true)` devolve `[]`, que `array_is_list()` considera uma
+  lista. O objeto vazio agora chega na API, que é quem sabe dizer quais
+  campos faltam. `[]` e listas continuam recusados localmente.
+- **`--tamanho-pagina` era validado com a mesma lista larga em todo
+  endpoint, e três deles não a aceitam.** `PaginationValidator` liberava
+  `10, 20, 50, 100, 200, 500, 1000` para qualquer listagem, mas
+  `GET /v1/servicos`, `/v1/notas-fiscais` e `/v1/notas-fiscais-servico`
+  respondem `400` acima de `100` ("O tamanho da página deve ser um dos
+  seguintes valores: 10, 20, 50 ou 100"). Resultado: `--tamanho-pagina 200`
+  passava na validação local e voltava `400` da API — o oposto do que
+  validar localmente existe para fazer. O validador agora recebe o limite do
+  endpoint (`validatePageSize($size, $maxSize)`), e as três listagens
+  passam `PaginationValidator::CAPPED_MAX_SIZE`; a mensagem de erro lista só
+  os tamanhos que aquele endpoint aceita. Os limites foram **medidos** um a
+  um contra a produção em 2026-08-19, não deduzidos da documentação: as
+  outras listagens (produtos e catálogos, pessoas, vendas, itens de venda,
+  orçamentos, contratos, transferências, contas a pagar/receber, categorias,
+  centros de custo, contas financeiras) aceitam `1000` de verdade e ficaram
+  como estavam — `captura status` foi a única que não deu para medir, por
+  exigir um id de documento real. Os testes de comando constroem o cliente
+  **sem nenhuma resposta enfileirada**, de modo que voltar a não passar o
+  limite falha ao atingir o transporte em vez de passar em silêncio, e há o
+  teste oposto em `venda list` provando que `1000` continua aceito.
+- **`servico list --busca` não filtrava nada.** A API chama esse filtro de
+  `busca_textual`, não `busca` (o nome que produtos e pessoas usam para a
+  mesma ideia); como a listagem descarta parâmetros desconhecidos em
+  silêncio, o comando devolvia os 26 serviços da conta em vez do único que
+  casava. `--busca` continua sendo o nome na CLI, por consistência com os
+  outros grupos, mas agora vai para a API como `busca_textual`, com teste
+  de módulo travando o mapeamento.
+- **`produto list --codigo` não filtrava nada.** A opção era enviada à
+  API como `codigo`, mas o parâmetro aceito é `sku`; como a listagem
+  descarta parâmetros desconhecidos sem erro, o comando devolvia os 420
+  produtos da conta em vez do único que casava. Agora `--codigo` é
+  mapeado para `sku`, e um teste de módulo trava esse mapeamento.
+- **`nota-fiscal list` sem datas falhava sempre.** `GET /v1/notas-fiscais`
+  limita o intervalo a **15 dias** — a mesma restrição que já era conhecida em
+  `nota-fiscal-servico list` — mas o comando caía no mês corrente quando as
+  datas eram omitidas, e a API respondia `400 {"error":"O período entre
+  data_inicial e data_final não pode ser maior que 15 dias"}`. Ou seja,
+  `ca nota-fiscal list` puro **nunca funcionou**; o defeito passou despercebido
+  porque toda chamada testada até aqui informava as datas. O default agora são
+  os últimos 15 dias, como na listagem de serviço, e o aviso em stderr menciona
+  o teto. O limite foi medido contra a produção: 15 dias de diferença passam,
+  16 respondem `400`.
 - **Documentação:** `COMMANDS.md` afirmava que uma resposta `204 No
   Content` é renderizada como `{}`. Ela sai como `[]` — um corpo vazio
   (e também um `{}` vindo da API) vira array PHP vazio e volta a ser
@@ -336,6 +277,58 @@ no [README](README.md#contrato-de-saída).
 
 ### Documented
 
+- **Grupo `captura` verificado contra a produção** (5 comandos), encerrando a
+  campanha de verificação — resta só `produto ecommerce-categorias`, que
+  responde `400` sob todo parâmetro tentado. Exercitado com dois recibos em
+  PDF gerados para o teste, um aceito e um recusado. `COMMANDS.md` ganhou:
+  o `201` (não `200`) de `captura enviar`; o `415` com que a API recusa
+  formato não suportado; o fato de que **`captura enviar` cria um fornecedor
+  no cadastro de pessoas** antes de qualquer aceite, reaproveitando o
+  registro em documentos do mesmo CNPJ; que os ids da Captura são uuid **v7**;
+  que este grupo devolve erro num **terceiro envelope** (`{"error": …}`), com
+  rota inexistente caindo no `404 page not found` em texto puro do gateway;
+  que `sugestao_evento_financeiro`, declarado no OpenAPI e documentado aqui,
+  **nunca vem na resposta**; que `--descricao` é escrita sem leitura
+  correspondente; e as três respostas diferentes para "o recurso já mudou de
+  estado" — `aceitar` duas vezes devolve `200` sem criar segundo lançamento,
+  `recusar` duas vezes devolve `204` das duas, e `get` numa captura recusada
+  devolve `404`. Registrado também que **`aceitar` não tem volta** (cria
+  evento financeiro, que a API não deixa apagar) enquanto **`recusar` tem**:
+  recusar todas as capturas tira o documento da listagem, e é o único jeito,
+  já que `DELETE /v1/captura/documentos/{id}` não existe.
+- **`captura status` trata zero como valor, não como ausência.** A API aceita
+  `pagina=0` e `tamanho_pagina=0` com `200` e cai no default (`-1` é que
+  devolve `400`, "deve ser maior ou igual a 1") — ou seja, ela valida o
+  negativo e deixa o zero passar como se não tivesse sido informado. O CLI
+  recusa `--tamanho-pagina 0` de propósito: aceitar em silêncio um valor que
+  não faz o que foi pedido é o mesmo defeito do descarte silencioso.
+- **`pessoa excluir` pode ser recusado, e a mensagem funde dois casos.** Uma
+  pessoa vinculada a qualquer lançamento devolve `400` ("… já foram removidos
+  anteriormente ou estão vinculados a um lançamento …"), sem dizer qual dos
+  dois aconteceu. Documentado depois de esbarrar nisso ao limpar o fornecedor
+  que a Captura criou: aceitar a captura deu a ele um evento financeiro e a
+  exclusão deixou de ser possível. `pessoa inativar` continua funcionando.
+- **Notas obsoletas de "ainda não exercitado" corrigidas.** `API_COVERAGE.md`
+  ainda declarava não verificados os grupos de Notas Fiscais, Vendas,
+  Orçamentos, Cobranças, `parcela list` e `financeiro saldo-inicial`, todos
+  fechados durante a campanha; o mesmo texto sobrevivia nos docblocks de
+  `NotasFiscaisClient`, `FinanceiroClient` e `FinanceiroClientTest`. Em
+  particular, o `200` com corpo vazio de `cobranca delete`/`baixa delete`
+  estava marcado como "comportamento real não verificado" no mesmo commit
+  em que foi corrigido por ter sido verificado.
+- **O caminho `/_bundle/open-api-docs/{slug}.json` voltou a funcionar** — via
+  `fetch()` de dentro da página, já que curl leva 403 —, e por ele saiu a
+  spec inteira da Captura, que não é linkada em `/aboutapis`. Com a ressalva
+  registrada: essa spec **estava errada** sobre a codificação de `ids`.
+- **Grupo `financeiro` verificado contra a produção** (16 comandos), fechando
+  a campanha iniciada em 2026-08-15. `COMMANDS.md` ganhou o payload mínimo
+  real de `conta-a-receber create` — que a documentação oficial erra em dois
+  pontos —, o teto de **365 dias** não documentado de `financeiro
+  saldo-inicial` e `financeiro alteracoes`, os pares de campos que trocam de
+  nome entre escrita e leitura (`detalhe_valor`/`composicao_valor` →
+  `valor_composicao`), os `409` e `500` onde se esperava `400`, e o aviso de
+  que **a API não publica `DELETE` para evento financeiro nem para centro de
+  custo** — o que se cria por lá só sai pela interface web.
 - **O que `nota-fiscal vincular-mdfe` faz, e o que não dá para saber sobre
   ele.** O endpoint registra na Conta Azul que um conjunto de NF-e pertence a
   um MDF-e emitido em outro sistema; **não emite MDF-e nem transmite nada à
@@ -373,7 +366,6 @@ no [README](README.md#contrato-de-saída).
   intervalo pode ser inválido para o próprio endpoint (exercite o comando sem
   argumento nenhum), e uma escrita pode não ter leitura correspondente — caso
   em que só dá para provar o que **não** mudou.
-
 - **A marca `⚠️` do `COMMANDS.md` foi reescrita.** Ela dizia "path correto
   conforme a documentação, mas nunca exercitado", o que sugere que só a
   escrita é arriscada. Depois de dois dos três grupos verificados
