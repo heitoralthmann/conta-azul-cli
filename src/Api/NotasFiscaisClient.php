@@ -18,8 +18,8 @@ use function rawurlencode;
  *
  * Paths e schemas conferidos direto na documentação renderizada
  * (https://developers.contaazul.com/open-api-docs/open-api-invoice/v1), já
- * que o portal bloqueia `WebFetch`/`curl`; ainda não exercitados contra a
- * API real. A API só suporta consulta (NFe de produto e NFS-e de serviço) e
+ * que o portal bloqueia `WebFetch`/`curl`, e exercitados contra a API de
+ * produção em 2026-08-19. A API só suporta consulta (NFe de produto e NFS-e de serviço) e
  * vínculo a MDF-e — não há emissão.
  */
 final class NotasFiscaisClient

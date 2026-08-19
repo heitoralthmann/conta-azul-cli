@@ -214,7 +214,7 @@ final class FinanceiroClientTest extends TestCase
    * Escrita síncrona — diferente de `createContaAPagar`/`createContaAReceber`,
    * a resposta já é o centro de custo criado, sem protocolo. Path e schema
    * conferidos direto no OpenAPI renderizado (o portal bloqueia
-   * `WebFetch`/`curl`); ainda não exercitado contra a API real.
+   * `WebFetch`/`curl`) e exercitados contra a produção em 2026-08-19.
    */
   public function testCreateCentroDeCustoUsesTheDocumentedPathAndBody(): void {
     $captured = null;
@@ -234,7 +234,7 @@ final class FinanceiroClientTest extends TestCase
   /**
    * Path e schema conferidos direto no OpenAPI renderizado
    * (https://developers.contaazul.com/docs/charge-apis-openapi/v1), spec
-   * próprio de Cobranças; ainda não exercitado contra a API real.
+   * próprio de Cobranças, e exercitados contra a produção em 2026-08-19.
    */
   public function testGerarCobrancaUsesTheDocumentedPathAndBody(): void {
     $captured = null;
@@ -289,7 +289,7 @@ final class FinanceiroClientTest extends TestCase
   /**
    * Path e schema conferidos direto no OpenAPI renderizado
    * (https://developers.contaazul.com/docs/acquittance-apis-openapi/v1),
-   * spec próprio de Baixas; ainda não exercitado contra a API real.
+   * spec próprio de Baixas, e exercitados contra a produção em 2026-08-19.
    */
   public function testCreateBaixaUsesTheDocumentedPathAndBody(): void {
     $captured = null;

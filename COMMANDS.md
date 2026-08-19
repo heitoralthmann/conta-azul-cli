@@ -1120,6 +1120,17 @@ um erro de cada vez, todos estes campos:
 **204 No Content** (renderizado como `[]`) e a exclusão é permanente:
 `pessoa get` passa a devolver 404.
 
+> **Mas `excluir` pode simplesmente ser recusado.** Uma pessoa vinculada a
+> qualquer lançamento devolve `400` com a lista de ids que sobraram: "Os IDs
+> […] não podem ser excluídos, pois já foram removidos anteriormente ou estão
+> vinculados a um lançamento (negociações, contratos, eventos financeiros ou
+> faturas de serviços/produtos)". Note que a mensagem **funde dois casos** —
+> "já excluído" e "ainda vinculado" —, então ela não diz qual dos dois
+> aconteceu. Confirmado em 2026-08-19 com o fornecedor que a Captura criou:
+> depois do `captura aceitar`, ele passou a ter evento financeiro e a
+> exclusão parou de ser possível. Nesses casos o caminho é `pessoa inativar`,
+> que continua funcionando.
+
 ### `pessoa conta-conectada` ✅
 
 `GET /v1/pessoas/conta-conectada` — retorna os dados da empresa vinculada ao token.
@@ -1986,7 +1997,16 @@ repita a consulta até o status chegar a um estado final. Aqui o
 
 Limites medidos, todos com mensagem própria: mais de 20 ids devolve `400`
 ("O campo 'ids' não pode conter mais de 20 itens"), e o CLI passou a barrar
-isso antes da ida à API. `--ids` vazio ou ausente é recusado pela própria
+isso antes da ida à API.
+
+> **Zero é buraco na validação da API, e o CLI é mais rígido de propósito.**
+> `tamanho_pagina=0` e `pagina=0` respondem `200` e caem no default (a
+> resposta volta com `tamanho_pagina: 10, pagina_atual: 1`), enquanto `-1`
+> devolve `400` ("deve ser maior ou igual a 1") — ou seja, a API valida o
+> negativo e deixa o zero passar como se fosse ausente. O CLI **recusa**
+> `--tamanho-pagina 0` localmente: zero não é um tamanho de página, e aceitar
+> silenciosamente um valor que não faz o que foi pedido é o mesmo defeito do
+> descarte silencioso. `--pagina 0` segue passando, e a API normaliza para 1. `--ids` vazio ou ausente é recusado pela própria
 API (`400`), sem descarte silencioso — ao contrário do que acontece com
 parâmetro desconhecido, que aqui também some sem avisar (`zzz_bogus=abc`
 devolve a resposta inalterada).

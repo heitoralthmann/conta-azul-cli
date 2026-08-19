@@ -124,8 +124,9 @@ final class FinanceiroClient
   /**
    * Cancela uma cobrança gerada incorretamente ou que precisa ser invalidada
    * antes do pagamento. A documentação lista resposta `200 OK` sem schema de
-   * corpo (não `204`, diferente dos demais deletes do CLI) — comportamento
-   * real ainda não exercitado contra a API.
+   * corpo (não `204`, diferente dos demais deletes do CLI), e é isso mesmo
+   * que a API faz: `200` com corpo **vazio**, confirmado contra a produção em
+   * 2026-08-19. Foi essa combinação que estourava o parser do CLI.
    *
    * @return array<mixed>
    */
@@ -292,8 +293,8 @@ final class FinanceiroClient
   /**
    * A exclusão impacta diretamente o saldo e o histórico financeiro da
    * parcela associada. A documentação lista resposta `200 OK` sem schema de
-   * corpo (não `204`, mesma observação de `deleteCobranca()`) —
-   * comportamento real ainda não exercitado contra a API.
+   * corpo (não `204`, mesma observação de `deleteCobranca()`), confirmado
+   * contra a produção em 2026-08-19: `200` com corpo vazio.
    *
    * @return array<mixed>
    */

@@ -22,8 +22,8 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 
 25 endpoints: 17 do spec `financial-apis-openapi` (o núcleo de Financeiro) + 3 do spec `charge-apis-openapi` (Cobranças) + 5 do spec `acquittance-apis-openapi` (Baixas). `src/Api/FinanceiroClient.php`.
 Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a API real em 2026-08-18;
-`parcela list` acrescentado em 2026-08-18 (path e schema conferidos direto na doc, endpoint ainda não exercitado contra a API real);
-`financeiro saldo-inicial` acrescentado em 2026-08-18, completando a sessão (path e query params conferidos direto na doc, endpoint ainda não exercitado contra a API real);
+`parcela list` acrescentado em 2026-08-18 (path e schema conferidos direto na doc; exercitado contra a produção em 2026-08-19);
+`financeiro saldo-inicial` acrescentado em 2026-08-18, completando a sessão (path e query params conferidos direto na doc; exercitado contra a produção em 2026-08-19, quando apareceu o teto não documentado de 365 dias no intervalo);
 `centro-de-custo create` acrescentado em 2026-08-18 e exercitado em produção em 2026-08-19. Atenção: a API **não publica `DELETE`** para centro de custo nem para evento financeiro (contas a receber/pagar) — o que se cria por esses três endpoints só sai pela interface web.
 **Cobranças e Baixas são specs OpenAPI próprios** (`charge-apis-openapi`, `acquittance-apis-openapi`), descobertos em 2026-08-19 — não estavam linkados na página `/aboutapis` e nunca tinham sido levantados. Ambos implementados na sequência (`cobranca create`/`get`/`delete`; `baixa create`/`list`/`get`/`update`/`delete`), completando a cobertura da API inteira.
 
@@ -48,7 +48,7 @@ Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a A
 - [x] `GET /v1/financeiro/eventos-financeiros/contas-a-receber/buscar` — `conta-a-receber list`
 
 ### Cobranças (spec `charge-apis-openapi`)
-Gera cobrança (boleto/PIX/link de pagamento) para a parcela de uma conta a receber. Path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/charge-apis-openapi/v1); ainda não exercitados contra a API real. O DELETE documenta resposta `200 OK` sem schema de corpo — diferente da convenção `204` do resto do CLI; comportamento real não verificado.
+Gera cobrança (boleto/PIX/link de pagamento) para a parcela de uma conta a receber. Path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/charge-apis-openapi/v1) e **exercitados contra a produção em 2026-08-19**. O DELETE documenta resposta `200 OK` sem schema de corpo — diferente da convenção `204` do resto do CLI —, e é o que ele faz mesmo: `200` com **corpo vazio**, o que quebrava o parser do CLI até ser corrigido.
 - [x] `POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca` — `cobranca create`; escrita síncrona, sem protocolo
 - [x] `GET /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id_cobranca}` — `cobranca get`
 - [x] `DELETE /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id_cobranca}` — `cobranca delete`
@@ -147,8 +147,8 @@ página `/aboutapis`, só dentro do próprio bundle OpenAPI.
 4 endpoints. `src/Api/NotasFiscaisClient.php`.
 Sessão implementada em 2026-08-18; paths e schemas conferidos direto na
 documentação renderizada (https://developers.contaazul.com/open-api-docs/open-api-invoice/v1),
-já que o portal bloqueia `WebFetch`/`curl` — ainda não exercitados contra a
-API real. A API só suporta consulta (NFe de produto e NFS-e de serviço) e
+já que o portal bloqueia `WebFetch`/`curl`. **Verificados contra a produção em
+2026-08-19** (4/4). A API só suporta consulta (NFe de produto e NFS-e de serviço) e
 vínculo a MDF-e; não há emissão.
 
 - [x] `GET /v1/notas-fiscais` — `nota-fiscal list`; exige `data_inicial`/`data_final`; retorna só NFe EMITIDA e CORRIGIDA_SUCESSO
@@ -161,8 +161,8 @@ vínculo a MDF-e; não há emissão.
 9 endpoints. `src/Api/VendasClient.php`.
 Sessão implementada em 2026-08-18; paths e schemas conferidos direto na
 documentação renderizada (https://developers.contaazul.com/docs/sales-apis-openapi/v1),
-já que o portal bloqueia `WebFetch`/`curl` — ainda não exercitados contra a
-API real.
+já que o portal bloqueia `WebFetch`/`curl`. **Verificados contra a produção em
+2026-08-19** (9/9).
 
 - [x] `GET /v1/venda/busca` — `venda list`; filtros opcionais (sem intervalo de datas obrigatório)
 - [x] `POST /v1/venda` — `venda create`
@@ -179,8 +179,8 @@ API real.
 4 endpoints. `src/Api/OrcamentosClient.php`.
 Sessão implementada em 2026-08-18; paths e schemas conferidos direto no
 OpenAPI renderizado (https://developers.contaazul.com/docs/open-api-proposal),
-já que o portal bloqueia `WebFetch`/`curl` — ainda não exercitados contra a
-API real. `orcamento list` só expõe os filtros escalares do endpoint
+já que o portal bloqueia `WebFetch`/`curl`. **Verificados contra a produção em
+2026-08-19** (4/4). `orcamento list` só expõe os filtros escalares do endpoint
 (mesmo recorte de `venda list`); os filtros de array (`ids_vendedores`,
 `ids_clientes`, `ids_natureza_operacao`, `ids_categorias`, `ids_produtos`,
 `situacoes`, `origens`, `numeros`, `ids_legado_*`) ficam de fora porque

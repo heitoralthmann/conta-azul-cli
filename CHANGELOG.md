@@ -97,6 +97,26 @@ no [README](README.md#contrato-de-saída).
   evento financeiro, que a API não deixa apagar) enquanto **`recusar` tem**:
   recusar todas as capturas tira o documento da listagem, e é o único jeito,
   já que `DELETE /v1/captura/documentos/{id}` não existe.
+- **`captura status` trata zero como valor, não como ausência.** A API aceita
+  `pagina=0` e `tamanho_pagina=0` com `200` e cai no default (`-1` é que
+  devolve `400`, "deve ser maior ou igual a 1") — ou seja, ela valida o
+  negativo e deixa o zero passar como se não tivesse sido informado. O CLI
+  recusa `--tamanho-pagina 0` de propósito: aceitar em silêncio um valor que
+  não faz o que foi pedido é o mesmo defeito do descarte silencioso.
+- **`pessoa excluir` pode ser recusado, e a mensagem funde dois casos.** Uma
+  pessoa vinculada a qualquer lançamento devolve `400` ("… já foram removidos
+  anteriormente ou estão vinculados a um lançamento …"), sem dizer qual dos
+  dois aconteceu. Documentado depois de esbarrar nisso ao limpar o fornecedor
+  que a Captura criou: aceitar a captura deu a ele um evento financeiro e a
+  exclusão deixou de ser possível. `pessoa inativar` continua funcionando.
+- **Notas obsoletas de "ainda não exercitado" corrigidas.** `API_COVERAGE.md`
+  ainda declarava não verificados os grupos de Notas Fiscais, Vendas,
+  Orçamentos, Cobranças, `parcela list` e `financeiro saldo-inicial`, todos
+  fechados durante a campanha; o mesmo texto sobrevivia nos docblocks de
+  `NotasFiscaisClient`, `FinanceiroClient` e `FinanceiroClientTest`. Em
+  particular, o `200` com corpo vazio de `cobranca delete`/`baixa delete`
+  estava marcado como "comportamento real não verificado" no mesmo commit
+  em que foi corrigido por ter sido verificado.
 - **O caminho `/_bundle/open-api-docs/{slug}.json` voltou a funcionar** — via
   `fetch()` de dentro da página, já que curl leva 403 —, e por ele saiu a
   spec inteira da Captura, que não é linkada em `/aboutapis`. Com a ressalva
