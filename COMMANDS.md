@@ -61,12 +61,12 @@ Cada endpoint traz uma marca de confiança:
 | `financeiro alteracoes` | `GET /v1/financeiro/eventos-financeiros/alteracoes` | ✅ |
 | `financeiro saldo-inicial` | `GET /v1/financeiro/eventos-financeiros/saldo-inicial` | ⚠️ |
 | `protocolo get` | `GET /v1/protocolo/{id}` | ⚠️ |
-| `contrato list` | `GET /v1/contratos` | ⚠️ |
-| `contrato create` | `POST /v1/contratos` | ⚠️ |
-| `contrato proximo-numero` | `GET /v1/contratos/proximo-numero` | ⚠️ |
-| `contrato get` | `GET /v1/contratos/{id}` | ⚠️ |
-| `contrato delete` | `DELETE /v1/contratos/{id}` | ⚠️ |
-| `contrato encerrar` | `POST /v1/contratos/{id}/encerrar` | ⚠️ |
+| `contrato list` | `GET /v1/contratos` | ✅ |
+| `contrato create` | `POST /v1/contratos` | ✅ |
+| `contrato proximo-numero` | `GET /v1/contratos/proximo-numero` | ✅ |
+| `contrato get` | `GET /v1/contratos/{id}` | ✅ |
+| `contrato delete` | `DELETE /v1/contratos/{id}` | ✅ |
+| `contrato encerrar` | `POST /v1/contratos/{id}/encerrar` | ✅ |
 | `pessoa list` | `GET /v1/pessoas` | ✅ |
 | `pessoa create` | `POST /v1/pessoas` | ✅ |
 | `pessoa get` | `GET /v1/pessoas/{id}` | ✅ |
@@ -203,11 +203,12 @@ E o nome do campo de contagem **não é o mesmo em todo lugar**:
 | `{totais, quantidades, total_itens, itens[]}` | `venda list` |
 | `{itens[], itens_totais, totais}` | `venda itens` |
 | `{itens[], total_itens}` | `orcamento list` |
+| `{itens_totais, itens[]}` | `contrato list` |
 
 `venda` sozinha traz duas dessas variações — a listagem e os itens de uma
-venda usam formatos diferentes. Os grupos ainda não verificados podem trazer
-outras: `contrato list` está documentado como `{itens_totais, items[]}`, mas
-não foi exercitado ainda.
+venda usam formatos diferentes. E `contrato list` mostra por que nem o nome
+da chave se deduz: estava documentado como `{itens_totais, items[]}` e a API
+devolve `itens`, não `items`.
 
 E o campo de contagem **pode simplesmente estar errado**: o `total_itens` de
 `orcamento list` ignora os orçamentos em `ORCAMENTO_RECUSADO` que a mesma
@@ -590,7 +591,30 @@ Consulta o status de uma escrita assíncrona. Não tem opções próprias. É co
 
 ## Contratos
 
-### `contrato list` ⚠️
+**Verificado contra produção em 2026-08-19** — os seis comandos, com dois
+contratos de teste criados, um encerrado e ambos excluídos. Os seis
+parâmetros de `contrato list` passaram na receita completa (baseline,
+`zzz_bogus=abc`, valor discriminante). Três avisos antes das tabelas:
+
+> **1. Criar um contrato cria vendas na hora.** Um contrato mensal com
+> `tipo_expiracao: NUNCA` e `data_fim` a um ano gerou **25 vendas agendadas**
+> de uma vez, com `data_ultima_emissao` em 2028 — o `NUNCA` ignora o
+> `data_fim` e agenda dois anos à frente. O mesmo contrato com
+> `tipo_expiracao: DATA` e janela de um mês gerou 2. Escolha a janela antes
+> de testar em produção.
+>
+> **2. `contrato delete` não é exclusão permanente**, ao contrário do que
+> este documento afirmava. O `GET` continua respondendo `200`, com
+> `status: DELETADO`; o que some é a listagem. As vendas associadas **são**
+> canceladas de verdade (a contagem de vendas voltou ao valor de antes).
+>
+> **3. Um uuid válido mas inexistente devolve `500`, não `404`** — em
+> `contrato get`, `contrato delete` e `contrato encerrar`. Nas duas escritas
+> o CLI classifica isso como `ambiguous` e sugere reconciliar, quando na
+> prática não havia nada para aplicar. Um id malformado, esse sim, devolve
+> `400`.
+
+### `contrato list` ✅
 
 `GET /v1/contratos`
 
@@ -599,17 +623,30 @@ Consulta o status de uma escrita assíncrona. Não tem opções próprias. É co
 | `--data-inicio` | não¹ | 1º dia do mês corrente | Início do intervalo (`YYYY-MM-DD`) |
 | `--data-fim` | não¹ | último dia do mês corrente | Fim do intervalo (`YYYY-MM-DD`) |
 | `--pagina` | não | `1` | Número da página |
-| `--tamanho-pagina` | não | `10` | Itens por página |
-| `--busca-textual` | não | — | Busca textual pelo nome do contrato |
+| `--tamanho-pagina` | não | `10` | Itens por página (aceita até `1000`) |
+| `--busca-textual` | não | — | Busca textual: casa **nome do cliente e número do contrato** |
 | `--cliente-id` | não | — | Filtra pelo ID do cliente |
 | `--campo-ordenado-ascendente` | não | — | `DATA_INICIO` ou `DATA_FIM`; se informado, ignora `--campo-ordenado-descendente` |
 | `--campo-ordenado-descendente` | não | — | `DATA_INICIO` ou `DATA_FIM` |
 
-¹ A API exige o intervalo; o CLI supre com o mês corrente e avisa em stderr.
+¹ A API exige o intervalo — **os dois lados**. Sem nenhum, responde `400`
+("Data de início da recorrência não pode ser nula"); só com um lado, cobra o
+outro. O CLI supre com o mês corrente e avisa em stderr, comportamento
+confirmado exercitando.
 
-Retorna `{itens_totais, items[]}`.
+Retorna **`{itens_totais, itens[]}`** — a chave é `itens`, não `items` como
+este documento dizia. Cada item traz `{id, cliente, status,
+proximo_vencimento, total_proximo_vencimento, data_inicio, numero,
+conta_financeira, termos, tipo_pagamento, total}`; é um recorte diferente do
+que `contrato get` devolve.
 
-### `contrato create` ⚠️
+`--busca-textual` não busca um "nome do contrato" — esse campo não existe no
+recurso. Casa o nome do cliente e o número: `busca_textual=2` devolveu só o
+contrato de número 2. Ordenação inválida devolve `400` listando
+`[DATA_INICIO, DATA_FIM]`, que é como se prova que o parâmetro é lido e não
+descartado; mandando as duas ordenações juntas, a ascendente vence.
+
+### `contrato create` ✅
 
 `POST /v1/contratos` — **escrita síncrona**, diferente das escritas financeiras: não devolve protocolo, o `id` do contrato já vem na resposta.
 
@@ -617,15 +654,81 @@ Retorna `{itens_totais, items[]}`.
 |---|---|---|
 | `--json` | **sim** | Payload JSON do contrato, repassado à API **verbatim** |
 
-O CLI não valida o conteúdo de `--json`; o schema é o da API (`id_cliente`, `termos`, `condicao_pagamento` e `itens` são obrigatórios). Retorna `{id, id_legado, id_venda}`.
+O CLI não valida o conteúdo de `--json`. A lista de obrigatórios que este
+documento trazia (`id_cliente`, `termos`, `condicao_pagamento`, `itens`) é
+verdadeira mas inútil: a API cobra **onze campos**, descobertos um `400` de
+cada vez.
 
-### `contrato proximo-numero` ⚠️
+| Campo | Onde | Formato |
+|---|---|---|
+| `id_cliente` | raiz | uuid da pessoa |
+| `tipo_frequencia` | `termos` | `MENSAL` ou `ANUAL` |
+| `tipo_expiracao` | `termos` | `DATA` ou `NUNCA` |
+| `data_inicio` | `termos` | `YYYY-MM-DD` |
+| `data_fim` | `termos` | `YYYY-MM-DD` — **exigido mesmo com `tipo_expiracao: NUNCA`** |
+| `intervalo_frequencia` | `termos` | inteiro |
+| `dia_emissao_venda` | `termos` | inteiro (dia do mês) |
+| `numero` | **`termos`** | inteiro — veja abaixo |
+| `tipo_pagamento` | `condicao_pagamento` | enum longo (`BOLETO_BANCARIO`, `PIX_PAGAMENTO_INSTANTANEO`, `DINHEIRO`, …) |
+| `dia_vencimento` | `condicao_pagamento` | inteiro |
+| `primeira_data_vencimento` | `condicao_pagamento` | `YYYY-MM-DD` |
+| `itens` | **raiz** | array de `{id, quantidade, valor}` |
+
+Dois desses lugares custam tempo se você supuser errado:
+
+- **`numero` fica dentro de `termos`.** Na raiz — e como `numero_contrato`,
+  `num_contrato`, `numero_do_contrato`, `contrato_numero` ou `number` — a API
+  repete "O número do contrato é obrigatório" sem dizer onde ela quer.
+- **`itens` fica na raiz**, não em `termos`. Dentro de `termos` a resposta é
+  "Lista de itens da recorrência não pode ser vazia".
+
+Retorna **`{id, id_legado}`** — não há `id_venda`, ao contrário do que este
+documento afirmava.
+
+**`observacoes` volta em outro lugar.** O que você manda na raiz como
+`observacoes` aparece no `GET` em `condicao_pagamento.observacoes_pagamento`;
+a `observacoes` da raiz fica sempre vazia na leitura, e uma
+`observacoes_pagamento` mandada dentro de `condicao_pagamento` é descartada.
+Mesma classe de troca de `orcamento create`.
+
+Payload mínimo que passou:
+
+```json
+{
+  "id_cliente": "a1523431-f1be-44c4-8413-fdb5e50643e3",
+  "termos": {
+    "tipo_frequencia": "MENSAL",
+    "tipo_expiracao": "DATA",
+    "data_inicio": "2026-09-01",
+    "data_fim": "2026-10-01",
+    "intervalo_frequencia": 1,
+    "dia_emissao_venda": 1,
+    "numero": 1
+  },
+  "condicao_pagamento": {
+    "tipo_pagamento": "BOLETO_BANCARIO",
+    "dia_vencimento": 10,
+    "primeira_data_vencimento": "2026-09-10"
+  },
+  "itens": [{ "id": "1a1b7957-12c7-4064-9809-5af7bbb40f57", "quantidade": 1, "valor": 10 }]
+}
+```
+
+A `descricao` de um item **propaga para as vendas geradas**, o que a torna o
+lugar prático para marcar um contrato de teste.
+
+### `contrato proximo-numero` ✅
 
 `GET /v1/contratos/proximo-numero`
 
-Sem parâmetros. Retorna o próximo número de contrato disponível como um inteiro solto (ex: `4512645`), não um objeto — diferente de todos os outros comandos de leitura.
+Sem parâmetros. Retorna o próximo número de contrato disponível como um inteiro solto, não um objeto — diferente de todos os outros comandos de leitura.
 
-### `contrato get` ⚠️
+O contador acompanha as exclusões: numa conta sem contratos devolveu `1`,
+subiu para `2` depois do contrato de número 1 e voltou a `1` quando os
+contratos de teste foram excluídos. Ao contrário de `venda`, esse número
+**não** é atribuído sozinho — é você quem manda `termos.numero` no `create`.
+
+### `contrato get` ✅
 
 `GET /v1/contratos/{id}`
 
@@ -633,17 +736,33 @@ Sem parâmetros. Retorna o próximo número de contrato disponível como um inte
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. Uuid do contrato |
 
-### `contrato delete` ⚠️
+Devolve bem mais do que a listagem: `{id, id_ultima_venda_confirmada,
+id_proxima_venda_agendada, cliente, vendedor, termos, data_proximo_vencimento,
+data_proxima_emissao, data_ultima_emissao, status, configuracao_recorrencia,
+condicao_pagamento, local_prestacao_servico, composicao_valor, observacoes}`.
 
-`DELETE /v1/contratos/{id}` — exclusão **permanente**.
+`status` é `ATIVO`, `INATIVO` (depois de `encerrar`) ou `DELETADO` (depois de
+`delete`). Uuid inexistente devolve `500`; id malformado, `400`.
+
+### `contrato delete` ✅
+
+`DELETE /v1/contratos/{id}` — exclusão **lógica**, apesar do nome.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. Uuid do contrato |
 
-Cancela todas as vendas associadas ao contrato (agendadas e efetivadas). Contratos em reajuste de valor não podem ser removidos. Resposta `204 No Content` — sem corpo.
+Resposta `204 No Content` — sem corpo, que o CLI imprime como `[]`.
 
-### `contrato encerrar` ⚠️
+O contrato sai da listagem mas continua legível por `contrato get`, com
+`status: DELETADO` e `id_proxima_venda_agendada` zerado. **As vendas
+associadas são canceladas de verdade**: um contrato que havia gerado 25
+vendas agendadas devolveu a contagem global de vendas ao valor anterior
+depois do `delete`. Funciona também em contrato já encerrado.
+
+Contratos em reajuste de valor não podem ser removidos.
+
+### `contrato encerrar` ✅
 
 `POST /v1/contratos/{id}/encerrar` — sem corpo.
 
@@ -651,7 +770,14 @@ Cancela todas as vendas associadas ao contrato (agendadas e efetivadas). Contrat
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. Uuid do contrato |
 
-Desativa o contrato: ele para de gerar novas cobranças, mas não é excluído (diferente de `contrato delete`). Contratos em reajuste de valor não podem ser encerrados. Resposta `204 No Content` — sem corpo.
+Resposta `204 No Content` — sem corpo, que o CLI imprime como `[]`.
+
+Desativa o contrato: `status` passa de `ATIVO` para `INATIVO` e
+`id_proxima_venda_agendada` é zerado, mas o contrato **permanece na
+listagem** — é o que separa `encerrar` de `delete`. A chamada é idempotente:
+repetida num contrato já `INATIVO`, responde `204` de novo.
+
+Contratos em reajuste de valor não podem ser encerrados.
 
 ---
 
@@ -1519,8 +1645,10 @@ tail -5 ~/.cache/conta-azul-cli/log.jsonl
 6. **Exclusão não quer dizer a mesma coisa em todo grupo.** `produto delete` faz o `get` passar a 404; `servico delete` é lógico e o `get` continua respondendo 200 com `status` `ATIVO`; `venda excluir-lote` também é lógico e vira `status` `CANCELADO` — mas deixa `situacao` como estava.
 7. **A resposta da escrita não fala a mesma língua que a da leitura.** `venda create` devolve `situacao.nome` em inglês (`IN_PROCESS`) para a venda que `venda get` mostra como `EM_ANDAMENTO`.
 8. **Zero pode ser lido como ausente.** `venda update` exige `versao` e recusa `0` com "campo obrigatório" — justamente o valor que uma venda recém-criada tem.
-9. **Dois campos podem estar simplesmente trocados.** O que `orcamento create` recebe em `observacoes` volta em `observacoes_pagamento` no `orcamento get`, e vice-versa. Escreva um valor distinto em cada campo suspeito e leia de volta: é a única forma de enxergar isso.
+9. **Dois campos podem estar simplesmente trocados.** O que `orcamento create` recebe em `observacoes` volta em `observacoes_pagamento` no `orcamento get`, e vice-versa; em `contrato create` a `observacoes` da raiz reaparece em `condicao_pagamento.observacoes_pagamento`. Escreva um valor distinto em cada campo suspeito e leia de volta: é a única forma de enxergar isso.
 10. **O total de uma listagem pode não bater com o que ela devolve.** `orcamento list` responde `total_itens: 157` junto de 158 itens, porque o contador ignora `ORCAMENTO_RECUSADO`.
+11. **Um id inexistente nem sempre é `404`.** Em `contrato get`, `delete` e `encerrar`, um uuid válido que não existe devolve `500` — e nas escritas o CLI traduz isso para `ambiguous`, sugerindo reconciliar algo que nunca aconteceu.
+12. **Um campo obrigatório pode estar aninhado onde você não procuraria.** O número do contrato é `termos.numero`, e a mensagem de erro ("O número do contrato é obrigatório") não diz onde. Se um nome óbvio não resolve, tente dentro de cada sub-objeto do payload antes de concluir que o nome está errado.
 
 Nunca deduza da documentação **nem o path, nem o nome de um filtro, nem o
 nome de um campo do payload, nem o tipo de um id, nem o formato da
@@ -1549,6 +1677,7 @@ qualquer filtro que recebe. Se você mexer em `$filters` num
 | `servico` | ✅ 5/5 (2026-08-19) — 1 filtro errado, 3 inexistentes |
 | `venda` | ✅ 9/9 (2026-08-19) — nenhum bug de filtro; as armadilhas estavam na escrita |
 | `orcamento` | ✅ 4/4 (2026-08-19) — nenhum bug de filtro; `total_itens` conta errado e dois campos trocam de nome entre escrita e leitura |
+| `contrato` | ✅ 6/6 (2026-08-19) — nenhum bug de filtro; payload de criação bem maior que o documentado e `delete` é lógico, não permanente |
 | resto | ⚠️ nunca exercitado — trate os filtros como suspeitos |
 
 `venda list` quebrou a sequência: era o grupo de mais filtros e todos os oito
@@ -1558,9 +1687,13 @@ verificação achou um campo obrigatório que ela não lista
 e um `id_legado` prometido em `venda vendedores` que não vem na resposta. O
 risco só mudou de lugar.
 
-`contrato list` é o último grupo grande de filtros ainda por exercitar, e
-continua sendo o de maior risco de leitura pela mesma razão que produtos e
-serviços foram.
+Os quatro grupos de mais filtros já foram exercitados, e os três últimos
+(`venda`, `orcamento`, `contrato`) não tinham um único filtro errado. O que
+sobrou de risco mudou de lugar: agora está nos **payloads de escrita** e nos
+**formatos de resposta**, onde os três grupos erraram — campo obrigatório
+não documentado, campo aninhado em lugar inesperado, chave de resposta com
+outro nome, contador que não conta, e dois pares de campos que trocam de
+lugar entre escrita e leitura.
 
 Lista autoritativa de operações: https://developers.contaazul.com/docs/financial-apis-openapi/v1 — o portal bloqueia `curl` e fetch automatizado (403), então abra no navegador. Só três specs aparecem linkadas em `/aboutapis` (financial, sales, contracts); produtos, serviços e pessoas **não têm spec pública encontrável**, e o caminho `/_bundle/open-api-docs/{slug}.json`, que já funcionou, hoje devolve 404 — na prática, esses grupos só se descobrem exercitando.
 

@@ -46,6 +46,37 @@ no [README](README.md#contrato-de-saída).
 
 ### Changed
 
+- **Grupo `contrato` verificado contra a produção (2026-08-19).** Os seis
+  comandos foram exercitados — dois contratos de teste criados, um
+  encerrado e ambos excluídos, com a listagem de volta a zero e a contagem
+  de vendas de volta a 6652 — e passaram a ✅ em `COMMANDS.md`. Os seis
+  parâmetros de `contrato list` sobreviveram à receita completa, o terceiro
+  grupo seguido **sem nenhum bug de filtro**. O que estava errado era a
+  descrição de tudo o mais: a resposta da listagem é `{itens_totais,
+  itens[]}` e não `items[]`; `contrato create` cobra **onze** campos
+  obrigatórios, não os quatro documentados, com `numero` aninhado em
+  `termos` (a mensagem de erro não diz onde) e `itens` na raiz (em `termos`
+  é recusado), e `data_fim` exigido mesmo com `tipo_expiracao: NUNCA`; a
+  resposta da criação é `{id, id_legado}`, sem o `id_venda` documentado; e
+  a `observacoes` enviada na raiz reaparece em
+  `condicao_pagamento.observacoes_pagamento`, mesma troca vista em
+  `orcamento`.
+- **`contrato delete` documentado como exclusão lógica, não permanente.**
+  Depois do `DELETE`, `contrato get` continua respondendo `200` com
+  `status: DELETADO` — só a listagem para de mostrá-lo. As vendas
+  associadas, essas, são canceladas mesmo: um contrato que gerou 25 vendas
+  agendadas devolveu a contagem global ao valor anterior.
+- **Documentado que criar um contrato cria vendas imediatamente.** Um
+  contrato mensal com `tipo_expiracao: NUNCA` gerou 25 vendas agendadas de
+  uma vez, agendando dois anos à frente e ignorando o `data_fim`; com
+  `tipo_expiracao: DATA` e janela de um mês, gerou 2. Vale saber antes de
+  exercitar o endpoint numa conta real.
+- **Documentado que `contrato get`, `delete` e `encerrar` devolvem `500`
+  para um uuid válido inexistente**, em vez de `404`. Nas duas escritas o
+  CLI classifica isso como `ambiguous` e sugere `ca financeiro alteracoes`,
+  sugerindo reconciliar uma operação que nunca existiu. A classificação não
+  foi alterada porque ela é compartilhada por todos os grupos; fica
+  registrada como comportamento conhecido.
 - **Grupo `orcamento` verificado contra a produção (2026-08-19).** Os
   quatro comandos foram exercitados — três orçamentos de teste criados,
   lidos e excluídos, com a listagem de volta aos 158 registros — e passaram

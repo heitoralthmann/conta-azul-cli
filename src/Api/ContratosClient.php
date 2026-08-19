@@ -14,7 +14,16 @@ use function array_merge;
 use function is_int;
 use function rawurlencode;
 
-/** Cliente dos endpoints de contratos da API Conta Azul. */
+/**
+ * Cliente dos endpoints de contratos da API Conta Azul.
+ *
+ * Os seis endpoints foram exercitados contra a API de produção em
+ * 2026-08-19, incluindo criação, encerramento e exclusão. Duas surpresas
+ * ficaram documentadas em `COMMANDS.md` e não são compensadas aqui:
+ * `DELETE` é lógico (o `GET` continua respondendo 200 com
+ * `status: DELETADO`), e um uuid válido mas inexistente devolve `500` em
+ * vez de `404` nos três comandos que recebem id.
+ */
 final class ContratosClient
 {
   use ApiClientOperations;
