@@ -63,9 +63,42 @@ no [README](README.md#contrato-de-saída).
   descarta parâmetros desconhecidos sem erro, o comando devolvia os 420
   produtos da conta em vez do único que casava. Agora `--codigo` é
   mapeado para `sku`, e um teste de módulo trava esse mapeamento.
+- **`nota-fiscal list` sem datas falhava sempre.** `GET /v1/notas-fiscais`
+  limita o intervalo a **15 dias** — a mesma restrição que já era conhecida em
+  `nota-fiscal-servico list` — mas o comando caía no mês corrente quando as
+  datas eram omitidas, e a API respondia `400 {"error":"O período entre
+  data_inicial e data_final não pode ser maior que 15 dias"}`. Ou seja,
+  `ca nota-fiscal list` puro **nunca funcionou**; o defeito passou despercebido
+  porque toda chamada testada até aqui informava as datas. O default agora são
+  os últimos 15 dias, como na listagem de serviço, e o aviso em stderr menciona
+  o teto. O limite foi medido contra a produção: 15 dias de diferença passam,
+  16 respondem `400`.
 
 ### Changed
 
+- **Grupo `notas fiscais` verificado contra a produção (2026-08-19).** Os
+  quatro comandos foram exercitados e passaram a ✅ em `COMMANDS.md`. As duas
+  listagens tiveram **todos os catorze filtros provados um a um** com valor
+  discriminante, depois de confirmar com `zzz_bogus=abc` que ambas descartam
+  parâmetro desconhecido em silêncio: os três de `nota-fiscal list`
+  (`documento_tomador`, `numero_nota`, `id_venda`) e os onze de
+  `nota-fiscal-servico list` estavam **todos corretos** — o primeiro grupo da
+  campanha cujo conjunto de filtros veio inteiro certo da documentação.
+  `nota-fiscal get` foi exercitado nos dois formatos que devolve: XML puro para
+  uma nota `EMITIDA` e ZIP (NF-e + carta de correção) para a única
+  `CORRIGIDA_SUCESSO` da conta. Testes de módulo passaram a inspecionar a URL
+  de saída dos catorze filtros, já que os testes de cliente não pegam nome
+  errado.
+- **`nota-fiscal vincular-mdfe` exercitado em produção, com autorização
+  explícita do titular da conta.** Era a única escrita do CLI que jamais tinha
+  retornado sucesso. O ciclo completo (`AUTORIZADO` → `ENCERRADO` →
+  `CANCELADO`) foi executado sobre notas de 2024 marcadas com `identificador`
+  `TESTE HEITOR`, confirmando o `204 No Content` que a documentação afirmava
+  sem prova. Também foram medidos o array plural, a repetição da mesma chave, a
+  reautorização depois do cancelamento e o lote misto com chave inexistente.
+  O XML das quatro notas envolvidas foi conferido por SHA-256 antes e depois:
+  **byte a byte idêntico** — a escrita cria metadado e não toca o documento
+  fiscal.
 - **Grupo `contrato` verificado contra a produção (2026-08-19).** Os seis
   comandos foram exercitados — dois contratos de teste criados, um
   encerrado e ambos excluídos, com a listagem de volta a zero e a contagem
@@ -180,6 +213,28 @@ no [README](README.md#contrato-de-saída).
   os comandos que respondem `204`.
 
 ### Documented
+
+- **O que `nota-fiscal vincular-mdfe` faz, e o que não dá para saber sobre
+  ele.** O endpoint registra na Conta Azul que um conjunto de NF-e pertence a
+  um MDF-e emitido em outro sistema; **não emite MDF-e nem transmite nada à
+  SEFAZ**. Os três campos são obrigatórios (a página anterior dizia que
+  `status` era opcional — era falso, e é o primeiro campo validado), o
+  `identificador` é texto livre, e o enum vai em caixa-alta exata. O vínculo
+  **não é legível por nenhum endpoint**: não há `GET`, a nota não muda no
+  `list`, repetir a chamada nunca acusa duplicata, e por isso não existe como
+  desfazer nem como conferir. Um lote com uma chave válida e outra inexistente
+  devolve `404` e deixa a atomicidade **indeterminada** — documentado como
+  desconhecido em vez de suposto.
+- **`nota-fiscal list` superconta pior que `orcamento list`.** O `total_itens`
+  soma notas de todos os status, mas `itens` só traz `EMITIDA` e
+  `CORRIGIDA_SUCESSO`; há janelas que devolvem `itens: []` ao lado de
+  `total_itens: 3`. Numa varredura de dois anos, 147 notas devolvidas contra
+  contadores bem maiores. Conte `len(itens)`. Sem nenhum resultado, a API ainda
+  devolve `tamanho_pagina: 9223372036854775807`.
+- **Duas armadilhas novas em "Notas para quem for estender":** um default de
+  intervalo pode ser inválido para o próprio endpoint (exercite o comando sem
+  argumento nenhum), e uma escrita pode não ter leitura correspondente — caso
+  em que só dá para provar o que **não** mudou.
 
 - **A marca `⚠️` do `COMMANDS.md` foi reescrita.** Ela dizia "path correto
   conforme a documentação, mas nunca exercitado", o que sugere que só a
