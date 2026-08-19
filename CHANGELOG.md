@@ -9,8 +9,38 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+### Removed
+
+- **`produto list --ids` e `produto list --categoria-id`.** Exercitados
+  contra a produção, nenhum dos dois filtrava: `GET /v1/produtos`
+  responde `200` e **ignora em silêncio** todo parâmetro que não
+  reconhece, então as duas opções devolviam o catálogo inteiro como se
+  tudo casasse — pior que não existir. Nenhum nome alternativo
+  (`id`, `uuid`, `uuids`, `produto_id`, `ids[]`, repetido, separado por
+  vírgula, `id_categoria`, `categoria_uuid`, …) surtiu efeito, e um
+  parâmetro propositalmente inexistente se comporta igual, o que
+  confirma o descarte silencioso. Removidas em vez de continuarem
+  anunciando um filtro que não filtra.
+
+### Fixed
+
+- **`produto list --codigo` não filtrava nada.** A opção era enviada à
+  API como `codigo`, mas o parâmetro aceito é `sku`; como a listagem
+  descarta parâmetros desconhecidos sem erro, o comando devolvia os 420
+  produtos da conta em vez do único que casava. Agora `--codigo` é
+  mapeado para `sku`, e um teste de módulo trava esse mapeamento.
+
 ### Changed
 
+- **Grupo `produto` verificado contra a produção (2026-08-19).** Dez dos
+  onze comandos foram exercitados num CRUD completo — criar, ler,
+  atualizar, excluir, mais os cinco catálogos — com o produto de teste
+  removido ao final, e passaram a ✅ em `COMMANDS.md`. O restante,
+  `produto ecommerce-categorias`, continua ⚠️: responde `400` em toda
+  tentativa, inclusive sem parâmetro nenhum. O path está confirmado
+  (caminhos vizinhos inventados caem na rota `/v1/produtos/{id}` e
+  reclamam de uuid, este cai num handler de e-commerce real), então a
+  hipótese que sobra é pré-condição de conta, não erro do CLI.
 - **Grupo `pessoa` verificado contra a produção (2026-08-19).** Os dez
   comandos (`list`, `create`, `get`, `legado`, `update`, `patch`,
   `ativar`, `inativar`, `excluir`, `conta-conectada`) foram exercitados

@@ -176,14 +176,14 @@ final class ProdutosServicosClientTest extends TestCase
     $captured = null;
     $client   = $this->productClientRecording($captured);
 
-    $client->listProdutos(2, 100, ['busca' => 'café', 'categoria_id' => 'cat-1']);
+    $client->listProdutos(2, 100, ['busca' => 'café', 'sku' => 'CAFE-01']);
 
     self::assertNotNull($captured);
     parse_str((string) parse_url($captured['url'], PHP_URL_QUERY), $query);
     self::assertSame('2', $query['pagina'] ?? null);
     self::assertSame('100', $query['tamanho_pagina'] ?? null);
     self::assertSame('café', $query['busca'] ?? null);
-    self::assertSame('cat-1', $query['categoria_id'] ?? null);
+    self::assertSame('CAFE-01', $query['sku'] ?? null);
   }
 
   public function testServiceBatchDeleteSendsJsonPayload(): void {

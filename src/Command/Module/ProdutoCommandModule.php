@@ -29,12 +29,14 @@ final class ProdutoCommandModule implements CommandModuleInterface
 
   /** @return list<Command> */
   public function commands(): array {
+    // `codigo` é o nome do filtro na CLI, mas a API o recebe como `sku`:
+    // enviar `codigo` não filtra nada. A listagem ignora em silêncio todo
+    // parâmetro desconhecido (devolve 200 com a lista inteira), então um
+    // nome errado aqui não vira erro — vira resultado errado.
     $filters = [
-      'busca'        => 'busca',
-      'categoria-id' => 'categoria_id',
-      'codigo'       => 'codigo',
-      'ids'          => 'ids',
-      'status'       => 'status',
+      'busca'  => 'busca',
+      'codigo' => 'sku',
+      'status' => 'status',
     ];
 
     return [
