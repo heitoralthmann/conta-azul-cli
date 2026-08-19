@@ -9,6 +9,61 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+### Added
+
+- **`parcela update`.** Expõe `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}`
+  pelo que ele é — atualização parcial da parcela (nota, descrição,
+  vencimento, `composicao_valor`, método de pagamento, perda, `nsu`, conta
+  financeira). Escrita síncrona; `versao` obrigatório no payload.
+
+### Changed
+
+- **`parcela baixar` agora quita de verdade, por outro endpoint.** Passou a
+  chamar `POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa`, e
+  ganhou a opção obrigatória `--conta-financeira` (a API exige a conta que
+  recebe a baixa). As opções `--poll-timeout` e `--no-wait` saíram: a escrita
+  é síncrona e nunca devolveu protocolo. **Mudança incompatível** para quem
+  usava as opções removidas.
+
+### Fixed
+
+- **Nenhuma escrita assíncrona fazia polling.** O envelope de escrita aceita
+  nomeia o campo `protocolo`; o CLI lia `protocolId`, nunca encontrava, e
+  devolvia o envelope `PENDING` cru como se fosse o resultado final. Na
+  prática `conta-a-receber create` e `conta-a-pagar create` entregavam um
+  protocolo não resolvido, e `--poll-timeout` e `--no-wait` não tinham
+  efeito observável — os dois caminhos faziam a mesma coisa. Agora a escrita
+  é acompanhada até o estado terminal e devolve `evento_financeiro_id`.
+- **Um delete bem-sucedido reportava falha.** `cobranca delete` e
+  `baixa delete` respondem `200` com corpo vazio, não `204`. Como o
+  tratamento de corpo vazio dependia do status ser `204`, o parser estourava
+  uma `JsonException` que escapava do `CommandExecutor` (que só captura
+  `CliException`): o comando imprimia a linha de uso do Symfony em stderr e
+  saía com código `1`, violando o contrato de saída, embora a exclusão
+  tivesse sido aplicada. Corpo vazio agora vira `[]` em qualquer status.
+- **`parcela baixar` respondia sucesso sem registrar pagamento.** Mandava
+  `{valor, data}` num `PATCH` da parcela; nenhum dos dois campos existe no
+  schema desse endpoint, e a API descarta campo desconhecido em silêncio
+  **também no corpo da escrita**. O `409` por falta de `versao` mascarava o
+  problema — o comando falhava antes de conseguir não fazer nada. Ver
+  *Changed*.
+- **`--json '{}'` era recusado como "JSON deve ser um objeto".**
+  `json_decode('{}', true)` devolve `[]`, que `array_is_list()` considera uma
+  lista. O objeto vazio agora chega na API, que é quem sabe dizer quais
+  campos faltam. `[]` e listas continuam recusados localmente.
+
+### Documented
+
+- **Grupo `financeiro` verificado contra a produção** (16 comandos), fechando
+  a campanha iniciada em 2026-08-15. `COMMANDS.md` ganhou o payload mínimo
+  real de `conta-a-receber create` — que a documentação oficial erra em dois
+  pontos —, o teto de **365 dias** não documentado de `financeiro
+  saldo-inicial` e `financeiro alteracoes`, os pares de campos que trocam de
+  nome entre escrita e leitura (`detalhe_valor`/`composicao_valor` →
+  `valor_composicao`), os `409` e `500` onde se esperava `400`, e o aviso de
+  que **a API não publica `DELETE` para evento financeiro nem para centro de
+  custo** — o que se cria por lá só sai pela interface web.
+
 ### Removed
 
 - **`servico list --codigo`, `--ids` e `--status`.** `GET /v1/servicos`

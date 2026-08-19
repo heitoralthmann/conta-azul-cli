@@ -26,13 +26,20 @@ Cada endpoint traz uma marca de confiança:
 > listados nas seções `⚠️` abaixo saíram da documentação, não de uma
 > chamada real.
 >
-> Sete grupos verificados depois, **todos tinham pelo menos um defeito**, mas
-> o defeito mudou de lugar: os quatro últimos (`venda`, `orcamento`,
+> Oito grupos verificados depois, **todos tinham pelo menos um defeito**, mas
+> o defeito mudou de lugar: os quatro do meio (`venda`, `orcamento`,
 > `contrato`, `notas fiscais`) não tinham filtro errado nenhum. Erraram em
 > campo obrigatório não documentado, par de campos trocado entre escrita e
 > leitura, contador que não conta, e — em `nota-fiscal list` — um **default
 > que o próprio endpoint recusa**, fazendo o comando sem argumentos falhar
 > sempre.
+>
+> E o grupo `financeiro`, verificado por último, mostrou que o risco também
+> mora no **código do CLI**, não só nos nomes que ele manda: uma chave de
+> resposta lida errado desligava o polling de toda escrita assíncrona, um
+> `200` de corpo vazio fazia um delete bem-sucedido sair com código `1`, e um
+> comando apontava para um endpoint que existe mas serve para outra coisa —
+> respondendo `200` sem fazer nada do que prometia.
 
 ---
 
@@ -46,28 +53,29 @@ Cada endpoint traz uma marca de confiança:
 | `categoria configuracao-padrao` | `GET /v1/categorias/configuracao-padrao` | ✅ |
 | `categoria dre` | `GET /v1/financeiro/categorias-dre` | ✅ |
 | `centro-de-custo list` | `GET /v1/centro-de-custo` | ✅ |
-| `centro-de-custo create` | `POST /v1/centro-de-custo` | ⚠️ |
+| `centro-de-custo create` | `POST /v1/centro-de-custo` | ✅ |
 | `conta-financeira list` | `GET /v1/conta-financeira` | ✅ |
 | `conta-financeira saldo` | `GET /v1/conta-financeira/{id}/saldo-atual` | ✅ |
 | `transferencia list` | `GET /v1/financeiro/transferencias` | ✅ |
 | `conta-a-receber list` | `GET /v1/financeiro/eventos-financeiros/contas-a-receber/buscar` | ✅ |
-| `conta-a-receber create` | `POST /v1/financeiro/eventos-financeiros/contas-a-receber` | ⚠️ |
-| `cobranca create` | `POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca` | ⚠️ |
-| `cobranca get` | `GET /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}` | ⚠️ |
-| `cobranca delete` | `DELETE /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}` | ⚠️ |
+| `conta-a-receber create` | `POST /v1/financeiro/eventos-financeiros/contas-a-receber` | ✅ |
+| `cobranca create` | `POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca` | ✅ |
+| `cobranca get` | `GET /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}` | ✅ |
+| `cobranca delete` | `DELETE /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}` | ✅ |
 | `conta-a-pagar list` | `GET /v1/financeiro/eventos-financeiros/contas-a-pagar/buscar` | ✅ |
-| `conta-a-pagar create` | `POST /v1/financeiro/eventos-financeiros/contas-a-pagar` | ⚠️ |
+| `conta-a-pagar create` | `POST /v1/financeiro/eventos-financeiros/contas-a-pagar` | ✅ |
 | `parcela get` | `GET /v1/financeiro/eventos-financeiros/parcelas/{id}` | ✅ |
-| `parcela baixar` | `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` | ⚠️ |
-| `parcela list` | `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas` | ⚠️ |
-| `baixa create` | `POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` | ⚠️ |
-| `baixa list` | `GET /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` | ⚠️ |
-| `baixa get` | `GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ⚠️ |
-| `baixa update` | `PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ⚠️ |
-| `baixa delete` | `DELETE /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ⚠️ |
+| `parcela update` | `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` | ✅ |
+| `parcela baixar` | `POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` | ✅ |
+| `parcela list` | `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas` | ✅ |
+| `baixa create` | `POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` | ✅ |
+| `baixa list` | `GET /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` | ✅ |
+| `baixa get` | `GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ✅ |
+| `baixa update` | `PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ✅ |
+| `baixa delete` | `DELETE /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ✅ |
 | `financeiro alteracoes` | `GET /v1/financeiro/eventos-financeiros/alteracoes` | ✅ |
-| `financeiro saldo-inicial` | `GET /v1/financeiro/eventos-financeiros/saldo-inicial` | ⚠️ |
-| `protocolo get` | `GET /v1/protocolo/{id}` | ⚠️ |
+| `financeiro saldo-inicial` | `GET /v1/financeiro/eventos-financeiros/saldo-inicial` | ✅ |
+| `protocolo get` | `GET /v1/protocolo/{id}` | ✅ |
 | `contrato list` | `GET /v1/contratos` | ✅ |
 | `contrato create` | `POST /v1/contratos` | ✅ |
 | `contrato proximo-numero` | `GET /v1/contratos/proximo-numero` | ✅ |
@@ -308,15 +316,21 @@ Sem parâmetros. Retorna `{itens[]}` com a estrutura hierárquica da DRE (Demons
 
 Cada item traz `id`, `codigo`, `nome`, `ativo`.
 
-### `centro-de-custo create` ⚠️
+### `centro-de-custo create` ✅
 
-`POST /v1/centro-de-custo` — **escrita síncrona**, sem protocolo.
+`POST /v1/centro-de-custo` — **escrita síncrona** (`200`), sem protocolo.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
 | `--json` | **sim** | Payload JSON do centro de custo (`nome` obrigatório; `codigo` opcional) |
 
-Retorna `{id, codigo, nome, ativo}` do centro de custo criado.
+Retorna `{id, codigo, nome, ativo}`. `codigo` omitido volta `null` — os
+registros criados pela interface trazem `""`, não `null`.
+
+> **Não existe como desfazer.** A API publica só `GET` e `POST` para este
+> recurso: `DELETE`, `PUT` e `PATCH` em `/v1/centro-de-custo/{id}` respondem
+> o `404` genérico de rota inexistente. Centro de custo criado por engano só
+> sai pela interface web.
 
 ---
 
@@ -385,7 +399,7 @@ Cada item traz `id`, `descricao`, `valor`, `data`, e os blocos `origem`/`destino
 
 Cada item traz `id`, `status` (`ACQUITTED`, `OVERDUE`, …), `status_traduzido`, `total`, `pago`, `nao_pago`, `data_vencimento`, `data_competencia`, `descricao`, `categorias[]`, `centros_de_custo[]`, `cliente`. A resposta ainda inclui um bloco `totais` com somatórios por situação.
 
-### `conta-a-receber create` ⚠️
+### `conta-a-receber create` ✅
 
 `POST /v1/financeiro/eventos-financeiros/contas-a-receber` — **escrita assíncrona**.
 
@@ -393,9 +407,54 @@ Cada item traz `id`, `status` (`ACQUITTED`, `OVERDUE`, …), `status_traduzido`,
 |---|---|---|---|
 | `--json` | **sim** | — | Payload JSON, repassado à API **verbatim** |
 | `--poll-timeout` | não | `60` | Segundos aguardando a confirmação assíncrona |
-| `--no-wait` | não | — | Retorna o `protocol_id` na hora, sem aguardar |
+| `--no-wait` | não | — | Retorna o protocolo na hora, sem aguardar |
 
-O CLI não valida o conteúdo de `--json`; o schema é o da API. A resposta é um protocolo que o CLI acompanha por polling, salvo com `--no-wait`.
+O CLI não valida o conteúdo de `--json`; o schema é o da API.
+
+**Payload mínimo aceito** — descoberto exercitando, porque a documentação
+oficial erra em dois pontos (ver adiante):
+
+```json
+{
+  "descricao": "…",
+  "data_competencia": "2026-08-19",
+  "valor": 1.00,
+  "rateio": [{"id_categoria": "<uuid>", "valor": 1.00, "rateio_centro_custo": []}],
+  "condicao_pagamento": {"parcelas": [{
+    "descricao": "…",
+    "data_vencimento": "2026-09-30",
+    "detalhe_valor": {"multa":0,"juros":0,"valor_bruto":1.00,"valor_liquido":1.00,"desconto":0,"taxa":0}
+  }]}
+}
+```
+
+Armadilhas confirmadas:
+
+- **Este endpoint acusa todos os campos faltantes de uma vez**, diferente do
+  resto da API, que revela um por `400`. O primeiro `400` já lista
+  `competenceDate`, `valor`, `condicao_pagamento` e `rateio` — em
+  *camelCase*, com o nome do campo Java, não o nome JSON (`data_competencia`).
+- **`condicao_pagamento` não é o que a leitura devolve.** Na escrita é
+  `{parcelas: [...]}`, uma lista; `parcela get` devolve
+  `{quantidade_parcelas, montante_fixo}`, um resumo. Mandar o formato de
+  leitura dá `paymentCondition.installments: deve ter no mínimo uma parcela`.
+- **A composição de valor da parcela é `detalhe_valor` na escrita** e
+  `valor_composicao` em toda leitura. `composicao_valor` — o nome que as
+  Baixas usam — **não** funciona aqui.
+- **A documentação oficial marca `observacao`, `contato` e `conta_financeira`
+  como obrigatórios; não são.** O payload acima é aceito sem os três.
+- **`contato` é obrigatório na prática se você for gerar cobrança.** Sem ele
+  `cobranca create` recusa com "Existem parcelas associadas a eventos
+  financeiros sem identificação do pagador" — e, como não há `PUT`/`PATCH`
+  de evento financeiro, não dá para adicionar o pagador depois. Decida antes
+  de criar.
+- **A resposta é `200`, não o `202` documentado**, e traz
+  `{protocolo, status, data_criacao}` com `status` `PENDING`.
+
+> **Não existe como desfazer.** A API não publica `DELETE` nem `GET` de
+> evento financeiro (`/v1/financeiro/eventos-financeiros/{id}` responde o
+> `404` genérico de rota inexistente em ambos). Conta a receber criada por
+> engano só sai pela interface web.
 
 ---
 
@@ -403,17 +462,35 @@ O CLI não valida o conteúdo de `--json`; o schema é o da API. A resposta é u
 
 Gera cobrança (boleto, PIX ou link de pagamento) para a parcela de uma conta a receber. Spec OpenAPI próprio (`charge-apis-openapi`), separado do núcleo Financeiro.
 
-### `cobranca create` ⚠️
+### `cobranca create` ✅
 
-`POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca` — **escrita síncrona**, sem protocolo.
+`POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca` — **escrita síncrona** (`200`), sem protocolo.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
 | `--json` | **sim** | Payload JSON da cobrança (`conta_bancaria`, `descricao_fatura`, `id_parcela`, `data_vencimento` e `tipo` — `LINK_PAGAMENTO`, `PIX_COBRANCA` ou `BOLETO` — obrigatórios) |
 
-O CLI não valida o conteúdo de `--json`; o schema é o da API. Retorna `{id, url, status}`.
+O CLI não valida o conteúdo de `--json`; o schema é o da API. Os cinco campos
+documentados conferem. Retorna `{id, url, status}`, mas:
 
-### `cobranca get` ⚠️
+- **`url` vem `null` na criação**, com `status` `AGUARDANDO_CONFIRMACAO`. O
+  link só existe depois que o provedor confirma — use `cobranca get` para
+  buscá-lo, não a resposta da criação.
+- **`conta_bancaria` precisa ser conta de banco.** Apontar para uma
+  `CAIXINHA` devolve `400` "O tipo de conta selecionado não é válido para a
+  criação de cobrança".
+- **A parcela precisa ter pagador.** Evento financeiro criado sem `contato`
+  recusa com "Existem parcelas associadas a eventos financeiros sem
+  identificação do pagador", e não há como acrescentá-lo depois.
+- **Payload incompleto responde `500`, não `400`** — e o CLI traduz `500` em
+  escrita para `ambiguous`, mandando reconciliar. Na verificação de
+  2026-08-19 nada tinha sido criado: `parcela get` devolveu
+  `solicitacoes_cobrancas: []`. É o mesmo problema de classificação de
+  `contrato get`/`delete`/`encerrar`.
+- Cliente sem CPF/e-mail leva a cobrança a `INVALIDO` alguns segundos depois
+  de criada. O endpoint funcionou; quem recusou foi o provedor.
+
+### `cobranca get` ✅
 
 `GET /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}`
 
@@ -421,7 +498,14 @@ O CLI não valida o conteúdo de `--json`; o schema é o da API. Retorna `{id, u
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. Uuid da cobrança |
 
-### `cobranca delete` ⚠️
+Retorna `{id, url, status}`. Id inexistente responde `404` **com corpo
+vazio** — a mensagem do envelope de erro fica em branco.
+
+As cobranças de uma parcela também aparecem em
+`parcela get` → `solicitacoes_cobrancas[]`, com mais campos
+(`status_solicitacao_cobranca`, `tipo_solicitacao_cobranca`, `valor_composicao`).
+
+### `cobranca delete` ✅
 
 `DELETE /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}` — recomendado só para cobrança gerada incorretamente ou a invalidar antes do pagamento.
 
@@ -429,7 +513,17 @@ O CLI não valida o conteúdo de `--json`; o schema é o da API. Retorna `{id, u
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. Uuid da cobrança |
 
-A documentação da API lista resposta `200 OK` sem schema de corpo para este endpoint — diferente da convenção `204 No Content` do resto do CLI. Comportamento real ainda não verificado contra a API.
+Responde **`200` com corpo vazio** (renderizado como `[]`), não `204` — a
+documentação acertou. Até 2026-08-19 isso **quebrava o CLI**: o caso de corpo
+vazio dependia do status ser `204`, então `toArray()` estourava numa exceção
+que escapava do tratamento de erro, e um delete bem-sucedido imprimia a linha
+de uso do Symfony e saía com código `1`. Corrigido.
+
+**A exclusão é lógica e assíncrona.** A cobrança passa a
+`EM_CANCELAMENTO` e assenta em `CANCELADO`; `cobranca get` continua
+respondendo `200`. Logo depois do `DELETE` há uma janela em que o `get`
+devolve `404` — é transitório, não indica exclusão permanente. Como em
+`servico delete`, o teste confiável é o **status**, não o `404`.
 
 ---
 
@@ -452,7 +546,7 @@ A documentação da API lista resposta `200 OK` sem schema de corpo para este en
 
 Formato de resposta igual ao de contas a receber, trocando `cliente` por fornecedor.
 
-### `conta-a-pagar create` ⚠️
+### `conta-a-pagar create` ✅
 
 `POST /v1/financeiro/eventos-financeiros/contas-a-pagar` — **escrita assíncrona**.
 
@@ -460,7 +554,13 @@ Formato de resposta igual ao de contas a receber, trocando `cliente` por fornece
 |---|---|---|---|
 | `--json` | **sim** | — | Payload JSON, repassado à API **verbatim** |
 | `--poll-timeout` | não | `60` | Segundos aguardando a confirmação assíncrona |
-| `--no-wait` | não | — | Retorna o `protocol_id` na hora, sem aguardar |
+| `--no-wait` | não | — | Retorna o protocolo na hora, sem aguardar |
+
+Mesmo payload de `conta-a-receber create` (inclusive `detalhe_valor` e o
+`condicao_pagamento.parcelas`), trocando a categoria do rateio por uma de
+`tipo` `DESPESA`. Vale a mesma advertência: **a API não publica `DELETE` de
+evento financeiro**, então conta a pagar criada por engano só sai pela
+interface web.
 
 ---
 
@@ -476,21 +576,48 @@ Formato de resposta igual ao de contas a receber, trocando `cliente` por fornece
 
 Retorna a parcela com o evento financeiro aninhado em `evento`, incluindo `evento.id`, `condicao_pagamento` e `rateio[]`.
 
-### `parcela baixar` ⚠️
+### `parcela update` ✅
 
-`PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` — **escrita assíncrona**.
+`PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` — **escrita síncrona** (`200`).
 
-| Parâmetro | Obrig. | Padrão | Descrição |
-|---|---|---|---|
-| `<id>` | **sim** | — | Argumento posicional. ID da parcela |
-| `--valor` | **sim** | — | Valor da baixa (ex: `100.50`) |
-| `--data` | **sim** | — | Data da baixa (`YYYY-MM-DD`) |
-| `--poll-timeout` | não | `60` | Segundos aguardando confirmação |
-| `--no-wait` | não | — | Retorna o `protocol_id` na hora |
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid da parcela |
+| `--json` | **sim** | Payload JSON da parcela; `versao` (a versão atual) é obrigatório |
 
-> Não existe subrecurso `/baixar` na API. A baixa é um `PATCH` na própria parcela.
+Atualiza `nota`, `descricao`, `vencimento`, `composicao_valor`,
+`data_pagamento_esperado`, `metodo_pagamento`, `perda`, `nsu`,
+`pagamento_agendado` e `id_conta_financeira`. Devolve a parcela atualizada,
+já com a `versao` nova.
 
-### `parcela list` ⚠️
+**Controle de concorrência otimista:** sem `versao` a resposta é **`409`**,
+não `400` — mesma regra de `baixa update`.
+
+> **Este endpoint não dá baixa.** Ele atualiza a parcela. Até 2026-08-19 o
+> CLI o chamava como se quitasse (`parcela baixar`, mandando `{valor, data}`)
+> e, exercitado, ele respondeu `200` sem registrar pagamento nenhum: nenhum
+> dos dois campos existe no schema, e a API descarta campo desconhecido em
+> silêncio também **no corpo da escrita**, não só na query. O `409` por falta
+> de `versao` escondia isso — o comando nunca chegava a "funcionar" errado.
+
+### `parcela baixar` ✅
+
+`POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` — **escrita
+síncrona** (`200`). Atalho para `baixa create`, montando o payload mínimo a
+partir de três opções.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid da parcela |
+| `--valor` | **sim** | Valor da baixa (ex: `100.50`) |
+| `--data` | **sim** | Data da baixa (`YYYY-MM-DD`) |
+| `--conta-financeira` | **sim** | Uuid da conta financeira que recebe a baixa |
+
+> O subrecurso `/baixa` **existe** — a nota anterior, de que a baixa seria um
+> `PATCH` na parcela, estava errada. `--poll-timeout` e `--no-wait` saíram:
+> a escrita é síncrona e nunca devolveu protocolo.
+
+### `parcela list` ✅
 
 `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas`
 
@@ -498,7 +625,11 @@ Retorna a parcela com o evento financeiro aninhado em `evento`, incluindo `event
 |---|---|---|
 | `<id-evento>` | **sim** | Argumento posicional. ID do evento financeiro (`evento.id` aninhado na resposta de `parcela get`) |
 
-Sem paginação: a API devolve o array completo de parcelas do evento. Cada item tem o mesmo formato de `parcela get`.
+Sem paginação: a API devolve **um array puro**, não um envelope — não há
+`itens` nem contador. Cada item tem o mesmo formato de `parcela get`.
+
+> O `id` do evento sai de `parcela get` → `evento.id`, ou do
+> `evento_financeiro_id` que `protocolo get` devolve depois de uma criação.
 
 ---
 
@@ -506,18 +637,36 @@ Sem paginação: a API devolve o array completo de parcelas do evento. Cada item
 
 Recurso dedicado de baixa (quitação) de uma parcela — mais rico que o `PATCH` direto de `parcela baixar`: registra data, valor, juros, multa, desconto e método de pagamento. Uma parcela pode ter mais de uma baixa (pagamento parcial). Spec OpenAPI próprio (`acquittance-apis-openapi`), separado do núcleo Financeiro.
 
-### `baixa create` ⚠️
+### `baixa create` ✅
 
-`POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` — **escrita síncrona**, sem protocolo.
+`POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` — **escrita síncrona** (`200`), sem protocolo.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. Uuid da parcela |
 | `--json` | **sim** | Payload JSON da baixa (`data_pagamento`, `conta_financeira` e `composicao_valor` — objeto com `valor_bruto` obrigatório e `multa`/`juros`/`desconto`/`taxa` opcionais — obrigatórios) |
 
-O CLI não valida o conteúdo de `--json`; o schema é o da API.
+O CLI não valida o conteúdo de `--json`; o schema é o da API. Os três campos
+documentados conferem — este spec acertou.
 
-### `baixa list` ⚠️
+```json
+{"data_pagamento":"2026-08-19","conta_financeira":"<uuid>","composicao_valor":{"valor_bruto":0.50}}
+```
+
+- **`composicao_valor` aqui, `detalhe_valor` em `conta-a-receber create`.**
+  Os dois specs nomeiam o mesmo objeto de formas diferentes na escrita, e
+  ambos voltam como `valor_composicao` na leitura.
+- **`conta_financeira` é um uuid na escrita e um objeto completo na
+  leitura** (`baixa get`, `baixa list`, `parcela get`).
+- **Pagamento parcial funciona:** duas baixas de `0,50` numa parcela de
+  `1,00` levam a parcela de `PENDENTE` a `RECEBIDO_PARCIAL` e depois a
+  `QUITADO`. Cada baixa incrementa a `versao` da parcela.
+- **Faltando campo obrigatório, a resposta é um `400` que embrulha uma
+  página HTML** ("Unexpected character ('<'…) … Internal Server Error"), não
+  uma mensagem de validação. Leia como "falta alguma coisa", sem pista de o
+  quê.
+
+### `baixa list` ✅
 
 `GET /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa`
 
@@ -525,9 +674,10 @@ O CLI não valida o conteúdo de `--json`; o schema é o da API.
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. Uuid da parcela |
 
-Sem paginação: a API devolve o array completo de baixas da parcela.
+Sem paginação: **array puro**, sem envelope nem contador. As mesmas baixas
+também vêm aninhadas em `parcela get` → `baixas[]`.
 
-### `baixa get` ⚠️
+### `baixa get` ✅
 
 `GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}`
 
@@ -535,7 +685,10 @@ Sem paginação: a API devolve o array completo de baixas da parcela.
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. Uuid da baixa |
 
-### `baixa update` ⚠️
+Traz `valor_composicao` (não `composicao_valor`) e `conta_financeira` como
+objeto. Baixa excluída responde `404` **com corpo vazio**.
+
+### `baixa update` ✅
 
 `PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}`
 
@@ -546,7 +699,12 @@ Sem paginação: a API devolve o array completo de baixas da parcela.
 
 **Controle de concorrência otimista:** a API exige a `versao` atual no payload e a incrementa após o sucesso, para evitar que duas atualizações concorrentes se sobrescrevam silenciosamente.
 
-### `baixa delete` ⚠️
+> Sem `versao`, a resposta é **`409 Conflict`**, não `400` — "Versão
+> informada para o recurso é inválida". A resposta de sucesso usa os nomes
+> de **escrita** (`composicao_valor`, `conta_financeira` como uuid), não os
+> de leitura.
+
+### `baixa delete` ✅
 
 `DELETE /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` — use com cautela: impacta o saldo e o histórico financeiro da parcela associada.
 
@@ -554,7 +712,16 @@ Sem paginação: a API devolve o array completo de baixas da parcela.
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. Uuid da baixa |
 
-A documentação da API lista resposta `200 OK` sem schema de corpo para este endpoint — diferente da convenção `204 No Content` do resto do CLI (mesma observação de `cobranca delete`). Comportamento real ainda não verificado contra a API.
+Responde **`200` com corpo vazio** (renderizado como `[]`), não `204` — a
+documentação acertou, e o mesmo bug de corpo vazio descrito em
+`cobranca delete` também atingia este comando. Corrigido em 2026-08-19.
+
+**A exclusão é permanente e desfaz a quitação.** `baixa get` passa a `404`, e
+a parcela volta ao estado anterior: `QUITADO` → `RECEBIDO_PARCIAL` →
+`PENDENTE` conforme as baixas somem, com `valor_pago` voltando a `0`. O saldo
+da conta financeira volta junto — na verificação, a conta saiu de `35004,34`
+e voltou a `35003,34` ao excluir a baixa de `1,00`. **É assim que se desfaz
+uma baixa: não existe "estornar".**
 
 ---
 
@@ -575,7 +742,7 @@ Feed de alterações no período — o caminho para reconciliar escritas que ter
 
 Retorna `{itens_totais, itens[]}`, onde cada item traz apenas o `id` do evento alterado. Use `parcela get` para hidratar.
 
-### `financeiro saldo-inicial` ⚠️
+### `financeiro saldo-inicial` ✅
 
 `GET /v1/financeiro/eventos-financeiros/saldo-inicial`
 
@@ -590,21 +757,52 @@ Saldos iniciais das contas financeiras no período.
 
 ¹ A API exige o intervalo; o CLI supre com o mês corrente e avisa em stderr.
 
-Retorna `{itens_totais, itens[]}`.
+Retorna `{itens_totais, itens[]}`, com `{tipo, id_conta_financeira, data_competencia, saldo_inicial}` em cada item.
+
+- **O intervalo é limitado a 365 dias.** Acima disso a resposta é `400` ("O
+  intervalo entre as datas excede o limite máximo permitido de 365 dias").
+  Exatos 365 passam. **`financeiro alteracoes` tem o mesmo teto**, e nenhum
+  dos dois documentava isso. O default do CLI (mês corrente) fica bem
+  abaixo, então o comando sem argumentos funciona.
+- **A janela não filtra por `data_competencia`.** A consulta de 2020 devolve
+  um item com `data_competencia` de 2024; janelas diferentes devolvem
+  conjuntos distintos, então o filtro existe — só não é sobre o campo que a
+  resposta mostra.
+- Descarta em silêncio parâmetro desconhecido, como as outras listagens
+  (comprovado com `zzz_bogus=abc`: o total não muda). Paginação funciona e
+  aceita `tamanho_pagina` até `1000`.
 
 ---
 
 ## Protocolos
 
-### `protocolo get` ⚠️
+### `protocolo get` ✅
 
 `GET /v1/protocolo/{id}`
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
-| `<id>` | **sim** | Argumento posicional. `protocol_id` devolvido por uma escrita |
+| `<id>` | **sim** | Argumento posicional. O `protocolo` devolvido por uma escrita |
 
 Consulta o status de uma escrita assíncrona. Não tem opções próprias. É como se retoma uma escrita disparada com no-wait, ou uma que terminou em `poll_timeout_known_id` ou `poll_drop_known_id`.
+
+Retorna `{id, resposta, status, evento_financeiro_id}`:
+
+```json
+{"id":"60a7011c-…","resposta":"O evento financeiro foi criado no contas a receber da Conta Azul.",
+ "status":"SUCCESS","evento_financeiro_id":"eef5550b-…"}
+```
+
+> **O id do protocolo vem em `id`, e o da entidade criada em
+> `evento_financeiro_id`** — não há um `data` embrulhando o objeto criado.
+> Para chegar na parcela criada: `protocolo get` → `evento_financeiro_id` →
+> `parcela list <evento>`.
+>
+> **A escrita que gera o protocolo devolve a chave `protocolo`**, não
+> `protocol_id` nem `protocolId`. Até 2026-08-19 o CLI procurava
+> `protocolId`, não achava, e por isso **nunca fazia polling**: toda escrita
+> assíncrona devolvia o envelope `PENDING` cru, e `--no-wait` e
+> `--poll-timeout` não tinham efeito observável. Corrigido.
 
 ---
 
@@ -1821,6 +2019,12 @@ tail -5 ~/.cache/conta-azul-cli/log.jsonl
 12. **O default de um intervalo de datas pode ser inválido para o próprio endpoint.** `nota-fiscal list` limita a janela a 15 dias, mas o CLI mandava o mês corrente — então o comando sem argumentos falhava com `400` em 100% das vezes, e ninguém notou porque quem chamava sempre passava datas. Ao adicionar um default, exercite-o **sem argumento nenhum**.
 13. **Uma escrita pode não ter leitura correspondente.** `nota-fiscal vincular-mdfe` grava um vínculo que nenhum `GET` devolve, que não altera a nota e que repetir nunca acusa duplicata. Sem `GET`, sem efeito colateral observável e sem erro de duplicata, não há como provar a limpeza — só dá para provar o que **não** mudou (o SHA-256 do XML da nota, idêntico antes e depois). Quando um grupo tiver escrita sem leitura, decida antes até onde vale exercitar.
 12. **Um campo obrigatório pode estar aninhado onde você não procuraria.** O número do contrato é `termos.numero`, e a mensagem de erro ("O número do contrato é obrigatório") não diz onde. Se um nome óbvio não resolve, tente dentro de cada sub-objeto do payload antes de concluir que o nome está errado.
+14. **O descarte silencioso não é só da query: vale para o corpo da escrita.** `parcela baixar` mandava `{valor, data}` num `PATCH` que não tem nenhum dos dois campos. Resposta: `200`, `versao` incrementada e **nenhum pagamento registrado**. O mesmo vale para `centro-de-custo create`, onde um `zzz_bogus` no payload produz exatamente o mesmo erro que um campo real ausente — ou seja, **não dá para provar que um campo opcional existe mandando ele junto de um payload inválido**. Só a escrita bem-sucedida seguida de leitura prova.
+15. **Um comando pode apontar para o endpoint errado e nunca dar sinal disso.** `parcela baixar` era um `PATCH` na parcela porque alguém concluiu que "não existe subrecurso /baixar". Existe: `POST /parcelas/{id}/baixa`. O endpoint que ele chamava é real, responde `200` e serve para outra coisa — atualizar a parcela. Confira o *propósito* do endpoint na documentação, não só se ele responde.
+16. **`200` com corpo vazio não é a mesma coisa que `204`.** `cobranca delete` e `baixa delete` respondem `200` sem corpo. Enquanto o CLI tratava o caso vazio só para `204`, o parser estourava, a exceção escapava do `CommandExecutor` (que só pega `CliException`) e **um delete bem-sucedido imprimia a linha de uso do Symfony e saía com código `1`**. Ao integrar um delete, confirme o status *e* o corpo.
+17. **Nem todo campo obrigatório vira `400`.** Falta de `versao` responde **`409`** em `baixa update` e `parcela update`. E em `cobranca create` um payload incompleto responde **`500`**, que o CLI classifica como `ambiguous` e manda reconciliar — reconcilie mesmo: na verificação, nada tinha sido criado.
+18. **Um endpoint pode ter data de corte que a documentação não menciona.** `financeiro saldo-inicial` e `financeiro alteracoes` recusam intervalo maior que **365 dias**. Como o default do CLI é o mês corrente, nenhum teste que passa datas explícitas curtas encontra isso.
+19. **Escrever é fácil; desfazer é que pode não existir.** A API não publica `DELETE` para evento financeiro (contas a receber/pagar) nem para centro de custo — `DELETE`, `PUT` e `PATCH` nesses paths devolvem o `404` genérico de rota inexistente. Antes de criar registro de teste num grupo, **verifique se existe caminho de volta**. Para distinguir "rota não existe" de "id não existe", compare a mensagem: rota inexistente devolve `"message":"Not Found"`; rota real com id desconhecido devolve `"message":"O recurso solicitado não foi encontrado"`.
 
 Nunca deduza da documentação **nem o path, nem o nome de um filtro, nem o
 nome de um campo do payload, nem o tipo de um id, nem o formato da
@@ -1850,7 +2054,9 @@ qualquer filtro que recebe. Se você mexer em `$filters` num
 | `venda` | ✅ 9/9 (2026-08-19) — nenhum bug de filtro; as armadilhas estavam na escrita |
 | `orcamento` | ✅ 4/4 (2026-08-19) — nenhum bug de filtro; `total_itens` conta errado e dois campos trocam de nome entre escrita e leitura |
 | `contrato` | ✅ 6/6 (2026-08-19) — nenhum bug de filtro; payload de criação bem maior que o documentado e `delete` é lógico, não permanente |
-| resto | ⚠️ nunca exercitado — trate os filtros como suspeitos |
+| `notas fiscais` | ✅ 4/4 (2026-08-19) — default de data que o próprio endpoint recusava |
+| `financeiro` | ✅ 16/16 (2026-08-19) — o grupo com mais defeitos de código da campanha: polling que nunca acontecia, delete que reportava falha ao dar certo, e um comando apontando para o endpoint errado |
+| `captura` | ⚠️ nunca exercitado — trate os filtros como suspeitos |
 
 `venda list` quebrou a sequência: era o grupo de mais filtros e todos os oito
 existiam. Não conclua daí que dá para confiar na documentação — a mesma

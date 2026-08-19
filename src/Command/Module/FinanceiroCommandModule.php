@@ -94,6 +94,15 @@ final class FinanceiroCommandModule implements CommandModuleInterface
       ),
       new ContaAPagarCreateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new ParcelaGetCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new ResourceIdJsonCommand(
+          'parcela update',
+          'Atualiza parcialmente uma parcela (não dá baixa; para quitar use "parcela baixar")',
+          $this->client->updateParcela(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Uuid da parcela',
+          'Payload JSON da parcela (campo "versao" com a versão atual é obrigatório)',
+      ),
       new BaixarCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new ParcelaListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new ResourceIdJsonCommand(

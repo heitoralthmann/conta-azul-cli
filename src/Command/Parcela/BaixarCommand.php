@@ -15,7 +15,18 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
 
-/** Registers payment for one financial installment. */
+/**
+ * Registers payment for one financial installment.
+ *
+ * Atalho para `baixa create`: monta o payload mínimo de uma baixa a partir de
+ * três opções, em vez de exigir o JSON inteiro.
+ *
+ * Até 2026-08-19 este comando mandava `{valor, data}` num `PATCH` da própria
+ * parcela, na crença de que "não existe subrecurso /baixar". Existe: quem
+ * quita é `POST /parcelas/{id}/baixa`. O `PATCH` só atualiza a parcela, e
+ * respondia `200` sem registrar pagamento nenhum — os dois campos não estão
+ * no schema dele e a API descarta campo desconhecido em silêncio.
+ */
 #[AsCommand(name: 'parcela baixar', description: 'Registra a baixa (pagamento) de uma parcela')]
 final class BaixarCommand extends Command
 {
@@ -41,36 +52,34 @@ final class BaixarCommand extends Command
       string|null $valor = null,
       #[Option(description: 'Data da baixa no formato YYYY-MM-DD')]
       string|null $data = null,
-      #[Option(name: 'poll-timeout', description: 'Timeout de polling em segundos')]
-      int $pollTimeout = 60,
-      #[Option(name: 'no-wait', description: 'Retorna imediatamente sem aguardar confirmação assíncrona')]
-      bool $noWait = false,
+      #[Option(name: 'conta-financeira', description: 'Uuid da conta financeira que recebe a baixa')]
+      string|null $contaFinanceira = null,
   ): int {
     return $this->commandExecutor->execute(
-        function () use ($id, $valor, $data, $pollTimeout, $noWait): void {
-          if ($valor === null || $valor === '') {
-              throw new CliException(
-                  ErrorKind::ClientError,
-                  false,
-                  'A opção --valor é obrigatória.',
-              );
-          }
-
-          if ($data === null || $data === '') {
-              throw new CliException(
-                  ErrorKind::ClientError,
-                  false,
-                  'A opção --data é obrigatória.',
-              );
-          }
+        function () use ($id, $valor, $data, $contaFinanceira): void {
+          $this->requireOption($valor, '--valor');
+          $this->requireOption($data, '--data');
+          $this->requireOption($contaFinanceira, '--conta-financeira');
 
           $payload = [
-            'valor' => (float) $valor,
-            'data'  => $data,
+            // A escrita chama isto de `composicao_valor`; toda leitura
+            // devolve o mesmo objeto como `valor_composicao`.
+            'composicao_valor' => ['valor_bruto' => (float) $valor],
+            'conta_financeira' => $contaFinanceira,
+            'data_pagamento'   => $data,
           ];
 
-          $this->jsonRenderer->render($this->client->baixarParcela($id, $payload, $pollTimeout, $noWait));
+          $this->jsonRenderer->render($this->client->createBaixa($id, $payload));
         },
     );
+  }
+
+  /** Rejects a missing or blank required option with a client error. */
+  private function requireOption(string|null $value, string $option): void {
+    if ($value !== null && $value !== '') {
+      return;
+    }
+
+    throw new CliException(ErrorKind::ClientError, false, 'A opção ' . $option . ' é obrigatória.');
   }
 }

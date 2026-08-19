@@ -110,7 +110,12 @@ final class ApiClientSupport
    * @return array<mixed>
    */
   public function handleAsyncResponse(array $response, int $pollTimeout = 60, bool $noWait = false): array {
-    $rawProtocolId = $response['protocolId'] ?? '';
+    // The accepted-write envelope names the field `protocolo`, not
+    // `protocolId`: `{protocolo, status, data_criacao}`, verified against
+    // production on 2026-08-19. Reading the wrong key made every
+    // asynchronous write skip polling and hand back the raw PENDING
+    // envelope, which also made `--no-wait` and `--poll-timeout` inert.
+    $rawProtocolId = $response['protocolo'] ?? '';
     $protocolId    = is_string($rawProtocolId) ? $rawProtocolId : '';
 
     if ($protocolId === '' || $noWait) {

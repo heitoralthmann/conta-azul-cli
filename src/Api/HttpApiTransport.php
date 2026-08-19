@@ -57,7 +57,7 @@ final class HttpApiTransport implements ApiTransportInterface
   public function request(string $method, string $path, array $options = []): array {
     $response = $this->sendWithRetry($method, $path, $options);
 
-    return $response->getStatusCode() === 204 ? [] : $this->decodeArray($response);
+    return $this->decodeArray($response);
   }
 
   /**
@@ -66,7 +66,7 @@ final class HttpApiTransport implements ApiTransportInterface
   public function requestScalar(string $method, string $path, array $options = []): mixed {
     $response = $this->sendWithRetry($method, $path, $options);
 
-    return $response->getStatusCode() === 204 ? null : $this->decodeScalar($response);
+    return $this->decodeScalar($response);
   }
 
   /**
@@ -187,17 +187,30 @@ final class HttpApiTransport implements ApiTransportInterface
     );
   }
 
-  /** @return array<mixed> */
+  /**
+   * Decodes a JSON body, treating an empty one as an empty array.
+   *
+   * A body-less success is not only `204`: `cobranca delete` and
+   * `baixa delete` answer `200` with nothing at all. Keying the empty case
+   * off the status code let `toArray()` throw a `JsonException` there, which
+   * escapes `CommandExecutor` (it only catches `CliException`) — so a
+   * successful delete printed Symfony's usage line and exited `1`.
+   *
+   * @return array<mixed>
+   */
   private function decodeArray(ResponseInterface $response): array {
-    return $response->toArray();
+    return $response->getContent() === '' ? [] : $response->toArray();
   }
 
   /**
    * Decodes a response body of any JSON shape, for endpoints whose payload
-   * is a bare scalar or null rather than an object or array.
+   * is a bare scalar or null rather than an object or array. An empty body
+   * is `null`, for the same reason `decodeArray()` maps it to `[]`.
    */
   private function decodeScalar(ResponseInterface $response): mixed {
-    return json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+    $content = $response->getContent();
+
+    return $content === '' ? null : json_decode($content, true, 512, JSON_THROW_ON_ERROR);
   }
 
   /**

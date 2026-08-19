@@ -89,6 +89,35 @@ trait ApiClientFactory
     return new CapturaClient(...$this->apiClientDependencies($responses, $accessToken));
   }
 
+  /**
+   * A FinanceiroClient that records the outgoing request instead of matching
+   * a queued response.
+   *
+   * Client tests cannot catch a wrong payload field name — the client
+   * forwards whatever it is handed. Inspecting the request body is the only
+   * way to pin the write-side names down, the same way the module tests pin
+   * down query parameters.
+   *
+   * @param array{method: string, url: string, body: string|null}|null $captured
+   */
+  protected function financeiroClientRecording(array|null &$captured): FinanceiroClient {
+    $http = new MockHttpClient(
+        static function (string $method, string $url, array $options) use (&$captured): MockResponse {
+          $captured = ['method' => $method, 'url' => $url, 'body' => $options['body'] ?? null];
+
+          return new MockResponse('{}', ['http_code' => 200]);
+        },
+    );
+
+    return new FinanceiroClient(
+        $this->testConfiguration(),
+        $this->testAuthManager('test-access-token'),
+        new Logger(new Redactor()),
+        new Redactor(),
+        $http,
+    );
+  }
+
   /** A 200 response with a JSON-encoded body. */
   protected function jsonResponse(mixed $data, int $status = 200): MockResponse {
     return new MockResponse(

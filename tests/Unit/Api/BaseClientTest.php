@@ -153,6 +153,18 @@ final class BaseClientTest extends TestCase
     self::assertSame([], $client->request('DELETE', '/v1/financeiro/contas-a-receber/abc'));
   }
 
+  /**
+   * `cobranca delete` e `baixa delete` respondem `200` com corpo vazio, não
+   * `204`. Enquanto o caso vazio dependia do status, `toArray()` estourava
+   * uma `JsonException` que escapava do `CommandExecutor` — e um delete bem
+   * sucedido imprimia a linha de uso do Symfony e saía com código 1.
+   */
+  public function testEmptyBodyOnA200ReturnsEmptyArrayInsteadOfThrowing(): void {
+    $client = $this->client([new MockResponse('', ['http_code' => 200])]);
+
+    self::assertSame([], $client->request('DELETE', '/v1/financeiro/contas-a-receber/cobranca/abc'));
+  }
+
   // --- Retry policy -----------------------------------------------------
 
   // phpcs:ignore Squiz.Commenting.FunctionComment.WrongStyle -- divider comment above, not a docblock.
@@ -335,7 +347,11 @@ final class BaseClientTest extends TestCase
 
     $result = $client->pollProtocol('proto-xyz-123', 60);
 
-    self::assertSame('new-event-456', $result['id']);
+    // O protocolo resolvido não embrulha a entidade criada: ele devolve
+    // `{id, resposta, status, evento_financeiro_id}`, e o id do que foi
+    // criado vem em `evento_financeiro_id`.
+    self::assertSame('proto-xyz-123', $result['id']);
+    self::assertSame('new-event-456', $result['evento_financeiro_id']);
     self::assertSame([1.0], $client->sleeps, 'First poll waits the initial backoff.');
   }
 
@@ -419,10 +435,24 @@ final class BaseClientTest extends TestCase
   public function testNoWaitReturnsTheRawAcceptedResponse(): void {
     $client = $this->client([]);
 
-    $result = $client->handleAsyncResponse(['protocolId' => 'p-1'], 60, true);
+    $result = $client->handleAsyncResponse(['protocolo' => 'p-1'], 60, true);
 
-    self::assertSame(['protocolId' => 'p-1'], $result);
+    self::assertSame(['protocolo' => 'p-1'], $result);
     self::assertSame([], $client->sleeps, 'No polling should happen under --no-wait.');
+  }
+
+  /**
+   * O envelope de escrita aceita chama o campo de `protocolo`. Ler
+   * `protocolId` fazia toda escrita assíncrona devolver o envelope
+   * `PENDING` cru sem nunca consultar o protocolo, o que também deixava
+   * `--no-wait` e `--poll-timeout` sem efeito observável.
+   */
+  public function testAcceptedWriteIsPolledByTheProtocoloKey(): void {
+    $client = $this->client([new MockResponse(self::fixture('protocolo_success.json'))]);
+
+    $result = $client->handleAsyncResponse(['protocolo' => 'p-1'], 60, false);
+
+    self::assertSame('new-event-456', $result['evento_financeiro_id']);
   }
 
   public function testSynchronousResponseWithoutProtocolIdIsPassedThrough(): void {

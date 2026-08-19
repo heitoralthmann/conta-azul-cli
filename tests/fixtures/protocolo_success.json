@@ -1,1 +1,1 @@
-{"protocolId":"proto-xyz-123","status":"SUCCESS","data":{"id":"new-event-456","descricao":"Conta a receber criada","valor":500.00}}
+{"id":"proto-xyz-123","resposta":"O evento financeiro foi criado no contas a receber da Conta Azul.","status":"SUCCESS","evento_financeiro_id":"new-event-456"}

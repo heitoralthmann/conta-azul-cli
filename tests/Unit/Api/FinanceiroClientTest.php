@@ -163,17 +163,37 @@ final class FinanceiroClientTest extends TestCase
     self::assertSame($expectedUrl, strtok($captured['url'], '?'));
   }
 
-  /** A baixa é um PATCH na parcela; o subrecurso /baixar nunca existiu. */
-  public function testBaixaIsAPatchOnTheInstallmentItself(): void {
+  /**
+   * O PATCH da parcela **não** quita: ele atualiza. Exercitado em produção
+   * em 2026-08-19, respondeu 200 sem registrar pagamento, porque `valor` e
+   * `data` não existem no schema e a API descarta campo desconhecido em
+   * silêncio. Quem quita é `createBaixa()`, num subrecurso que existe.
+   */
+  public function testUpdatingAnInstallmentIsAPatchOnTheInstallmentItself(): void {
     $captured = null;
     $client   = $this->clientRecording($captured);
 
-    $client->baixarParcela('p9', ['valor' => 10.0], noWait: true);
+    $client->updateParcela('p9', ['versao' => 3, 'nota' => 'x']);
 
     self::assertNotNull($captured);
     self::assertSame('PATCH', $captured['method']);
     self::assertSame(
         'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/parcelas/p9',
+        $captured['url'],
+    );
+  }
+
+  /** A quitação é um POST no subrecurso /baixa da parcela. */
+  public function testSettlingAnInstallmentPostsToTheBaixaSubresource(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->createBaixa('p9', ['data_pagamento' => '2026-08-19']);
+
+    self::assertNotNull($captured);
+    self::assertSame('POST', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/parcelas/p9/baixa',
         $captured['url'],
     );
   }

@@ -8,46 +8,88 @@ use ContaAzulCli\Command\Parcela\BaixarCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Console\Command\Command;
 
 use function json_decode;
 
 final class BaixarCommandTest extends CommandTestCase
 {
+  private const string PARCELA = 'parcela-1';
+
+  private const array VALID_INPUT = [
+    '--conta-financeira' => 'conta-1',
+    '--data'             => '2026-08-16',
+    '--valor'            => '100.50',
+    'id'                 => self::PARCELA,
+  ];
+
   public function testRegistersPaymentAndRendersOnlyThePayloadToStdout(): void {
     $output  = $this->newOutput();
     $command = new BaixarCommand(
-        $this->financeiroClient([$this->jsonResponse(['id' => 'parcela-1', 'status' => 'baixada'])]),
+        $this->financeiroClient([$this->jsonResponse(['id' => 'baixa-1', 'versao' => 0])]),
         new ErrorEnvelope($output),
         new JsonRenderer($output),
     );
 
-    $tester = $this->runCommand(
-        $command,
-        ['id' => 'parcela-1', '--valor' => '100.50', '--data' => '2026-08-16'],
-    );
+    $tester = $this->runCommand($command, self::VALID_INPUT);
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-    self::assertSame(['id' => 'parcela-1', 'status' => 'baixada'], json_decode($output->stdout(), true));
+    self::assertSame(['id' => 'baixa-1', 'versao' => 0], json_decode($output->stdout(), true));
     self::assertSame('', $output->stderr());
   }
 
-  public function testMissingValorFailsBeforeAnyApiCall(): void {
-    $output  = $this->newOutput();
-    $command = new BaixarCommand(
-        $this->financeiroClient([]),
+  /**
+   * Trava o endpoint e o payload reais.
+   *
+   * Até 2026-08-19 o comando mandava `{valor, data}` num `PATCH` da própria
+   * parcela. Esse endpoint existe, mas atualiza a parcela em vez de quitá-la:
+   * respondia `200` sem registrar pagamento, porque nenhum dos dois campos
+   * está no schema dele e a API descarta campo desconhecido em silêncio.
+   */
+  public function testSettlesThroughTheBaixaSubresourceWithTheWriteSideFieldNames(): void {
+    $captured = null;
+    $output   = $this->newOutput();
+    $command  = new BaixarCommand(
+        $this->financeiroClientRecording($captured),
         new ErrorEnvelope($output),
         new JsonRenderer($output),
     );
 
-    $tester = $this->runCommand($command, ['id' => 'parcela-1', '--data' => '2026-08-16']);
+    $this->runCommand($command, self::VALID_INPUT);
 
-    self::assertSame(Command::FAILURE, $tester->getStatusCode());
-    $envelope = json_decode($output->stderr(), true);
-    self::assertSame('client_error', $envelope['kind']);
+    self::assertNotNull($captured);
+    self::assertSame('POST', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/parcelas/' . self::PARCELA . '/baixa',
+        $captured['url'],
+    );
+    self::assertSame(
+        [
+          // A escrita é `composicao_valor`; toda leitura devolve
+          // `valor_composicao`.
+          'composicao_valor' => ['valor_bruto' => 100.5],
+          'conta_financeira' => 'conta-1',
+          'data_pagamento'   => '2026-08-16',
+        ],
+        json_decode((string) $captured['body'], true),
+    );
   }
 
-  public function testMissingDataFailsBeforeAnyApiCall(): void {
+  /** @return array<string, array{string}> */
+  public static function requiredOptionProvider(): array {
+    return [
+      '--conta-financeira' => ['--conta-financeira'],
+      '--data'             => ['--data'],
+      '--valor'            => ['--valor'],
+    ];
+  }
+
+  #[DataProvider('requiredOptionProvider')]
+  public function testMissingRequiredOptionFailsBeforeAnyApiCall(string $option): void {
+    $input = self::VALID_INPUT;
+    unset($input[$option]);
+
     $output  = $this->newOutput();
     $command = new BaixarCommand(
         $this->financeiroClient([]),
@@ -55,7 +97,7 @@ final class BaixarCommandTest extends CommandTestCase
         new JsonRenderer($output),
     );
 
-    $tester = $this->runCommand($command, ['id' => 'parcela-1', '--valor' => '100.50']);
+    $tester = $this->runCommand($command, $input);
 
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
     $envelope = json_decode($output->stderr(), true);
@@ -70,10 +112,7 @@ final class BaixarCommandTest extends CommandTestCase
         new JsonRenderer($output),
     );
 
-    $tester = $this->runCommand(
-        $command,
-        ['id' => 'parcela-1', '--valor' => '100.50', '--data' => '2026-08-16'],
-    );
+    $tester = $this->runCommand($command, self::VALID_INPUT);
 
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
     $envelope = json_decode($output->stderr(), true);

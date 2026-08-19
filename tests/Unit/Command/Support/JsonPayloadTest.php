@@ -33,6 +33,22 @@ final class JsonPayloadTest extends TestCase
     JsonPayload::object('{');
   }
 
+  /**
+   * `json_decode('{}', true)` devolve `[]`, e `array_is_list([])` é `true` —
+   * então o objeto vazio era recusado como se não fosse um objeto. Ele
+   * precisa chegar na API: é ela que diz quais campos faltam.
+   */
+  public function testAcceptsAnEmptyObject(): void {
+    self::assertSame([], JsonPayload::object('{}'));
+  }
+
+  public function testStillRejectsAnEmptyJsonArray(): void {
+    $this->expectException(CliException::class);
+    $this->expectExceptionMessage('JSON deve ser um objeto.');
+
+    JsonPayload::object('[]');
+  }
+
   public function testRejectsAnEmptyOption(): void {
     $this->expectException(CliException::class);
     $this->expectExceptionMessage('A opção --json é obrigatória.');

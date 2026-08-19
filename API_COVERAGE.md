@@ -24,7 +24,7 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a API real em 2026-08-18;
 `parcela list` acrescentado em 2026-08-18 (path e schema conferidos direto na doc, endpoint ainda não exercitado contra a API real);
 `financeiro saldo-inicial` acrescentado em 2026-08-18, completando a sessão (path e query params conferidos direto na doc, endpoint ainda não exercitado contra a API real);
-`centro-de-custo create` acrescentado em 2026-08-18, completando o spec `financial-apis-openapi` — path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/financial-apis-openapi/v1), endpoint ainda não exercitado contra a API real.
+`centro-de-custo create` acrescentado em 2026-08-18 e exercitado em produção em 2026-08-19. Atenção: a API **não publica `DELETE`** para centro de custo nem para evento financeiro (contas a receber/pagar) — o que se cria por esses três endpoints só sai pela interface web.
 **Cobranças e Baixas são specs OpenAPI próprios** (`charge-apis-openapi`, `acquittance-apis-openapi`), descobertos em 2026-08-19 — não estavam linkados na página `/aboutapis` e nunca tinham sido levantados. Ambos implementados na sequência (`cobranca create`/`get`/`delete`; `baixa create`/`list`/`get`/`update`/`delete`), completando a cobertura da API inteira.
 
 ### Centros de custo
@@ -59,12 +59,12 @@ Gera cobrança (boleto/PIX/link de pagamento) para a parcela de uma conta a rece
 
 ### Parcelas
 - [x] `GET /v1/financeiro/eventos-financeiros/parcelas/{id}` — `parcela get`
-- [x] `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` — `parcela baixar`
+- [x] `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` — `parcela update`; atualiza a parcela (**não** quita), síncrono, `versao` obrigatório
 - [x] `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas` — `parcela list`
 
 ### Baixas (spec `acquittance-apis-openapi`)
-Recurso dedicado de baixa (quitação), mais rico que o PATCH direto de `parcela baixar`: registra data, valor, juros, multa, desconto e método de pagamento; uma parcela pode ter mais de uma baixa (pagamento parcial). `baixa update` exige o campo `versao` atual no payload — controle de concorrência otimista, a API o incrementa após o sucesso. Path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/acquittance-apis-openapi/v1); ainda não exercitados contra a API real. O DELETE documenta resposta `200 OK` sem schema de corpo — mesma observação de Cobranças.
-- [x] `POST /v1/financeiro/eventos-financeiros/parcelas/{parcela_id}/baixa` — `baixa create`; escrita síncrona, sem protocolo
+Recurso dedicado de baixa (quitação): registra data, valor, juros, multa, desconto e método de pagamento; uma parcela pode ter mais de uma baixa (pagamento parcial, confirmado em produção). `baixa update` exige o campo `versao` atual no payload — controle de concorrência otimista, a API o incrementa após o sucesso, e sem ele a resposta é `409`. Exercitados contra a API real em 2026-08-19; o DELETE responde mesmo `200 OK` sem corpo, e a exclusão desfaz a quitação.
+- [x] `POST /v1/financeiro/eventos-financeiros/parcelas/{parcela_id}/baixa` — `baixa create` e `parcela baixar` (atalho com `--valor`/`--data`/`--conta-financeira`); escrita síncrona, sem protocolo
 - [x] `GET /v1/financeiro/eventos-financeiros/parcelas/{parcela_id}/baixa` — `baixa list`; não pagina
 - [x] `GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{baixa_id}` — `baixa get`
 - [x] `PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{baixa_id}` — `baixa update`

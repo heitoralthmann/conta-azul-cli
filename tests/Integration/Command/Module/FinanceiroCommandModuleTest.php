@@ -56,7 +56,7 @@ final class FinanceiroCommandModuleTest extends CommandTestCase
       $byName[(string) $command->getName()] = $command;
     }
 
-    self::assertCount(26, $byName);
+    self::assertCount(27, $byName);
     self::assertInstanceOf(ContaAReceberListCommand::class, $byName['conta-a-receber list']);
     self::assertInstanceOf(ContaAReceberCreateCommand::class, $byName['conta-a-receber create']);
     self::assertInstanceOf(ResourceJsonCommand::class, $byName['cobranca create']);
@@ -65,6 +65,7 @@ final class FinanceiroCommandModuleTest extends CommandTestCase
     self::assertInstanceOf(ContaAPagarListCommand::class, $byName['conta-a-pagar list']);
     self::assertInstanceOf(ContaAPagarCreateCommand::class, $byName['conta-a-pagar create']);
     self::assertInstanceOf(ParcelaGetCommand::class, $byName['parcela get']);
+    self::assertInstanceOf(ResourceIdJsonCommand::class, $byName['parcela update']);
     self::assertInstanceOf(BaixarCommand::class, $byName['parcela baixar']);
     self::assertInstanceOf(ParcelaListCommand::class, $byName['parcela list']);
     self::assertInstanceOf(ResourceIdJsonCommand::class, $byName['baixa create']);

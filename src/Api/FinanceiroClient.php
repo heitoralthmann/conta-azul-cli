@@ -194,20 +194,27 @@ final class FinanceiroClient
   }
 
   /**
-   * A baixa é um PATCH na própria parcela — não existe subrecurso `/baixar`.
+   * Atualiza parcialmente a parcela — nota, descrição, vencimento,
+   * `composicao_valor`, método de pagamento, perda, `nsu` e conta financeira.
+   *
+   * **Não dá baixa.** O endpoint foi modelado aqui como se quitasse a
+   * parcela; exercitado em 2026-08-19, ele respondeu `200` sem registrar
+   * pagamento nenhum, porque `valor` e `data` não existem no schema e a API
+   * descarta campo desconhecido em silêncio. Quem quita é `createBaixa()`.
+   *
+   * `versao` é obrigatório (controle otimista): sem ele a resposta é `409`,
+   * não `400`. A escrita é **síncrona** e devolve a parcela atualizada.
    *
    * @param array<string, mixed> $payload
    *
    * @return array<mixed>
    */
-  public function baixarParcela(string $id, array $payload, int $pollTimeout = 60, bool $noWait = false): array {
-    $response = $this->support->request(
+  public function updateParcela(string $id, array $payload): array {
+    return $this->support->request(
         'PATCH',
-        '/v1/financeiro/eventos-financeiros/parcelas/' . $id,
+        '/v1/financeiro/eventos-financeiros/parcelas/' . rawurlencode($id),
         ['json' => $payload],
     );
-
-    return $this->support->handleAsyncResponse($response, $pollTimeout, $noWait);
   }
 
   /**
