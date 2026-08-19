@@ -9,6 +9,30 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-08-19
+
+### Added
+
+- Comandos `contrato get` (`GET /v1/contratos/{id}`), `contrato delete`
+  (`DELETE /v1/contratos/{id}`, exclusão permanente que cancela as
+  vendas associadas — contratos em reajuste de valor não podem ser
+  removidos) e `contrato encerrar` (`POST /v1/contratos/{id}/encerrar`,
+  sem corpo, desativa o contrato sem excluí-lo), completando a sessão
+  de Contratos. O levantamento original de `API_COVERAGE.md` só tinha
+  encontrado 3 dos 6 endpoints do spec real — o nome interno da rota
+  no portal (`open-api-scheduled-sales`) não aparece linkado na página
+  `/aboutapis`. Paths e schemas conferidos direto no OpenAPI
+  renderizado, ainda não exercitados contra a API real.
+
+### Changed
+
+- `API_COVERAGE.md`/`COMMANDS.md` passam a documentar explicitamente
+  duas famílias inteiras que seguem fora do CLI — **Cobranças**
+  (`charge-apis-openapi`, boleto/PIX sobre contas a receber) e
+  **Baixas** como recurso dedicado (`acquittance-apis-openapi`, mais
+  rico que `parcela baixar`) — descobertas na mesma varredura que
+  achou o gap de Contratos.
+
 ## [0.11.0] - 2026-08-18
 
 ### Added
@@ -221,7 +245,8 @@ Primeira versão tagueada.
 - `release.yml` corrigido: faltava `permissions: contents: write`, o que
   impedia a publicação do PHAR na release do GitHub.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.8.0...v0.9.0

@@ -10,6 +10,7 @@ use ContaAzulCli\Command\CommandModuleInterface;
 use ContaAzulCli\Command\Contrato\ListCommand;
 use ContaAzulCli\Command\Contrato\ProximoNumeroCommand;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
+use ContaAzulCli\Command\Support\ResourceIdCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -50,6 +51,30 @@ final class ContratoCommandModule implements CommandModuleInterface
           'Payload JSON do contrato',
       ),
       new ProximoNumeroCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new ResourceIdCommand(
+          'contrato get',
+          'Busca um contrato por ID',
+          $this->client->getContrato(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Uuid do contrato',
+      ),
+      new ResourceIdCommand(
+          'contrato delete',
+          'Remove um contrato permanentemente, cancelando as vendas associadas',
+          $this->client->deleteContrato(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Uuid do contrato',
+      ),
+      new ResourceIdCommand(
+          'contrato encerrar',
+          'Encerra um contrato ativo; ele deixa de gerar novas cobranças',
+          $this->client->encerrarContrato(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Uuid do contrato',
+      ),
     ];
   }
 }

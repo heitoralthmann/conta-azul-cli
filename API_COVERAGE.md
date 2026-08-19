@@ -2,9 +2,11 @@
 
 Arquivo de controle: todos os endpoints publicados no [Portal do Desenvolvedor Conta Azul](https://developers.contaazul.com/aboutapis), agrupados por área funcional, com o que o `ca` já implementa marcado.
 
-**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, e as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais**, **Vendas**, **Orçamentos** e **Captura**. Todos os 72 endpoints publicados no portal têm comando.
+**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Cobranças + Baixas — as duas últimas só parcialmente, ver abaixo), o recurso de **Protocolos** que ela depende para escritas assíncronas, e as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais**, **Vendas**, **Orçamentos** e **Captura**.
 
 Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md`, `src/Api/FinanceiroClient.php`, `src/Api/PessoasClient.php`, `src/Api/ProdutosClient.php` e `src/Api/ServicosClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
+
+**2026-08-19: o levantamento original ficou incompleto.** Uma varredura direta dos specs OpenAPI reais (não só da página `/aboutapis`) achou 3 áreas com endpoints nunca listados aqui: **Contratos** tinha só 3 dos 6 endpoints do spec (corrigido nesta sessão — `contrato get`/`delete`/`encerrar`); **Cobranças** e **Baixas** são specs OpenAPI próprios (`charge-apis-openapi`, `acquittance-apis-openapi`) que não aparecem linkados na página inicial e seguem inteiramente fora do CLI (8 endpoints, ver subseções em Financeiro). Não há garantia de que a superfície completa da API já esteja mapeada — só o que foi ativamente verificado.
 
 ---
 
@@ -18,11 +20,12 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 
 ## 💰 Financeiro / Cobranças / Baixas
 
-17 endpoints. `src/Api/FinanceiroClient.php`.
+17 endpoints do spec `financial-apis-openapi` (o núcleo de Financeiro). `src/Api/FinanceiroClient.php`.
 Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a API real em 2026-08-18;
 `parcela list` acrescentado em 2026-08-18 (path e schema conferidos direto na doc, endpoint ainda não exercitado contra a API real);
 `financeiro saldo-inicial` acrescentado em 2026-08-18, completando a sessão (path e query params conferidos direto na doc, endpoint ainda não exercitado contra a API real);
-`centro-de-custo create` acrescentado em 2026-08-18, completando a sessão e a cobertura da API inteira (72/72) — path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/financial-apis-openapi/v1), endpoint ainda não exercitado contra a API real.
+`centro-de-custo create` acrescentado em 2026-08-18, completando o spec `financial-apis-openapi` — path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/financial-apis-openapi/v1), endpoint ainda não exercitado contra a API real.
+**Cobranças e Baixas são specs OpenAPI próprios** (`charge-apis-openapi`, `acquittance-apis-openapi`), descobertos em 2026-08-19 — não estavam linkados na página `/aboutapis` e nunca tinham sido levantados; ficam listados como subseções abaixo, ainda fora do CLI.
 
 ### Centros de custo
 - [x] `GET /v1/centro-de-custo` — `centro-de-custo list`
@@ -44,6 +47,12 @@ Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a A
 - [x] `POST /v1/financeiro/eventos-financeiros/contas-a-receber` — `conta-a-receber create`
 - [x] `GET /v1/financeiro/eventos-financeiros/contas-a-receber/buscar` — `conta-a-receber list`
 
+### Cobranças (spec `charge-apis-openapi`) — fora do CLI
+Gera cobrança (boleto/PIX) para uma conta a receber. Path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/charge-apis-openapi/v1) em 2026-08-19; nunca exercitados contra a API real.
+- [ ] `POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca` — criar uma nova cobrança
+- [ ] `GET /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id_cobranca}` — retornar a cobrança por id
+- [ ] `DELETE /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id_cobranca}` — deletar cobrança por id
+
 ### Contas a pagar
 - [x] `POST /v1/financeiro/eventos-financeiros/contas-a-pagar` — `conta-a-pagar create`
 - [x] `GET /v1/financeiro/eventos-financeiros/contas-a-pagar/buscar` — `conta-a-pagar list`
@@ -52,6 +61,14 @@ Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a A
 - [x] `GET /v1/financeiro/eventos-financeiros/parcelas/{id}` — `parcela get`
 - [x] `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` — `parcela baixar`
 - [x] `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas` — `parcela list`
+
+### Baixas (spec `acquittance-apis-openapi`) — fora do CLI
+Recurso dedicado de baixa (quitação), mais rico que o PATCH direto de `parcela baixar`: registra data, valor, juros, multa, desconto e método de pagamento; uma parcela pode ter mais de uma baixa (pagamento parcial). Path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/acquittance-apis-openapi/v1) em 2026-08-19; nunca exercitados contra a API real.
+- [ ] `POST /v1/financeiro/eventos-financeiros/parcelas/{parcela_id}/baixa` — criar uma nova baixa
+- [ ] `GET /v1/financeiro/eventos-financeiros/parcelas/{parcela_id}/baixa` — retornar as baixas pelo id da parcela
+- [ ] `GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{baixa_id}` — retornar a baixa por id
+- [ ] `PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{baixa_id}` — atualizar parcialmente uma baixa por id
+- [ ] `DELETE /v1/financeiro/eventos-financeiros/parcelas/baixa/{baixa_id}` — deletar baixa por id
 
 ### Eventos financeiros / diversos
 - [x] `GET /v1/financeiro/eventos-financeiros/alteracoes` — `financeiro alteracoes`
@@ -65,14 +82,23 @@ Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a A
 
 ## 📑 Contratos
 
-3 endpoints. `src/Api/ContratosClient.php`.
+6 endpoints. `src/Api/ContratosClient.php`.
 Sessão implementada em 2026-08-18; paths e schemas conferidos direto na
 documentação renderizada (https://developers.contaazul.com/docs/contracts-apis-openapi/v1),
 não deduzidos do PDF/YAML — mas, diferente da sessão Financeiro, ainda não
 exercitados contra a API real.
+`contrato get`, `contrato delete` e `contrato encerrar` acrescentados em
+2026-08-19: o levantamento original de 2026-08-18 só tinha visto 3 dos 6
+endpoints do spec — o nome interno da rota no portal é
+`open-api-scheduled-sales` (não tem relação com "vendas agendadas"; mesma
+armadilha de `open-api-proposal` = Orçamentos), e não aparece linkado na
+página `/aboutapis`, só dentro do próprio bundle OpenAPI.
 
 - [x] `GET /v1/contratos` — `contrato list`; exige `data_inicio`/`data_fim`
 - [x] `POST /v1/contratos` — `contrato create`; escrita síncrona (não devolve protocolo)
+- [x] `GET /v1/contratos/{id}` — `contrato get`
+- [x] `DELETE /v1/contratos/{id}` — `contrato delete`; exclusão permanente, cancela vendas associadas; contratos em reajuste de valor não podem ser removidos; resposta `204 No Content`
+- [x] `POST /v1/contratos/{id}/encerrar` — `contrato encerrar`; sem corpo, desativa o contrato (para de gerar cobranças); contratos em reajuste de valor não podem ser encerrados; resposta `204 No Content`
 - [x] `GET /v1/contratos/proximo-numero` — `contrato proximo-numero`; corpo da resposta é um inteiro solto (ou `null`), não um objeto
 
 ## 👥 Pessoas / Fornecedores
@@ -192,9 +218,9 @@ prévia.
 | Área | Implementados | Total |
 |---|---|---|
 | Autenticação | 3 | 3 |
-| Financeiro / Cobranças / Baixas | 17 | 17 |
+| Financeiro / Cobranças / Baixas | 17 | 25 |
 | Protocolos | 1 | 1 |
-| Contratos | 3 | 3 |
+| Contratos | 6 | 6 |
 | Pessoas / Fornecedores | 10 | 10 |
 | Produtos | 11 | 11 |
 | Serviços | 5 | 5 |
@@ -202,4 +228,4 @@ prévia.
 | Vendas | 9 | 9 |
 | Orçamentos | 4 | 4 |
 | Captura | 5 | 5 |
-| **Total** | **72** | **72** |
+| **Total** | **75** | **83** |

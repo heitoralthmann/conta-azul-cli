@@ -141,6 +141,63 @@ final class ContratosClientTest extends TestCase
     self::assertSame('DATA_INICIO', $query['campo_ordenado_ascendente'] ?? null);
   }
 
+  public function testGetContratoUsesTheDocumentedPathAndUrlEncodesTheId(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->getContrato('contrato id/1');
+
+    self::assertNotNull($captured);
+    self::assertSame('GET', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/contratos/contrato%20id%2F1',
+        strtok($captured['url'], '?'),
+    );
+  }
+
+  public function testDeleteContratoUsesTheDocumentedPath(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->deleteContrato('contrato-1');
+
+    self::assertNotNull($captured);
+    self::assertSame('DELETE', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/contratos/contrato-1',
+        strtok($captured['url'], '?'),
+    );
+  }
+
+  /** A resposta é `204 No Content` — sem corpo para decodificar. */
+  public function testDeleteContratoReturnsAnEmptyArrayFor204(): void {
+    $client = $this->clientResponding(new MockResponse('', ['http_code' => 204]));
+
+    self::assertSame([], $client->deleteContrato('contrato-1'));
+  }
+
+  public function testEncerrarContratoSendsAPostWithNoBody(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->encerrarContrato('contrato-1');
+
+    self::assertNotNull($captured);
+    self::assertSame('POST', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/contratos/contrato-1/encerrar',
+        strtok($captured['url'], '?'),
+    );
+    self::assertNull($captured['body']);
+  }
+
+  /** A resposta é `204 No Content` — sem corpo para decodificar. */
+  public function testEncerrarContratoReturnsAnEmptyArrayFor204(): void {
+    $client = $this->clientResponding(new MockResponse('', ['http_code' => 204]));
+
+    self::assertSame([], $client->encerrarContrato('contrato-1'));
+  }
+
   /**
    * O corpo da resposta é um inteiro solto (`4512645`), não um objeto — o
    * decode teria que ser especial para não estourar em `Response::toArray()`.

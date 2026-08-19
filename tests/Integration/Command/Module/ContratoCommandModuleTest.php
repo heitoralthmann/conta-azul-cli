@@ -9,6 +9,7 @@ use ContaAzulCli\Command\Contrato\ListCommand;
 use ContaAzulCli\Command\Contrato\ProximoNumeroCommand;
 use ContaAzulCli\Command\Module\ContratoCommandModule;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
+use ContaAzulCli\Command\Support\ResourceIdCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -38,9 +39,12 @@ final class ContratoCommandModuleTest extends CommandTestCase
       $byName[(string) $command->getName()] = $command;
     }
 
-    self::assertCount(3, $byName);
+    self::assertCount(6, $byName);
     self::assertInstanceOf(ListCommand::class, $byName['contrato list']);
     self::assertInstanceOf(ResourceJsonCommand::class, $byName['contrato create']);
     self::assertInstanceOf(ProximoNumeroCommand::class, $byName['contrato proximo-numero']);
+    self::assertInstanceOf(ResourceIdCommand::class, $byName['contrato get']);
+    self::assertInstanceOf(ResourceIdCommand::class, $byName['contrato delete']);
+    self::assertInstanceOf(ResourceIdCommand::class, $byName['contrato encerrar']);
   }
 }

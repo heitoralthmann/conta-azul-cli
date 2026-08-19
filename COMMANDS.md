@@ -40,6 +40,9 @@ Cada endpoint traz uma marca de confiança:
 | `contrato list` | `GET /v1/contratos` | ⚠️ |
 | `contrato create` | `POST /v1/contratos` | ⚠️ |
 | `contrato proximo-numero` | `GET /v1/contratos/proximo-numero` | ⚠️ |
+| `contrato get` | `GET /v1/contratos/{id}` | ⚠️ |
+| `contrato delete` | `DELETE /v1/contratos/{id}` | ⚠️ |
+| `contrato encerrar` | `POST /v1/contratos/{id}/encerrar` | ⚠️ |
 | `pessoa list` | `GET /v1/pessoas` | ⚠️ |
 | `pessoa create` | `POST /v1/pessoas` | ⚠️ |
 | `pessoa get` | `GET /v1/pessoas/{id}` | ⚠️ |
@@ -471,6 +474,34 @@ O CLI não valida o conteúdo de `--json`; o schema é o da API (`id_cliente`, `
 
 Sem parâmetros. Retorna o próximo número de contrato disponível como um inteiro solto (ex: `4512645`), não um objeto — diferente de todos os outros comandos de leitura.
 
+### `contrato get` ⚠️
+
+`GET /v1/contratos/{id}`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid do contrato |
+
+### `contrato delete` ⚠️
+
+`DELETE /v1/contratos/{id}` — exclusão **permanente**.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid do contrato |
+
+Cancela todas as vendas associadas ao contrato (agendadas e efetivadas). Contratos em reajuste de valor não podem ser removidos. Resposta `204 No Content` — sem corpo.
+
+### `contrato encerrar` ⚠️
+
+`POST /v1/contratos/{id}/encerrar` — sem corpo.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid do contrato |
+
+Desativa o contrato: ele para de gerar novas cobranças, mas não é excluído (diferente de `contrato delete`). Contratos em reajuste de valor não podem ser encerrados. Resposta `204 No Content` — sem corpo.
+
 ---
 
 ## Pessoas / Fornecedores
@@ -867,11 +898,17 @@ Resposta `204 No Content` — sem corpo. Uma captura já aceita, ou ainda em pro
 
 ## Fora do escopo do CLI
 
-Todos os 72 endpoints publicados no portal já têm comando — veja a
+A maior parte da API publicada no portal já tem comando — veja a
 referência rápida no topo deste arquivo e `API_COVERAGE.md` para a lista
 completa por área (Contratos, Notas Fiscais, Vendas, Orçamentos e Captura
 foram implementados além do escopo original declarado em
-`ESPECIFICACAO.md`).
+`ESPECIFICACAO.md`). Duas famílias inteiras seguem fora, descobertas em
+2026-08-19 porque vivem em specs OpenAPI próprios sem link na página
+inicial do portal — **Cobranças** (boleto/PIX sobre contas a receber,
+spec `charge-apis-openapi`) e **Baixas** como recurso dedicado (spec
+`acquittance-apis-openapi`; o CLI só cobre a quitação simples via
+`parcela baixar`). Detalhes e paths em `API_COVERAGE.md`, seção
+Financeiro.
 
 Recursos que **não existem** na API v1 — não procure o comando, não há endpoint:
 

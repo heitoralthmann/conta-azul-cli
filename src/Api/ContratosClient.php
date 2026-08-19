@@ -12,6 +12,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 use function array_merge;
 use function is_int;
+use function rawurlencode;
 
 /** Cliente dos endpoints de contratos da API Conta Azul. */
 final class ContratosClient
@@ -78,5 +79,32 @@ final class ContratosClient
     $numero = $this->support->requestScalar('GET', '/v1/contratos/proximo-numero');
 
     return is_int($numero) ? $numero : null;
+  }
+
+  /** @return array<mixed> */
+  public function getContrato(string $id): array {
+    return $this->support->request('GET', '/v1/contratos/' . rawurlencode($id));
+  }
+
+  /**
+   * Exclusão permanente, cancelando as vendas associadas (agendadas e
+   * efetivadas). Contratos em reajuste de valor não podem ser removidos.
+   * Resposta `204 No Content`.
+   *
+   * @return array<mixed>
+   */
+  public function deleteContrato(string $id): array {
+    return $this->support->request('DELETE', '/v1/contratos/' . rawurlencode($id));
+  }
+
+  /**
+   * Desativa o contrato; ele deixa de gerar novas cobranças. Contratos em
+   * reajuste de valor não podem ser encerrados. Sem corpo, resposta
+   * `204 No Content`.
+   *
+   * @return array<mixed>
+   */
+  public function encerrarContrato(string $id): array {
+    return $this->support->request('POST', '/v1/contratos/' . rawurlencode($id) . '/encerrar');
   }
 }
