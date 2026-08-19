@@ -46,6 +46,33 @@ no [README](README.md#contrato-de-saída).
 
 ### Changed
 
+- **Grupo `orcamento` verificado contra a produção (2026-08-19).** Os
+  quatro comandos foram exercitados — três orçamentos de teste criados,
+  lidos e excluídos, com a listagem de volta aos 158 registros — e passaram
+  a ✅ em `COMMANDS.md`. Os nove filtros de `orcamento list` sobreviveram à
+  receita completa, então **nenhum bug de filtro**; as divergências foram
+  outras duas, e das piores já encontradas neste projeto:
+  **`total_itens` conta errado** (responde `157` junto de 158 itens
+  distintos, porque ignora os orçamentos em `ORCAMENTO_RECUSADO` que a
+  mesma resposta devolve — quem paginar por ele perde registros); e
+  **`observacoes` e `observacoes_pagamento` trocam de lugar entre escrita e
+  leitura**, confirmado com valores distintos em cada campo e
+  `descricao`/`previsao_entrega` como controle. Nenhuma das duas é
+  compensada no CLI, que repassa `--json` sem transformação. Documentado
+  ainda: os três pares de data são tudo-ou-nada (um lado sozinho devolve
+  `400`) e `--data-alteracao-*` é o único que exige data-time ISO 8601;
+  `numero` é atribuído pela API, do mesmo contador das vendas; a exclusão é
+  **física** (`get` passa a `404`), ao contrário de `venda excluir-lote`, e
+  o `204` não distingue um uuid excluído de um inexistente; e o recurso não
+  tem update nem exclusão individual — `PUT` e `DELETE` em
+  `/v1/orcamentos/{id}` respondem `405`.
+- **Filtros por array de `orcamento list` reavaliados.** `situacoes`,
+  `numeros` e `ids_clientes` foram exercitados e **funcionam**, inclusive
+  com um único valor escalar (e com valores repetidos ou separados por
+  vírgula; a forma `campo[]` devolve `400`). Continuam fora da CLI, mas a
+  justificativa registrada — de que o comando genérico de listagem só
+  suporta filtros escalares — não era o impedimento que parecia, e o texto
+  em `COMMANDS.md` foi corrigido para dizer que é decisão de escopo.
 - **Grupo `venda` verificado contra a produção (2026-08-19).** Os nove
   comandos foram exercitados num CRUD completo — três vendas de teste
   criadas, uma atualizada e todas excluídas, com a listagem de volta ao

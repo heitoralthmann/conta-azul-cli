@@ -106,10 +106,10 @@ Cada endpoint traz uma marca de confiança:
 | `venda vendedores` | `GET /v1/venda/vendedores` | ✅ |
 | `venda proximo-numero` | `GET /v1/venda/proximo-numero` | ✅ |
 | `venda excluir-lote` | `POST /v1/venda/exclusao-lote` | ✅ |
-| `orcamento list` | `GET /v1/orcamentos` | ⚠️ |
-| `orcamento create` | `POST /v1/orcamentos` | ⚠️ |
-| `orcamento get` | `GET /v1/orcamentos/{id}` | ⚠️ |
-| `orcamento excluir-lote` | `DELETE /v1/orcamentos` | ⚠️ |
+| `orcamento list` | `GET /v1/orcamentos` | ✅ |
+| `orcamento create` | `POST /v1/orcamentos` | ✅ |
+| `orcamento get` | `GET /v1/orcamentos/{id}` | ✅ |
+| `orcamento excluir-lote` | `DELETE /v1/orcamentos` | ✅ |
 | `captura enviar` | `POST /v1/captura/documentos` | ⚠️ |
 | `captura status` | `GET /v1/captura/documentos/status` | ⚠️ |
 | `captura get` | `GET /v1/captura/{id}` | ⚠️ |
@@ -202,11 +202,18 @@ E o nome do campo de contagem **não é o mesmo em todo lugar**:
 | `{itens[], paginacao{total_itens}}` | `servico list` |
 | `{totais, quantidades, total_itens, itens[]}` | `venda list` |
 | `{itens[], itens_totais, totais}` | `venda itens` |
+| `{itens[], total_itens}` | `orcamento list` |
 
 `venda` sozinha traz duas dessas variações — a listagem e os itens de uma
 venda usam formatos diferentes. Os grupos ainda não verificados podem trazer
 outras: `contrato list` está documentado como `{itens_totais, items[]}`, mas
 não foi exercitado ainda.
+
+E o campo de contagem **pode simplesmente estar errado**: o `total_itens` de
+`orcamento list` ignora os orçamentos em `ORCAMENTO_RECUSADO` que a mesma
+resposta devolve dentro de `itens`. Ao verificar uma listagem, conte
+`len(itens)` em vez de confiar no total — foi só assim que essa divergência
+apareceu.
 
 ## Datas
 
@@ -1231,29 +1238,112 @@ que é o par de campos que engana. A prova confiável é o sumiço da listagem.
 
 O payload de criação segue o schema da API e é enviado sem transformação. Use `--json` com um objeto JSON.
 
-### `orcamento list` ⚠️
+**Verificado contra produção em 2026-08-19** — os quatro comandos, com três
+orçamentos de teste criados e excluídos. Os nove filtros de `orcamento list`
+passaram na receita completa (baseline, `zzz_bogus=abc`, valor
+discriminante). Como em `venda`, os problemas estavam fora da listagem — e
+aqui há dois graves o suficiente para virem antes das tabelas:
+
+> **1. `total_itens` não conta tudo o que `itens` devolve.** A listagem sem
+> filtro responde `total_itens: 157` e entrega **158** orçamentos distintos.
+> A diferença é a situação `ORCAMENTO_RECUSADO`: filtrando
+> `situacoes=ORCAMENTO` os dois números batem (160/160), e filtrando
+> `situacoes=ORCAMENTO_RECUSADO` a resposta traz um item com
+> `total_itens: 0`. Quem paginar por `total_itens` **perde registros** —
+> conte `itens`.
+>
+> **2. `observacoes` e `observacoes_pagamento` trocam de lugar entre
+> escrita e leitura.** O que você manda no `POST` como `observacoes` volta
+> no `GET` como `observacoes_pagamento`, e vice-versa. Confirmado com um
+> orçamento criado com os dois campos preenchidos com textos distintos, mais
+> `descricao` e `previsao_entrega` como controle — esses dois voltam no
+> lugar certo. O CLI **não corrige** a troca: `--json` é repassado sem
+> transformação, e compensar aqui quebraria no dia em que a API consertar.
+
+### `orcamento list` ✅
 
 `GET /v1/orcamentos`
 
 | Parâmetro | Obrig. | Padrão | Descrição |
 |---|---|---|---|
 | `--pagina` | não | `1` | Número da página |
-| `--tamanho-pagina` | não | `50` | Itens por página |
+| `--tamanho-pagina` | não | `50` | Itens por página (aceita até `1000`) |
 | filtros | não | — | `--termo-busca`, `--data-inicio`, `--data-fim`, `--data-criacao-de`, `--data-criacao-ate`, `--data-alteracao-de`, `--data-alteracao-ate`, `--campo-ordenado-ascendente`, `--campo-ordenado-descendente` (`DATA`, `NUMERO` ou `CLIENTE`) |
 
-O intervalo de datas é opcional — a API não o exige. A API também aceita filtros por array (`ids_vendedores`, `ids_clientes`, `ids_natureza_operacao`, `ids_categorias`, `ids_produtos`, `situacoes`, `origens`, `numeros`, `ids_legado_donos`, `ids_legado_clientes`, `ids_legado_produtos`); eles não estão expostos como opções porque o comando genérico de listagem só suporta filtros escalares hoje. Retorna `{itens[], total_itens}`.
+Retorna `{itens[], total_itens}` — com a ressalva sobre `total_itens` acima.
 
-### `orcamento create` ⚠️
+**Os pares de data são tudo-ou-nada.** Omitir os dois lados é válido (o
+intervalo é opcional), mas mandar **um só** devolve `400`:
+
+| Par | Formato | Erro se vier só um lado |
+|---|---|---|
+| `--data-inicio` / `--data-fim` | `YYYY-MM-DD` | "É necessário informar ambos os parâmetros de data" |
+| `--data-criacao-de` / `--data-criacao-ate` | `YYYY-MM-DD` | "…ambos os parâmetros de data de criação" |
+| `--data-alteracao-de` / `--data-alteracao-ate` | **`YYYY-MM-DDTHH:MM:SS`** | "…ambos os parâmetros de data de alteração" |
+
+O par de alteração é o único que **exige data-time ISO 8601**: com
+`2024-11-18` a API responde `400` pedindo o formato
+`2025-10-20T07:59:59`. Os outros dois pares recusam justamente esse formato
+estendido — não são intercambiáveis.
+
+`--termo-busca` casa nome do cliente e número do orçamento.
+`--campo-ordenado-*` não muda a contagem, mas um valor fora de
+`[CLIENTE, DATA, NUMERO]` devolve `400` — foi assim que se provou que o
+parâmetro é lido, e não descartado.
+
+**Filtros por array não expostos.** A API também aceita `ids_vendedores`,
+`ids_clientes`, `ids_natureza_operacao`, `ids_categorias`, `ids_produtos`,
+`situacoes`, `origens`, `numeros`, `ids_legado_donos`, `ids_legado_clientes`
+e `ids_legado_produtos`. Eles são **reais** — `situacoes`, `numeros` e
+`ids_clientes` foram exercitados e filtraram corretamente — e aceitam tanto
+um valor único quanto vários repetidos (`numeros=1&numeros=2`) ou separados
+por vírgula (`numeros=1,2`); a forma `numeros[]` devolve `400`. Ou seja: um
+valor escalar já funciona, então a razão antiga para não expô-los ("o
+comando genérico só suporta filtros escalares") não se sustenta. Continuam
+fora da CLI por decisão de escopo, não por impedimento técnico.
+O enum de `situacoes` é `ORCAMENTO`, `ORCAMENTO_ACEITO` ou
+`ORCAMENTO_RECUSADO`.
+
+### `orcamento create` ✅
 
 `POST /v1/orcamentos` — **escrita síncrona**, sem protocolo.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
-| `--json` | **sim** | Payload JSON do orçamento (`data_orcamento`, `data_validade`, `id_cliente` e `itens` são obrigatórios) |
+| `--json` | **sim** | Payload JSON do orçamento (ver campos obrigatórios abaixo) |
 
-Retorna `{id}` do orçamento criado.
+Quatro campos obrigatórios, e a documentação acertou desta vez:
 
-### `orcamento get` ⚠️
+| Campo | Formato |
+|---|---|
+| `id_cliente` | uuid da pessoa |
+| `data_orcamento` | `YYYY-MM-DD` |
+| `data_validade` | `YYYY-MM-DD` |
+| `itens` | array de `{id, quantidade, valor}` — `id` é o uuid do produto ou serviço |
+
+`quantidade` e `valor` precisam ser **maiores que zero**; a API recusa `0`
+com mensagem própria para cada um.
+
+Ao contrário de `venda create`, **`numero` não é aceito nem exigido** — a API
+atribui sozinha, e do **mesmo contador das vendas**: com `venda
+proximo-numero` em 7297, o orçamento criado em seguida saiu como 7297.
+`situacao` também não entra no payload; todo orçamento nasce `ORCAMENTO`.
+
+Retorna apenas `{id}`.
+
+Payload mínimo que passou:
+
+```json
+{
+  "id_cliente": "a1523431-f1be-44c4-8413-fdb5e50643e3",
+  "data_orcamento": "2026-08-19",
+  "data_validade": "2026-09-19",
+  "descricao": "TESTE HEITOR",
+  "itens": [{ "id": "1a1b7957-12c7-4064-9809-5af7bbb40f57", "quantidade": 1, "valor": 10 }]
+}
+```
+
+### `orcamento get` ✅
 
 `GET /v1/orcamentos/{id}`
 
@@ -1261,7 +1351,14 @@ Retorna `{id}` do orçamento criado.
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. Uuid do orçamento |
 
-### `orcamento excluir-lote` ⚠️
+Devolve o orçamento **solto**, sem envelope — ao contrário de `venda get` — e
+com os `itens` inclusos, também ao contrário de `venda get`. Id inexistente
+devolve `404` com `"Orçamento não encontrado com o ID informado"`.
+
+Lembre da troca de `observacoes` ↔ `observacoes_pagamento` ao ler o que você
+mesmo escreveu.
+
+### `orcamento excluir-lote` ✅
 
 `DELETE /v1/orcamentos` — exclui orçamentos em lote.
 
@@ -1269,7 +1366,22 @@ Retorna `{id}` do orçamento criado.
 |---|---|---|
 | `--json` | **sim** | Payload JSON com `{"ids": [...]}` — de 1 a 10 uuids por chamada |
 
-Resposta `204 No Content` — sem corpo.
+Resposta `204 No Content` — sem corpo, que o CLI imprime como `[]`. Os dois
+limites são cobrados: `[]` e 11 ids devolvem `400`.
+
+**A exclusão é física**, ao contrário de `venda excluir-lote` e `servico
+delete`: depois da chamada, `orcamento get` responde `404`. É a mesma
+semântica de `produto delete`.
+
+**O `204` não diz o que foi excluído.** Um uuid inexistente responde `204`
+igual, sem os contadores `{atualizados, ignorados}` que `venda excluir-lote`
+devolve. A única confirmação é reler a listagem.
+
+Não existe exclusão individual: `DELETE /v1/orcamentos/{id}` responde `405`.
+E o grupo **não tem update** — `PUT /v1/orcamentos/{id}` também responde
+`405`, então os quatro comandos são a superfície completa do recurso.
+
+---
 
 ## Captura
 
@@ -1370,7 +1482,8 @@ que se comporta exatamente como os nomes errados que o CLI mandava.
 
 Nunca conclua que um filtro funciona porque a chamada respondeu 200.
 
-1. **Baseline.** Pegue o total sem nenhum filtro.
+1. **Baseline.** Pegue o total sem nenhum filtro — contando `len(itens)`,
+   não o campo de total. Em `orcamento list` os dois divergem.
 2. **Controle.** Mande `zzz_bogus=abc`. Se o total não mudar, o endpoint
    descarta em silêncio e **todo** filtro precisa ser provado um a um.
 3. **Valor discriminante.** Teste cada filtro com um valor que case com
@@ -1406,6 +1519,8 @@ tail -5 ~/.cache/conta-azul-cli/log.jsonl
 6. **Exclusão não quer dizer a mesma coisa em todo grupo.** `produto delete` faz o `get` passar a 404; `servico delete` é lógico e o `get` continua respondendo 200 com `status` `ATIVO`; `venda excluir-lote` também é lógico e vira `status` `CANCELADO` — mas deixa `situacao` como estava.
 7. **A resposta da escrita não fala a mesma língua que a da leitura.** `venda create` devolve `situacao.nome` em inglês (`IN_PROCESS`) para a venda que `venda get` mostra como `EM_ANDAMENTO`.
 8. **Zero pode ser lido como ausente.** `venda update` exige `versao` e recusa `0` com "campo obrigatório" — justamente o valor que uma venda recém-criada tem.
+9. **Dois campos podem estar simplesmente trocados.** O que `orcamento create` recebe em `observacoes` volta em `observacoes_pagamento` no `orcamento get`, e vice-versa. Escreva um valor distinto em cada campo suspeito e leia de volta: é a única forma de enxergar isso.
+10. **O total de uma listagem pode não bater com o que ela devolve.** `orcamento list` responde `total_itens: 157` junto de 158 itens, porque o contador ignora `ORCAMENTO_RECUSADO`.
 
 Nunca deduza da documentação **nem o path, nem o nome de um filtro, nem o
 nome de um campo do payload, nem o tipo de um id, nem o formato da
@@ -1433,6 +1548,7 @@ qualquer filtro que recebe. Se você mexer em `$filters` num
 | `produto` | ✅ 10/11 (2026-08-19) — 1 filtro errado, 2 inexistentes; falta `ecommerce-categorias` |
 | `servico` | ✅ 5/5 (2026-08-19) — 1 filtro errado, 3 inexistentes |
 | `venda` | ✅ 9/9 (2026-08-19) — nenhum bug de filtro; as armadilhas estavam na escrita |
+| `orcamento` | ✅ 4/4 (2026-08-19) — nenhum bug de filtro; `total_itens` conta errado e dois campos trocam de nome entre escrita e leitura |
 | resto | ⚠️ nunca exercitado — trate os filtros como suspeitos |
 
 `venda list` quebrou a sequência: era o grupo de mais filtros e todos os oito
@@ -1442,8 +1558,8 @@ verificação achou um campo obrigatório que ela não lista
 e um `id_legado` prometido em `venda vendedores` que não vem na resposta. O
 risco só mudou de lugar.
 
-Os próximos grupos com muitos filtros (`orcamento list`, `contrato list`)
-continuam sendo os de maior risco de leitura, pela mesma razão que produtos e
+`contrato list` é o último grupo grande de filtros ainda por exercitar, e
+continua sendo o de maior risco de leitura pela mesma razão que produtos e
 serviços foram.
 
 Lista autoritativa de operações: https://developers.contaazul.com/docs/financial-apis-openapi/v1 — o portal bloqueia `curl` e fetch automatizado (403), então abra no navegador. Só três specs aparecem linkadas em `/aboutapis` (financial, sales, contracts); produtos, serviços e pessoas **não têm spec pública encontrável**, e o caminho `/_bundle/open-api-docs/{slug}.json`, que já funcionou, hoje devolve 404 — na prática, esses grupos só se descobrem exercitando.

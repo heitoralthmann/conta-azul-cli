@@ -16,9 +16,13 @@ use function rawurlencode;
 /**
  * Cliente dos endpoints de orçamentos da API Conta Azul.
  *
- * Paths e schemas conferidos direto no OpenAPI renderizado
- * (https://developers.contaazul.com/docs/open-api-proposal), já que o
- * portal bloqueia `WebFetch`/`curl`; ainda não exercitados contra a API real.
+ * Os quatro endpoints foram exercitados contra a API de produção em
+ * 2026-08-19, incluindo criação e exclusão em lote. Duas surpresas da API
+ * estão documentadas em `COMMANDS.md` e não são compensadas aqui, porque o
+ * cliente repassa o payload sem transformação: `observacoes` e
+ * `observacoes_pagamento` trocam de lugar entre escrita e leitura, e
+ * `total_itens` não conta os orçamentos em `ORCAMENTO_RECUSADO` que a
+ * própria resposta devolve em `itens`.
  */
 final class OrcamentosClient
 {
