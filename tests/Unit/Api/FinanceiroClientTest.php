@@ -266,6 +266,90 @@ final class FinanceiroClientTest extends TestCase
     );
   }
 
+  /**
+   * Path e schema conferidos direto no OpenAPI renderizado
+   * (https://developers.contaazul.com/docs/acquittance-apis-openapi/v1),
+   * spec próprio de Baixas; ainda não exercitado contra a API real.
+   */
+  public function testCreateBaixaUsesTheDocumentedPathAndBody(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $payload = [
+      'composicao_valor' => ['valor_bruto' => 150.0],
+      'conta_financeira' => 'conta-1',
+      'data_pagamento'   => '2026-09-01',
+    ];
+    $client->createBaixa('parcela id/1', $payload);
+
+    self::assertNotNull($captured);
+    self::assertSame('POST', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/parcelas/parcela%20id%2F1/baixa',
+        strtok($captured['url'], '?'),
+    );
+    self::assertSame($payload, json_decode((string) $captured['body'], true));
+  }
+
+  /** Endpoint não pagina: devolve o array completo de baixas da parcela. */
+  public function testListBaixasByParcelaUsesTheDocumentedPath(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->listBaixasByParcela('parcela-1');
+
+    self::assertNotNull($captured);
+    self::assertSame('GET', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/parcelas/parcela-1/baixa',
+        strtok($captured['url'], '?'),
+    );
+  }
+
+  public function testGetBaixaUsesTheDocumentedPathAndUrlEncodesTheId(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->getBaixa('baixa id/1');
+
+    self::assertNotNull($captured);
+    self::assertSame('GET', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/parcelas/baixa/baixa%20id%2F1',
+        strtok($captured['url'], '?'),
+    );
+  }
+
+  /** A API exige o campo `versao` atual no payload — controle de concorrência otimista. */
+  public function testUpdateBaixaUsesTheDocumentedPathAndBody(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->updateBaixa('baixa-1', ['versao' => 2]);
+
+    self::assertNotNull($captured);
+    self::assertSame('PATCH', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/parcelas/baixa/baixa-1',
+        strtok($captured['url'], '?'),
+    );
+    self::assertSame(['versao' => 2], json_decode((string) $captured['body'], true));
+  }
+
+  public function testDeleteBaixaUsesTheDocumentedPath(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->deleteBaixa('baixa-1');
+
+    self::assertNotNull($captured);
+    self::assertSame('DELETE', $captured['method']);
+    self::assertSame(
+        'https://api-v2.contaazul.com/v1/financeiro/eventos-financeiros/parcelas/baixa/baixa-1',
+        strtok($captured['url'], '?'),
+    );
+  }
+
   /** A API espera `'true'`/`'false'` literal, não o `1`/vazio do PHP nativo. */
   public function testSugestaoPadraoIsSentAsLiteralBooleanString(): void {
     $captured = null;

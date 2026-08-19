@@ -9,6 +9,31 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-08-19
+
+### Added
+
+- Sessão de Baixas completa: `baixa create`
+  (`POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa`,
+  escrita síncrona — registra data, valor, juros, multa, desconto e
+  método de pagamento; uma parcela pode ter mais de uma baixa,
+  pagamento parcial), `baixa list` (`GET .../parcelas/{id}/baixa`, sem
+  paginação), `baixa get` (`GET .../parcelas/baixa/{id}`), `baixa
+  update` (`PATCH .../parcelas/baixa/{id}`, controle de concorrência
+  otimista — exige o campo `versao` atual, incrementado pela API após
+  o sucesso) e `baixa delete` (`DELETE .../parcelas/baixa/{id}`,
+  mesma observação de `cobranca delete`: a API documenta `200 OK` sem
+  schema de corpo, não `204`). Baixas é um recurso dedicado, mais rico
+  que o `PATCH` simples de `parcela baixar` (que continua funcionando
+  como está). Spec OpenAPI próprio (`acquittance-apis-openapi`) que
+  não aparecia linkado na página inicial do portal e nunca tinha sido
+  levantado. Paths e schemas conferidos direto no OpenAPI renderizado,
+  ainda não exercitados contra a API real.
+- **`API_COVERAGE.md` fecha em 83/83.** Essa era a última área
+  descoberta na varredura de 2026-08-19 (junto com Contratos e
+  Cobranças, já resolvidas em v0.12.0/v0.13.0); todos os endpoints
+  publicados no portal do desenvolvedor agora têm comando.
+
 ## [0.13.0] - 2026-08-19
 
 ### Added
@@ -265,7 +290,8 @@ Primeira versão tagueada.
 - `release.yml` corrigido: faltava `permissions: contents: write`, o que
   impedia a publicação do PHAR na release do GitHub.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.10.0...v0.11.0

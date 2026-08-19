@@ -223,6 +223,81 @@ final class FinanceiroClient
   }
 
   // -------------------------------------------------------------------------
+  // Baixas
+  // -------------------------------------------------------------------------
+
+  /**
+   * Registra uma baixa (quitação) vinculada a uma parcela; a API atualiza o
+   * status da parcela automaticamente. Recurso dedicado, mais rico que
+   * `baixarParcela()` (data, valor, juros, multa, desconto, método de
+   * pagamento); uma parcela pode ter mais de uma baixa (pagamento parcial).
+   * Escrita síncrona — a resposta já traz a baixa criada, sem protocolo.
+   *
+   * @param array<string, mixed> $payload
+   *
+   * @return array<mixed>
+   */
+  public function createBaixa(string $idParcela, array $payload): array {
+    return $this->support->request(
+        'POST',
+        '/v1/financeiro/eventos-financeiros/parcelas/' . rawurlencode($idParcela) . '/baixa',
+        ['json' => $payload],
+    );
+  }
+
+  /**
+   * Endpoint não pagina: devolve o array completo de baixas da parcela.
+   *
+   * @return array<mixed>
+   */
+  public function listBaixasByParcela(string $idParcela): array {
+    return $this->support->request(
+        'GET',
+        '/v1/financeiro/eventos-financeiros/parcelas/' . rawurlencode($idParcela) . '/baixa',
+    );
+  }
+
+  /** @return array<mixed> */
+  public function getBaixa(string $id): array {
+    return $this->support->request(
+        'GET',
+        '/v1/financeiro/eventos-financeiros/parcelas/baixa/' . rawurlencode($id),
+    );
+  }
+
+  /**
+   * Atualização parcial otimista: a API exige o campo `versao` atual no
+   * payload e o incrementa após o sucesso, para evitar conflito com
+   * atualizações concorrentes.
+   *
+   * @param array<string, mixed> $payload
+   *
+   * @return array<mixed>
+   */
+  public function updateBaixa(string $id, array $payload): array {
+    return $this->support->request(
+        'PATCH',
+        '/v1/financeiro/eventos-financeiros/parcelas/baixa/' . rawurlencode($id),
+        ['json' => $payload],
+    );
+  }
+
+  /**
+   * A exclusão impacta diretamente o saldo e o histórico financeiro da
+   * parcela associada. A documentação lista resposta `200 OK` sem schema de
+   * corpo (não `204`, mesma observação de `deleteCobranca()`) —
+   * comportamento real ainda não exercitado contra a API.
+   *
+   * @return array<mixed>
+   */
+  public function deleteBaixa(string $id): array {
+    return $this->support->request(
+        'DELETE',
+        '/v1/financeiro/eventos-financeiros/parcelas/baixa/' . rawurlencode($id),
+    );
+  }
+
+  // -------------------------------------------------------------------------
   // Contas Financeiras
   // -------------------------------------------------------------------------
 

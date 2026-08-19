@@ -37,6 +37,11 @@ Cada endpoint traz uma marca de confiança:
 | `parcela get` | `GET /v1/financeiro/eventos-financeiros/parcelas/{id}` | ✅ |
 | `parcela baixar` | `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` | ⚠️ |
 | `parcela list` | `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas` | ⚠️ |
+| `baixa create` | `POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` | ⚠️ |
+| `baixa list` | `GET /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` | ⚠️ |
+| `baixa get` | `GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ⚠️ |
+| `baixa update` | `PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ⚠️ |
+| `baixa delete` | `DELETE /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ⚠️ |
 | `financeiro alteracoes` | `GET /v1/financeiro/eventos-financeiros/alteracoes` | ✅ |
 | `financeiro saldo-inicial` | `GET /v1/financeiro/eventos-financeiros/saldo-inicial` | ⚠️ |
 | `protocolo get` | `GET /v1/protocolo/{id}` | ⚠️ |
@@ -421,6 +426,62 @@ Retorna a parcela com o evento financeiro aninhado em `evento`, incluindo `event
 | `<id-evento>` | **sim** | Argumento posicional. ID do evento financeiro (`evento.id` aninhado na resposta de `parcela get`) |
 
 Sem paginação: a API devolve o array completo de parcelas do evento. Cada item tem o mesmo formato de `parcela get`.
+
+---
+
+## Baixas
+
+Recurso dedicado de baixa (quitação) de uma parcela — mais rico que o `PATCH` direto de `parcela baixar`: registra data, valor, juros, multa, desconto e método de pagamento. Uma parcela pode ter mais de uma baixa (pagamento parcial). Spec OpenAPI próprio (`acquittance-apis-openapi`), separado do núcleo Financeiro.
+
+### `baixa create` ⚠️
+
+`POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` — **escrita síncrona**, sem protocolo.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid da parcela |
+| `--json` | **sim** | Payload JSON da baixa (`data_pagamento`, `conta_financeira` e `composicao_valor` — objeto com `valor_bruto` obrigatório e `multa`/`juros`/`desconto`/`taxa` opcionais — obrigatórios) |
+
+O CLI não valida o conteúdo de `--json`; o schema é o da API.
+
+### `baixa list` ⚠️
+
+`GET /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid da parcela |
+
+Sem paginação: a API devolve o array completo de baixas da parcela.
+
+### `baixa get` ⚠️
+
+`GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid da baixa |
+
+### `baixa update` ⚠️
+
+`PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid da baixa |
+| `--json` | **sim** | Payload JSON com as mudanças; campo `versao` (a versão atual da baixa) é obrigatório |
+
+**Controle de concorrência otimista:** a API exige a `versao` atual no payload e a incrementa após o sucesso, para evitar que duas atualizações concorrentes se sobrescrevam silenciosamente.
+
+### `baixa delete` ⚠️
+
+`DELETE /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` — use com cautela: impacta o saldo e o histórico financeiro da parcela associada.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. Uuid da baixa |
+
+A documentação da API lista resposta `200 OK` sem schema de corpo para este endpoint — diferente da convenção `204 No Content` do resto do CLI (mesma observação de `cobranca delete`). Comportamento real ainda não verificado contra a API.
 
 ---
 
@@ -935,22 +996,19 @@ Resposta `204 No Content` — sem corpo. Uma captura já aceita, ou ainda em pro
 
 ## Fora do escopo do CLI
 
-A maior parte da API publicada no portal já tem comando — veja a
+Todos os 83 endpoints publicados no portal já têm comando — veja a
 referência rápida no topo deste arquivo e `API_COVERAGE.md` para a lista
-completa por área (Contratos, Notas Fiscais, Vendas, Orçamentos, Captura
-e Cobranças foram implementados além do escopo original declarado em
-`ESPECIFICACAO.md`). Uma família inteira segue fora, descoberta em
-2026-08-19 porque vive num spec OpenAPI próprio sem link na página
-inicial do portal — **Baixas** como recurso dedicado (spec
-`acquittance-apis-openapi`; o CLI só cobre a quitação simples via
-`parcela baixar`). Detalhes e paths em `API_COVERAGE.md`, seção
-Financeiro.
+completa por área (Contratos, Notas Fiscais, Vendas, Orçamentos, Captura,
+Cobranças e Baixas foram implementados além do escopo original declarado
+em `ESPECIFICACAO.md`; as duas últimas descobertas só em 2026-08-19,
+porque vivem em specs OpenAPI próprios sem link na página inicial do
+portal).
 
 Recursos que **não existem** na API v1 — não procure o comando, não há endpoint:
 
-**lançamentos**, **cobranças**, busca por id de conta a pagar/receber, update/delete desses eventos, e criação de transferência.
+**lançamentos**, busca por id de conta a pagar/receber, update/delete desses eventos, e criação de transferência.
 
-> Comandos para esses recursos já existiram, apontando para paths inventados, e retornavam 404. Foram removidos em vez de continuarem anunciando o que não funciona.
+> Comandos para esses recursos já existiram, apontando para paths inventados, e retornavam 404. Foram removidos em vez de continuarem anunciando o que não funciona. Um comando `cobrança` também já existiu nessa situação e foi removido — não confundir com os comandos reais de hoje, `cobranca create`/`get`/`delete`, que usam o path correto (`.../contas-a-receber/gerar-cobranca` e `.../contas-a-receber/cobranca/{id}`), descoberto na sessão de 2026-08-19.
 
 ---
 

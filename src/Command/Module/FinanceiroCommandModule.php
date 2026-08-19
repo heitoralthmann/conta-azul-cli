@@ -25,6 +25,7 @@ use ContaAzulCli\Command\Parcela\ListCommand as ParcelaListCommand;
 use ContaAzulCli\Command\Protocolo\GetCommand as ProtocoloGetCommand;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Command\Support\ResourceIdCommand;
+use ContaAzulCli\Command\Support\ResourceIdJsonCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Command\Transferencia\ListCommand as TransferenciaListCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
@@ -95,6 +96,48 @@ final class FinanceiroCommandModule implements CommandModuleInterface
       new ParcelaGetCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new BaixarCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
       new ParcelaListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new ResourceIdJsonCommand(
+          'baixa create',
+          'Registra uma baixa (quitação) para uma parcela',
+          $this->client->createBaixa(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Uuid da parcela',
+          'Payload JSON da baixa (data_pagamento, conta_financeira e composicao_valor obrigatórios)',
+      ),
+      new ResourceIdCommand(
+          'baixa list',
+          'Lista as baixas de uma parcela',
+          $this->client->listBaixasByParcela(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Uuid da parcela',
+      ),
+      new ResourceIdCommand(
+          'baixa get',
+          'Busca uma baixa por ID',
+          $this->client->getBaixa(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Uuid da baixa',
+      ),
+      new ResourceIdJsonCommand(
+          'baixa update',
+          'Atualiza parcialmente uma baixa',
+          $this->client->updateBaixa(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Uuid da baixa',
+          'Payload JSON da baixa (campo "versao" com a versão atual é obrigatório)',
+      ),
+      new ResourceIdCommand(
+          'baixa delete',
+          'Exclui uma baixa, impactando o saldo e o histórico financeiro da parcela',
+          $this->client->deleteBaixa(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Uuid da baixa',
+      ),
       new ContaFinanceiraListCommand(
           $this->client,
           $this->errorEnvelope,

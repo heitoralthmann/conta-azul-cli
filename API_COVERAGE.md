@@ -2,11 +2,11 @@
 
 Arquivo de controle: todos os endpoints publicados no [Portal do Desenvolvedor Conta Azul](https://developers.contaazul.com/aboutapis), agrupados por área funcional, com o que o `ca` já implementa marcado.
 
-**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Cobranças + Baixas — a última só parcialmente, ver abaixo), o recurso de **Protocolos** que ela depende para escritas assíncronas, e as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais**, **Vendas**, **Orçamentos** e **Captura**.
+**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Cobranças + Baixas), o recurso de **Protocolos** que ela depende para escritas assíncronas, e as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais**, **Vendas**, **Orçamentos** e **Captura**. Todos os 83 endpoints publicados no portal têm comando.
 
 Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md`, `src/Api/FinanceiroClient.php`, `src/Api/PessoasClient.php`, `src/Api/ProdutosClient.php` e `src/Api/ServicosClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
 
-**2026-08-19: o levantamento original ficou incompleto.** Uma varredura direta dos specs OpenAPI reais (não só da página `/aboutapis`) achou 3 áreas com endpoints nunca listados aqui: **Contratos** tinha só 3 dos 6 endpoints do spec (corrigido — `contrato get`/`delete`/`encerrar`); **Cobranças** era um spec OpenAPI próprio (`charge-apis-openapi`) que não aparece linkado na página inicial e não tinha nenhum comando (corrigido — `cobranca create`/`get`/`delete`); **Baixas** (`acquittance-apis-openapi`) segue inteiramente fora do CLI como recurso dedicado, ver subseção em Financeiro. Não há garantia de que a superfície completa da API já esteja mapeada — só o que foi ativamente verificado.
+**2026-08-19: o levantamento original ficou incompleto.** Uma varredura direta dos specs OpenAPI reais (não só da página `/aboutapis`) achou 3 áreas com endpoints nunca listados aqui, todas corrigidas na mesma sequência de sessões: **Contratos** tinha só 3 dos 6 endpoints do spec (`contrato get`/`delete`/`encerrar`); **Cobranças** (`charge-apis-openapi`) e **Baixas** (`acquittance-apis-openapi`) eram specs OpenAPI próprios que não aparecem linkados na página inicial e não tinham nenhum comando (`cobranca create`/`get`/`delete`; `baixa create`/`list`/`get`/`update`/`delete`). Como sempre, "todos os endpoints publicados" é o que foi ativamente verificado navegando o portal — não há garantia formal contra a Conta Azul publicar algo novo sem aviso.
 
 ---
 
@@ -20,12 +20,12 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 
 ## 💰 Financeiro / Cobranças / Baixas
 
-20 endpoints: 17 do spec `financial-apis-openapi` (o núcleo de Financeiro) + 3 do spec `charge-apis-openapi` (Cobranças). `src/Api/FinanceiroClient.php`.
+25 endpoints: 17 do spec `financial-apis-openapi` (o núcleo de Financeiro) + 3 do spec `charge-apis-openapi` (Cobranças) + 5 do spec `acquittance-apis-openapi` (Baixas). `src/Api/FinanceiroClient.php`.
 Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a API real em 2026-08-18;
 `parcela list` acrescentado em 2026-08-18 (path e schema conferidos direto na doc, endpoint ainda não exercitado contra a API real);
 `financeiro saldo-inicial` acrescentado em 2026-08-18, completando a sessão (path e query params conferidos direto na doc, endpoint ainda não exercitado contra a API real);
 `centro-de-custo create` acrescentado em 2026-08-18, completando o spec `financial-apis-openapi` — path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/financial-apis-openapi/v1), endpoint ainda não exercitado contra a API real.
-**Cobranças e Baixas são specs OpenAPI próprios** (`charge-apis-openapi`, `acquittance-apis-openapi`), descobertos em 2026-08-19 — não estavam linkados na página `/aboutapis` e nunca tinham sido levantados. Cobranças foi implementado na sequência (`cobranca create`/`get`/`delete`); Baixas como recurso dedicado segue fora do CLI, listado como subseção abaixo.
+**Cobranças e Baixas são specs OpenAPI próprios** (`charge-apis-openapi`, `acquittance-apis-openapi`), descobertos em 2026-08-19 — não estavam linkados na página `/aboutapis` e nunca tinham sido levantados. Ambos implementados na sequência (`cobranca create`/`get`/`delete`; `baixa create`/`list`/`get`/`update`/`delete`), completando a cobertura da API inteira.
 
 ### Centros de custo
 - [x] `GET /v1/centro-de-custo` — `centro-de-custo list`
@@ -62,13 +62,13 @@ Gera cobrança (boleto/PIX/link de pagamento) para a parcela de uma conta a rece
 - [x] `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` — `parcela baixar`
 - [x] `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas` — `parcela list`
 
-### Baixas (spec `acquittance-apis-openapi`) — fora do CLI
-Recurso dedicado de baixa (quitação), mais rico que o PATCH direto de `parcela baixar`: registra data, valor, juros, multa, desconto e método de pagamento; uma parcela pode ter mais de uma baixa (pagamento parcial). Path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/acquittance-apis-openapi/v1) em 2026-08-19; nunca exercitados contra a API real.
-- [ ] `POST /v1/financeiro/eventos-financeiros/parcelas/{parcela_id}/baixa` — criar uma nova baixa
-- [ ] `GET /v1/financeiro/eventos-financeiros/parcelas/{parcela_id}/baixa` — retornar as baixas pelo id da parcela
-- [ ] `GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{baixa_id}` — retornar a baixa por id
-- [ ] `PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{baixa_id}` — atualizar parcialmente uma baixa por id
-- [ ] `DELETE /v1/financeiro/eventos-financeiros/parcelas/baixa/{baixa_id}` — deletar baixa por id
+### Baixas (spec `acquittance-apis-openapi`)
+Recurso dedicado de baixa (quitação), mais rico que o PATCH direto de `parcela baixar`: registra data, valor, juros, multa, desconto e método de pagamento; uma parcela pode ter mais de uma baixa (pagamento parcial). `baixa update` exige o campo `versao` atual no payload — controle de concorrência otimista, a API o incrementa após o sucesso. Path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/acquittance-apis-openapi/v1); ainda não exercitados contra a API real. O DELETE documenta resposta `200 OK` sem schema de corpo — mesma observação de Cobranças.
+- [x] `POST /v1/financeiro/eventos-financeiros/parcelas/{parcela_id}/baixa` — `baixa create`; escrita síncrona, sem protocolo
+- [x] `GET /v1/financeiro/eventos-financeiros/parcelas/{parcela_id}/baixa` — `baixa list`; não pagina
+- [x] `GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{baixa_id}` — `baixa get`
+- [x] `PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{baixa_id}` — `baixa update`
+- [x] `DELETE /v1/financeiro/eventos-financeiros/parcelas/baixa/{baixa_id}` — `baixa delete`
 
 ### Eventos financeiros / diversos
 - [x] `GET /v1/financeiro/eventos-financeiros/alteracoes` — `financeiro alteracoes`
@@ -218,7 +218,7 @@ prévia.
 | Área | Implementados | Total |
 |---|---|---|
 | Autenticação | 3 | 3 |
-| Financeiro / Cobranças / Baixas | 20 | 25 |
+| Financeiro / Cobranças / Baixas | 25 | 25 |
 | Protocolos | 1 | 1 |
 | Contratos | 6 | 6 |
 | Pessoas / Fornecedores | 10 | 10 |
@@ -228,4 +228,4 @@ prévia.
 | Vendas | 9 | 9 |
 | Orçamentos | 4 | 4 |
 | Captura | 5 | 5 |
-| **Total** | **78** | **83** |
+| **Total** | **83** | **83** |
