@@ -11,6 +11,14 @@ no [README](README.md#contrato-de-saída).
 
 ### Added
 
+- **`PageSizeRule`.** Descreve a *forma* do limite de página de um endpoint —
+  degraus discretos ou qualquer inteiro até o teto —, porque medir só o teto
+  não descrevia `captura status`. Os demais endpoints seguem no padrão
+  anterior sem mudança de comportamento.
+- **Guarda local de 20 ids em `captura status`.** Acima disso a API responde
+  `400` ("O campo 'ids' não pode conter mais de 20 itens"); agora o CLI
+  recusa antes da ida à rede, como já fazia com o tamanho de página.
+
 - **`parcela update`.** Expõe `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}`
   pelo que ele é — atualização parcial da parcela (nota, descrição,
   vencimento, `composicao_valor`, método de pagamento, perda, `nsu`, conta
@@ -26,6 +34,22 @@ no [README](README.md#contrato-de-saída).
   usava as opções removidas.
 
 ### Fixed
+
+- **`captura status` só funcionava com um id.** O cliente mandava os ids
+  juntos num parâmetro só, separados por vírgula, seguindo o `explode: false`
+  do OpenAPI publicado — e é exatamente essa forma que a API recusa com
+  `400` ("O valor informado para o campo 'ids' é inválido"). Ela quer o
+  parâmetro repetido (`ids=a&ids=b`). Como as duas codificações são idênticas
+  para **um** id, todo teste de um id só passava, e a opção que existe para
+  consultar vários documentos de uma vez nunca funcionou. Varridas e
+  descartadas contra a produção: vírgula, espaço, `|`, `;`, JSON e `ids[]=`.
+- **`captura status --tamanho-pagina` era validado contra a regra errada, nos
+  dois sentidos.** Esse endpoint aceita **qualquer inteiro de 1 a 20**, e não
+  os degraus discretos (`10, 20, 50, …`) das demais listagens. Validá-lo com
+  a régua dos outros deixava `--tamanho-pagina 1000` chegar na API e voltar
+  `400`, e recusava localmente `15`, que a API aceita. É o único limite de
+  página do CLI que nunca tinha sido medido, por exigir um id de documento
+  real para chamar o endpoint.
 
 - **Nenhuma escrita assíncrona fazia polling.** O envelope de escrita aceita
   nomeia o campo `protocolo`; o CLI lia `protocolId`, nunca encontrava, e
@@ -54,6 +78,29 @@ no [README](README.md#contrato-de-saída).
 
 ### Documented
 
+- **Grupo `captura` verificado contra a produção** (5 comandos), encerrando a
+  campanha de verificação — resta só `produto ecommerce-categorias`, que
+  responde `400` sob todo parâmetro tentado. Exercitado com dois recibos em
+  PDF gerados para o teste, um aceito e um recusado. `COMMANDS.md` ganhou:
+  o `201` (não `200`) de `captura enviar`; o `415` com que a API recusa
+  formato não suportado; o fato de que **`captura enviar` cria um fornecedor
+  no cadastro de pessoas** antes de qualquer aceite, reaproveitando o
+  registro em documentos do mesmo CNPJ; que os ids da Captura são uuid **v7**;
+  que este grupo devolve erro num **terceiro envelope** (`{"error": …}`), com
+  rota inexistente caindo no `404 page not found` em texto puro do gateway;
+  que `sugestao_evento_financeiro`, declarado no OpenAPI e documentado aqui,
+  **nunca vem na resposta**; que `--descricao` é escrita sem leitura
+  correspondente; e as três respostas diferentes para "o recurso já mudou de
+  estado" — `aceitar` duas vezes devolve `200` sem criar segundo lançamento,
+  `recusar` duas vezes devolve `204` das duas, e `get` numa captura recusada
+  devolve `404`. Registrado também que **`aceitar` não tem volta** (cria
+  evento financeiro, que a API não deixa apagar) enquanto **`recusar` tem**:
+  recusar todas as capturas tira o documento da listagem, e é o único jeito,
+  já que `DELETE /v1/captura/documentos/{id}` não existe.
+- **O caminho `/_bundle/open-api-docs/{slug}.json` voltou a funcionar** — via
+  `fetch()` de dentro da página, já que curl leva 403 —, e por ele saiu a
+  spec inteira da Captura, que não é linkada em `/aboutapis`. Com a ressalva
+  registrada: essa spec **estava errada** sobre a codificação de `ids`.
 - **Grupo `financeiro` verificado contra a produção** (16 comandos), fechando
   a campanha iniciada em 2026-08-15. `COMMANDS.md` ganhou o payload mínimo
   real de `conta-a-receber create` — que a documentação oficial erra em dois

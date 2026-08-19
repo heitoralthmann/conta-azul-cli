@@ -118,6 +118,34 @@ trait ApiClientFactory
     );
   }
 
+  /**
+   * A CapturaClient that records the outgoing request URL.
+   *
+   * Only the URL is kept: `MockResponse::fromRequest()` drains a multipart
+   * body closure as soon as the factory returns, so touching `$options`
+   * ['body'] here would consume the upload stream that the client under
+   * test is still building.
+   *
+   * @param array{method: string, url: string}|null $captured
+   */
+  protected function capturaClientRecording(array|null &$captured): CapturaClient {
+    $http = new MockHttpClient(
+        static function (string $method, string $url) use (&$captured): MockResponse {
+          $captured = ['method' => $method, 'url' => $url];
+
+          return new MockResponse('{}', ['http_code' => 200]);
+        },
+    );
+
+    return new CapturaClient(
+        $this->testConfiguration(),
+        $this->testAuthManager('test-access-token'),
+        new Logger(new Redactor()),
+        new Redactor(),
+        $http,
+    );
+  }
+
   /** A 200 response with a JSON-encoded body. */
   protected function jsonResponse(mixed $data, int $status = 200): MockResponse {
     return new MockResponse(

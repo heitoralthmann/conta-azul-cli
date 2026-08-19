@@ -125,7 +125,16 @@ final class CapturaClientTest extends TestCase
     self::assertStringNotContainsString('name="descricao"', $body);
   }
 
-  public function testStatusDocumentosJoinsIdsWithCommaAndSendsPagination(): void {
+  /**
+   * The published OpenAPI declares `style: form, explode: false` for `ids`,
+   * i.e. comma-joined — and production answers `400` ("O valor informado
+   * para o campo 'ids' é inválido") to that form. It wants the parameter
+   * repeated. Verified against production on 2026-08-19.
+   *
+   * parse_str() cannot express this: it keeps only the last of the repeated
+   * keys, so the query string is asserted directly.
+   */
+  public function testStatusDocumentosRepeatsTheIdsParameterInsteadOfJoiningWithComma(): void {
     $captured = null;
     $client   = $this->clientRecording($captured);
 
@@ -137,10 +146,50 @@ final class CapturaClientTest extends TestCase
         'https://api-v2.contaazul.com/v1/captura/documentos/status',
         strtok($captured['url'], '?'),
     );
+
+    $query = (string) parse_url($captured['url'], PHP_URL_QUERY);
+    self::assertStringContainsString('ids=doc-1&ids=doc-2', $query);
+    self::assertStringNotContainsString('doc-1,', $query);
+    self::assertStringNotContainsString('doc-1%2C', $query);
+    self::assertStringNotContainsString('ids[0]', $query);
+    self::assertStringNotContainsString('ids%5B', $query);
+  }
+
+  public function testStatusDocumentosSendsPaginationAlongsideTheRepeatedIds(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->statusDocumentos(['doc-1', 'doc-2'], 2, 20);
+
+    self::assertNotNull($captured);
     parse_str((string) parse_url($captured['url'], PHP_URL_QUERY), $query);
-    self::assertSame('doc-1,doc-2', $query['ids'] ?? null);
     self::assertSame('2', $query['pagina'] ?? null);
     self::assertSame('20', $query['tamanho_pagina'] ?? null);
+  }
+
+  public function testStatusDocumentosUrlEncodesEachId(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->statusDocumentos(['doc 1/a', 'doc-2']);
+
+    self::assertNotNull($captured);
+    self::assertStringContainsString(
+        'ids=doc%201%2Fa&ids=doc-2',
+        (string) parse_url($captured['url'], PHP_URL_QUERY),
+    );
+  }
+
+  public function testStatusDocumentosStillWorksForASingleId(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->statusDocumentos(['doc-1']);
+
+    self::assertNotNull($captured);
+    $query = (string) parse_url($captured['url'], PHP_URL_QUERY);
+    self::assertStringContainsString('ids=doc-1', $query);
+    self::assertStringNotContainsString('ids=doc-1&ids=', $query);
   }
 
   public function testGetCapturaUsesTheDocumentedPathAndUrlEncodesTheId(): void {

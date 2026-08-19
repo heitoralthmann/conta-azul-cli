@@ -9,9 +9,13 @@ use ContaAzulCli\Command\Captura\StatusCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Console\Command\Command;
 
+use function array_map;
+use function implode;
 use function json_decode;
+use function range;
 
 final class StatusCommandTest extends CommandTestCase
 {
@@ -47,7 +51,13 @@ final class StatusCommandTest extends CommandTestCase
     self::assertSame('client_error', json_decode($output->stderr(), true)['kind']);
   }
 
-  public function testInvalidPageSizeIsRenderedAsClientError(): void {
+  /**
+   * This endpoint stops at 20, unlike almost every other listing. Sizes the
+   * API refuses must not reach it — `7` used to be the case here, but the
+   * endpoint actually accepts it (see the test below).
+   */
+  #[DataProvider('pageSizesTheEndpointRefuses')]
+  public function testPageSizeAboveTheEndpointMaximumIsRenderedAsClientError(string $size): void {
     $output  = $this->newOutput();
     $command = new StatusCommand(
         $this->capturaClient([]),
@@ -56,9 +66,79 @@ final class StatusCommandTest extends CommandTestCase
         new PaginationValidator(),
     );
 
-    $tester = $this->runCommand($command, ['--ids' => 'doc-1', '--tamanho-pagina' => '7']);
+    $tester = $this->runCommand($command, ['--ids' => 'doc-1', '--tamanho-pagina' => $size]);
 
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
     self::assertSame('client_error', json_decode($output->stderr(), true)['kind']);
+  }
+
+  /** @return list<array{string}> */
+  public static function pageSizesTheEndpointRefuses(): array {
+    return [['0'], ['21'], ['50'], ['100'], ['1000']];
+  }
+
+  /**
+   * `captura status` takes any integer in 1..20. Validating it against the
+   * discrete steps the other listings use rejected sizes production
+   * answers `200` to — measured on 2026-08-19.
+   */
+  #[DataProvider('pageSizesTheEndpointAccepts')]
+  public function testPageSizeWithinTheEndpointRangeReachesTheApi(string $size): void {
+    $output  = $this->newOutput();
+    $command = new StatusCommand(
+        $this->capturaClient([$this->jsonResponse(['itens' => []])]),
+        new ErrorEnvelope($output),
+        new JsonRenderer($output),
+        new PaginationValidator(),
+    );
+
+    $tester = $this->runCommand($command, ['--ids' => 'doc-1', '--tamanho-pagina' => $size]);
+
+    self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+    self::assertSame('', $output->stderr());
+  }
+
+  /** @return list<array{string}> */
+  public static function pageSizesTheEndpointAccepts(): array {
+    return [['1'], ['7'], ['15'], ['20']];
+  }
+
+  /**
+   * The endpoint answers `400` ("O campo 'ids' não pode conter mais de 20
+   * itens") above twenty, so the CLI stops it before the round trip.
+   */
+  public function testMoreThanTwentyIdsIsRejectedWithoutCallingTheApi(): void {
+    $output  = $this->newOutput();
+    $command = new StatusCommand(
+        $this->capturaClient([]),
+        new ErrorEnvelope($output),
+        new JsonRenderer($output),
+        new PaginationValidator(),
+    );
+
+    $ids = implode(',', array_map(static fn (int $i): string => 'doc-' . $i, range(1, 21)));
+
+    $tester = $this->runCommand($command, ['--ids' => $ids]);
+
+    self::assertSame(Command::FAILURE, $tester->getStatusCode());
+    self::assertSame('', $output->stdout());
+    self::assertSame('client_error', json_decode($output->stderr(), true)['kind']);
+  }
+
+  public function testExactlyTwentyIdsIsAccepted(): void {
+    $output  = $this->newOutput();
+    $command = new StatusCommand(
+        $this->capturaClient([$this->jsonResponse(['itens' => []])]),
+        new ErrorEnvelope($output),
+        new JsonRenderer($output),
+        new PaginationValidator(),
+    );
+
+    $ids = implode(',', array_map(static fn (int $i): string => 'doc-' . $i, range(1, 20)));
+
+    $tester = $this->runCommand($command, ['--ids' => $ids]);
+
+    self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+    self::assertSame('', $output->stderr());
   }
 }

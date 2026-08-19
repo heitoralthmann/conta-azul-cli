@@ -198,18 +198,24 @@ Sessão implementada em 2026-08-18; paths e schemas conferidos direto no
 OpenAPI renderizado
 (https://developers.contaazul.com/open-api-docs/developer-platform-open-api-capture/v1),
 via Chrome (`_bundle/open-api-docs/developer-platform-open-api-capture.json`),
-já que o portal bloqueia `WebFetch`/`curl` — ainda não exercitada contra a
-API real. Fluxo: `captura enviar` sobe o arquivo e devolve `id` (do
+já que o portal bloqueia `WebFetch`/`curl`. **Exercitada contra a produção em
+2026-08-19**, quando a codificação de `ids` declarada nesse OpenAPI se
+mostrou errada. Fluxo: `captura enviar` sobe o arquivo e devolve `id` (do
 documento); `captura status` consulta esse `id` e devolve, quando pronta, a
 `id_captura`; `captura get` traz a prévia extraída pela IA para essa
 `id_captura`; `captura aceitar`/`captura recusar` decidem o que fazer com a
 prévia.
 
-- [x] `POST /v1/captura/documentos` — `captura enviar`; multipart/form-data (`arquivo` obrigatório — PDF/JPEG/PNG/BMP até 10 MB —, `descricao` opcional)
-- [x] `GET /v1/captura/documentos/status` — `captura status`; `ids` aceita até 20 valores separados por vírgula
-- [x] `GET /v1/captura/{id}` — `captura get`; busca os dados extraídos por `id_captura`
-- [x] `POST /v1/captura/{id}` — `captura aceitar`; sem corpo, cria o evento financeiro a partir da prévia
-- [x] `DELETE /v1/captura/{id}` — `captura recusar`; sem corpo, resposta `204 No Content`
+Duas consequências fora deste grupo, medidas na verificação: **`captura
+enviar` grava um fornecedor no cadastro de pessoas** assim que a extração
+termina (antes de qualquer aceite), e **`captura aceitar` cria um evento
+financeiro que a API não publica `DELETE` para apagar**.
+
+- [x] `POST /v1/captura/documentos` — `captura enviar`; multipart/form-data (`arquivo` obrigatório — PDF/JPEG/PNG/BMP até 10 MB —, `descricao` opcional); resposta **`201`**
+- [x] `GET /v1/captura/documentos/status` — `captura status`; `ids` **repetido** (`ids=a&ids=b`), até 20 valores; a vírgula que o OpenAPI declara devolve `400`; `tamanho_pagina` aceita qualquer inteiro de 1 a 20
+- [x] `GET /v1/captura/{id}` — `captura get`; busca os dados extraídos por `id_captura`; a prévia só vem em `PENDENTE`, e `404` depois da recusa
+- [x] `POST /v1/captura/{id}` — `captura aceitar`; sem corpo, cria o evento financeiro a partir da prévia; idempotente (repetir não cria segundo lançamento)
+- [x] `DELETE /v1/captura/{id}` — `captura recusar`; sem corpo, resposta `204 No Content`; idempotente; `409` se a captura já foi aceita
 
 ---
 

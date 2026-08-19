@@ -26,7 +26,7 @@ Cada endpoint traz uma marca de confiança:
 > listados nas seções `⚠️` abaixo saíram da documentação, não de uma
 > chamada real.
 >
-> Oito grupos verificados depois, **todos tinham pelo menos um defeito**, mas
+> Nove grupos verificados depois, **todos tinham pelo menos um defeito**, mas
 > o defeito mudou de lugar: os quatro do meio (`venda`, `orcamento`,
 > `contrato`, `notas fiscais`) não tinham filtro errado nenhum. Erraram em
 > campo obrigatório não documentado, par de campos trocado entre escrita e
@@ -34,12 +34,19 @@ Cada endpoint traz uma marca de confiança:
 > que o próprio endpoint recusa**, fazendo o comando sem argumentos falhar
 > sempre.
 >
-> E o grupo `financeiro`, verificado por último, mostrou que o risco também
+> E o grupo `financeiro` mostrou que o risco também
 > mora no **código do CLI**, não só nos nomes que ele manda: uma chave de
 > resposta lida errado desligava o polling de toda escrita assíncrona, um
 > `200` de corpo vazio fazia um delete bem-sucedido sair com código `1`, e um
 > comando apontava para um endpoint que existe mas serve para outra coisa —
 > respondendo `200` sem fazer nada do que prometia.
+>
+> `captura`, verificado por último, mostrou o defeito que **sobrevive a
+> testes**: a API recusa a codificação de `ids` que a spec dela mesma
+> declara, e como as duas formas coincidem para **um** id, o comando
+> funcionava em todo teste que passasse um id só. O mesmo grupo trouxe a
+> primeira listagem cujo limite de página não é uma lista de valores, e a
+> primeira leitura que **escreve em outro cadastro** sem dizer.
 
 ---
 
@@ -125,11 +132,11 @@ Cada endpoint traz uma marca de confiança:
 | `orcamento create` | `POST /v1/orcamentos` | ✅ |
 | `orcamento get` | `GET /v1/orcamentos/{id}` | ✅ |
 | `orcamento excluir-lote` | `DELETE /v1/orcamentos` | ✅ |
-| `captura enviar` | `POST /v1/captura/documentos` | ⚠️ |
-| `captura status` | `GET /v1/captura/documentos/status` | ⚠️ |
-| `captura get` | `GET /v1/captura/{id}` | ⚠️ |
-| `captura aceitar` | `POST /v1/captura/{id}` | ⚠️ |
-| `captura recusar` | `DELETE /v1/captura/{id}` | ⚠️ |
+| `captura enviar` | `POST /v1/captura/documentos` | ✅ |
+| `captura status` | `GET /v1/captura/documentos/status` | ✅ |
+| `captura get` | `GET /v1/captura/{id}` | ✅ |
+| `captura aceitar` | `POST /v1/captura/{id}` | ✅ |
+| `captura recusar` | `DELETE /v1/captura/{id}` | ✅ |
 
 ¹ `produto ecommerce-categorias` foi exercitado e **respondeu 400 em todas as tentativas**, inclusive sem nenhum parâmetro. Ver a seção de Produtos.
 
@@ -213,11 +220,24 @@ Nessas três, `--tamanho-pagina 200` falha na hora com
 validação usava a lista larga para todo mundo, então o `200` passava aqui e
 voltava `400` de lá — justamente o que validar localmente deveria evitar.
 
+**E uma listagem não usa lista discreta nenhuma.** `captura status` aceita
+**qualquer inteiro de 1 a 20** — `1`, `5` e `15` respondem `200`, e só `21`
+para cima responde `400` ("O valor do atributo 'tamanho_pagina' deve ser no
+máximo 20"). Medido em 2026-08-19, depois que um id de documento real
+finalmente permitiu chamar o endpoint. Validá-lo contra os degraus discretos
+errava **nos dois sentidos**: deixava `1000` chegar na API (que recusa) e
+recusava `15` (que a API aceita). Por isso a validação passou a distinguir a
+*forma* da regra, não só o teto — veja `PageSizeRule`.
+
+| Listagem | Regra |
+|---|---|
+| `captura status` | qualquer inteiro em `1..20` |
+| todas as outras | os degraus discretos acima |
+
 Os limites foram **medidos** endpoint a endpoint contra a produção, não
 deduzidos: aceitam `1000` as listagens de produtos (e seus catálogos),
 pessoas, vendas, itens de venda, orçamentos, contratos, transferências,
 contas a pagar/receber, categorias, centros de custo e contas financeiras.
-Só `captura status` ficou sem medir, por exigir um id de documento real.
 
 E o nome do campo de contagem **não é o mesmo em todo lugar**:
 
@@ -231,6 +251,7 @@ E o nome do campo de contagem **não é o mesmo em todo lugar**:
 | `{itens[], itens_totais, totais}` | `venda itens` |
 | `{itens[], total_itens}` | `orcamento list` |
 | `{itens_totais, itens[]}` | `contrato list` |
+| `{itens[], paginacao{pagina_atual, tamanho_pagina, total_itens, total_paginas}}` | `captura status` |
 
 `venda` sozinha traz duas dessas variações — a listagem e os itens de uma
 venda usam formatos diferentes. E `contrato list` mostra por que nem o nome
@@ -1885,18 +1906,59 @@ termina, devolve a `id_captura`; `captura get` traz a prévia extraída para
 essa `id_captura`; `captura aceitar`/`captura recusar` decidem o que fazer
 com a prévia.
 
-### `captura enviar` ⚠️
+Verificado contra a produção em 2026-08-19 com dois recibos em PDF gerados
+para o teste. **É o único grupo que escreve em outro cadastro sem avisar** e
+o único cujo `id` de recurso não é uuid v4 — veja as duas notas abaixo.
 
-`POST /v1/captura/documentos` — multipart/form-data.
+> **`captura enviar` cria um fornecedor no cadastro de pessoas.** Não é o
+> `aceitar` que faz isso: assim que a IA termina de extrair, o
+> `previa_evento_financeiro.fornecedor` já vem com um `id` que
+> `pessoa get` resolve, com `criado_em` do dia e perfil `Fornecedor`. Um
+> segundo documento do mesmo CNPJ reaproveita o registro em vez de duplicar.
+> Ou seja: **subir um documento é uma escrita no cadastro de pessoas**, não
+> uma leitura. Quem for exercitar isso em produção deve contar com esse
+> registro a mais.
+
+> **Os ids da Captura são uuid v7**, não v4 (`01a01a96-61f5-7007-…`, com `7`
+> na posição da versão). Qualquer validação local que exija v4 recusaria um
+> id legítimo. A API, por sua vez, valida o formato: um id que não é uuid
+> devolve `400` ("O ID da captura informado é inválido") e um uuid válido
+> porém inexistente devolve `404` ("Captura não encontrada com o ID
+> informado").
+
+> **Este grupo devolve erro em outro envelope.** Onde o resto da API usa
+> `{"timestamp", "status", "error", "message", "path"}`, a Captura responde
+> `{"error": "mensagem"}`. Serve para distinguir rota inexistente de id
+> inexistente: `/v1/captura/documentos/{id}` (rota que não existe) devolve o
+> `404 page not found` em **texto puro** do gateway, enquanto as rotas reais
+> devolvem JSON.
+
+### `captura enviar` ✅
+
+`POST /v1/captura/documentos` — multipart/form-data. Responde **`201`**, não
+`200`.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
 | `<arquivo>` | **sim** | Argumento posicional. Caminho de um arquivo local (PDF, JPEG, PNG ou BMP; máximo de 10 MB) |
 | `--descricao` | não | Descrição do documento (máximo de 255 caracteres) |
 
-O CLI valida que o arquivo existe e é legível antes de enviar. Retorna `{id, nome}`, onde `id` identifica o documento para `captura status`.
+O CLI valida que o arquivo existe e é legível antes de enviar. Retorna
+`{id, nome}`, onde `id` identifica o documento para `captura status`.
 
-### `captura status` ⚠️
+O **tipo do arquivo é validado pela API**, não pelo CLI: um `.txt` volta
+`415` com "Formato não suportado. Aceitos: PDF, JPEG, PNG, BMP." — mensagem
+clara o bastante para não valer duplicar a regra localmente.
+
+> **`--descricao` é escrita sem leitura.** Nenhuma das três respostas de
+> leitura (`status`, `get`, `aceitar`) devolve a descrição enviada, e a
+> descrição do evento financeiro criado vem do **texto que a IA extraiu do
+> documento**, não dela. Serve para o histórico na interface web; pelo CLI
+> não há como conferir o que foi gravado. O limite de 255 caracteres ficou
+> **sem exercitar**: comprová-lo exigiria mais um upload, e documento
+> enviado não tem como ser apagado (veja `captura recusar`).
+
+### `captura status` ✅
 
 `GET /v1/captura/documentos/status`
 
@@ -1904,11 +1966,41 @@ O CLI valida que o arquivo existe e é legível antes de enviar. Retorna `{id, n
 |---|---|---|---|
 | `--ids` | **sim** | — | IDs de documentos separados por vírgula (até 20) |
 | `--pagina` | não | `1` | Número da página |
-| `--tamanho-pagina` | não | `10` | Itens por página (máximo 20) |
+| `--tamanho-pagina` | não | `10` | Itens por página (**qualquer inteiro de 1 a 20**) |
 
-Retorna `{itens[], paginacao}`; cada item traz `status_documento` e a lista de `capturas` geradas (pode estar vazia). O processamento é assíncrono — repita a consulta até o status chegar a um estado final.
+Retorna `{itens[], paginacao}`; cada item traz `status_documento` e a lista
+de `capturas` geradas (pode estar vazia). O processamento é assíncrono —
+repita a consulta até o status chegar a um estado final. Aqui o
+`total_itens` **confere** com `len(itens)`.
 
-### `captura get` ⚠️
+> **`--ids` com mais de um id nunca funcionou até 2026-08-19.** O OpenAPI
+> publicado declara `style: form, explode: false` — os ids juntos num
+> parâmetro só, separados por vírgula — e a API responde `400` ("O valor
+> informado para o campo 'ids' é inválido") exatamente a essa forma. Ela quer
+> o parâmetro **repetido**: `ids=a&ids=b`. Com **um** id as duas formas
+> coincidem, e foi por isso que o defeito atravessou incólume todo teste que
+> passava um id só. Varridas e descartadas: vírgula, espaço, `|`, `;`, JSON
+> e `ids[]=` (todas `400`). Funciona também `ids[0]=a&ids[1]=b`, que é o que
+> a opção `query` do Symfony geraria — mas o CLI manda a forma repetida, que
+> é a canônica.
+
+Limites medidos, todos com mensagem própria: mais de 20 ids devolve `400`
+("O campo 'ids' não pode conter mais de 20 itens"), e o CLI passou a barrar
+isso antes da ida à API. `--ids` vazio ou ausente é recusado pela própria
+API (`400`), sem descarte silencioso — ao contrário do que acontece com
+parâmetro desconhecido, que aqui também some sem avisar (`zzz_bogus=abc`
+devolve a resposta inalterada).
+
+Estados possíveis, do OpenAPI e confirmados no fluxo real —
+`status_documento`: `PENDENTE`, `PROCESSANDO`, `EXTRAINDO_DADOS`,
+`APLICANDO_REGRAS`, `AGUARDANDO_VINCULO_LANCAMENTO`,
+`CRIANDO_LANCAMENTOS_FINANCEIROS`, `PRONTO`, `IGNORADO`, `RESOLVIDO`,
+`ERRO`, `EXCLUIDO`; `status_captura`: `PROCESSANDO`, `PENDENTE`, `ACEITA`,
+`REJEITADA`, `FALHA`. Na verificação o documento percorreu
+`EXTRAINDO_DADOS` → `AGUARDANDO_VINCULO_LANCAMENTO` → `PRONTO` em poucos
+segundos, e foi para `RESOLVIDO` depois do aceite.
+
+### `captura get` ✅
 
 `GET /v1/captura/{id}`
 
@@ -1916,27 +2008,74 @@ Retorna `{itens[], paginacao}`; cada item traz `status_documento` e a lista de `
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. `id_captura`, obtido em `captura status` |
 
-Retorna `{id, id_documento, status, previa_evento_financeiro, sugestao_evento_financeiro}`. A prévia e a sugestão só vêm preenchidas quando `status` é `PENDENTE`.
+Retorna `{id, id_documento, status, previa_evento_financeiro}`. A prévia só
+vem enquanto `status` é `PENDENTE`: depois do aceite a resposta encolhe para
+`{id, id_documento, status}`, e depois da recusa o `get` passa a responder
+**`404`**.
 
-### `captura aceitar` ⚠️
+> **`sugestao_evento_financeiro` não existe na resposta real.** O OpenAPI a
+> declara e este arquivo a documentava; a API nunca a devolveu, nem com a
+> captura em `PENDENTE`. Documentar campo de resposta a partir da spec é o
+> mesmo erro que documentar filtro a partir dela.
 
-`POST /v1/captura/{id}` — sem corpo.
+A `previa_evento_financeiro` traz `tipo`, `valor`, `data_competencia`,
+`descricao`, `observacao`, `referencia_externa`, `fornecedor{id, nome,
+documento}`, `categoria{id, nome}` e `parcelas[]` com `data_vencimento`,
+`metodo_pagamento` e `composicao_valor`. Tanto o `fornecedor.id` quanto o
+`categoria.id` apontam para registros que existem de verdade no cadastro.
+
+### `captura aceitar` ✅
+
+`POST /v1/captura/{id}` — sem corpo. Responde `200`.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. `id_captura` cuja prévia será aceita |
 
-Cria o evento financeiro a partir da prévia e retorna `{id, status, evento_financeiro}`.
+Cria o evento financeiro a partir da prévia e retorna
+`{id, status, evento_financeiro{id, valor, tipo, data_competencia,
+descricao}}`.
 
-### `captura recusar` ⚠️
+> **Não há volta.** O evento financeiro criado é uma conta a pagar/receber
+> comum, e a API **não publica `DELETE` de evento financeiro** — só sai pela
+> interface web. Some-se a isso que o documento também não tem `DELETE` e a
+> captura aceita não pode mais ser recusada: `aceitar` é a transição mais
+> cara do CLI inteiro. Decida antes de chamar.
 
-`DELETE /v1/captura/{id}` — sem corpo.
+> **É idempotente, e isso é a parte boa.** Chamar `aceitar` de novo na mesma
+> captura devolve `200` com `{id, status: "ACEITA"}` e **sem**
+> `evento_financeiro` — não cria um segundo lançamento. Conferido contando
+> `conta-a-pagar list` antes e depois: 37 → 38, com duas chamadas de aceite.
+
+O evento criado guarda o caminho de volta: em `parcela get`, o
+`evento.referencia` vem `{id: <id_captura>, origem: "LANCAMENTO_FINANCEIRO"}`.
+É o único vínculo legível entre o financeiro e a captura que o originou.
+
+### `captura recusar` ✅
+
+`DELETE /v1/captura/{id}` — sem corpo. Resposta **`204 No Content`**,
+renderizada como `[]`.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. `id_captura` a ser recusada |
 
-Resposta `204 No Content` — sem corpo. Uma captura já aceita, ou ainda em processamento, não pode ser recusada.
+> **É o único caminho de volta do grupo, e funciona.** Recusar a captura tira
+> o documento da listagem de status — comprovado: consultar os dois ids
+> enviados passou a devolver só o outro. Como não existe
+> `DELETE /v1/captura/documentos/{id}` (a rota devolve o `404 page not found`
+> do gateway), recusar é a **única** forma de fazer um documento enviado
+> desaparecer. Se você for exercitar este grupo, planeje recusar tudo que
+> não precisar aceitar.
+
+Depois da recusa, `captura get` no mesmo id responde `404` — a captura sai do
+caminho de leitura de vez. Mas **recusar de novo continua respondendo `204`
+e saindo com código `0`**: a recusa é idempotente e nunca acusa "já
+recusada", ao contrário do `get`.
+
+Uma captura **já aceita** não pode ser recusada: `409` ("A captura não pode
+ser recusada no status atual (já foi aceita ou está em processamento)"),
+que o CLI classifica corretamente como `client_error` e sai com `1`.
 
 ---
 
@@ -2024,7 +2163,12 @@ tail -5 ~/.cache/conta-azul-cli/log.jsonl
 16. **`200` com corpo vazio não é a mesma coisa que `204`.** `cobranca delete` e `baixa delete` respondem `200` sem corpo. Enquanto o CLI tratava o caso vazio só para `204`, o parser estourava, a exceção escapava do `CommandExecutor` (que só pega `CliException`) e **um delete bem-sucedido imprimia a linha de uso do Symfony e saía com código `1`**. Ao integrar um delete, confirme o status *e* o corpo.
 17. **Nem todo campo obrigatório vira `400`.** Falta de `versao` responde **`409`** em `baixa update` e `parcela update`. E em `cobranca create` um payload incompleto responde **`500`**, que o CLI classifica como `ambiguous` e manda reconciliar — reconcilie mesmo: na verificação, nada tinha sido criado.
 18. **Um endpoint pode ter data de corte que a documentação não menciona.** `financeiro saldo-inicial` e `financeiro alteracoes` recusam intervalo maior que **365 dias**. Como o default do CLI é o mês corrente, nenhum teste que passa datas explícitas curtas encontra isso.
-19. **Escrever é fácil; desfazer é que pode não existir.** A API não publica `DELETE` para evento financeiro (contas a receber/pagar) nem para centro de custo — `DELETE`, `PUT` e `PATCH` nesses paths devolvem o `404` genérico de rota inexistente. Antes de criar registro de teste num grupo, **verifique se existe caminho de volta**. Para distinguir "rota não existe" de "id não existe", compare a mensagem: rota inexistente devolve `"message":"Not Found"`; rota real com id desconhecido devolve `"message":"O recurso solicitado não foi encontrado"`.
+19. **Escrever é fácil; desfazer é que pode não existir.** A API não publica `DELETE` para evento financeiro (contas a receber/pagar) nem para centro de custo — `DELETE`, `PUT` e `PATCH` nesses paths devolvem o `404` genérico de rota inexistente. Antes de criar registro de teste num grupo, **verifique se existe caminho de volta**. Para distinguir "rota não existe" de "id não existe", compare a mensagem: rota inexistente devolve `"message":"Not Found"`; rota real com id desconhecido devolve `"message":"O recurso solicitado não foi encontrado"`. Em `captura` nem essa comparação serve: lá a rota inexistente devolve `404 page not found` em **texto puro**, e as reais devolvem `{"error": "…"}` — um terceiro envelope de erro.
+20. **A codificação de um parâmetro de lista também precisa ser exercitada.** `captura status` manda `ids`, e o OpenAPI publicado declara `explode: false` (vírgula). A API responde `400` a essa forma: ela quer `ids` **repetido**. Com um item só as duas formas são idênticas — então o defeito sobrevive a qualquer teste de um id só, que é exatamente o teste que se escreve primeiro. Ao integrar um parâmetro que aceita vários valores, **teste com dois**.
+21. **A regra de `tamanho_pagina` pode não ser uma lista de valores.** Todas as listagens medidas até então recusavam qualquer coisa fora de `10, 20, 50, …`; `captura status` aceita **qualquer inteiro de 1 a 20**. Validar contra os degraus discretos errava nos dois sentidos ao mesmo tempo — deixava passar `1000` (que a API recusa) e recusava `15` (que ela aceita). Meça a *forma* do limite, não só o teto: mande `15` e veja se passa.
+22. **Uma leitura pode escrever em outro cadastro.** `captura enviar` sobe um arquivo — e, ao terminar a extração, o fornecedor identificado **já existe** no cadastro de pessoas, com `criado_em` do dia. Nenhum aceite foi dado ainda. Ao mapear o efeito colateral de um comando, não pare no recurso que ele nomeia.
+23. **Nem todo id da API é uuid v4.** Os ids da Captura são uuid **v7** (`01a01a96-61f5-7007-…`). Uma validação local de formato que exigisse v4 recusaria id legítimo.
+24. **Idempotência varia entre operações irmãs.** Em `captura`, aceitar duas vezes devolve `200` e não cria segundo lançamento; recusar duas vezes devolve `204` das duas; mas `get` numa captura recusada devolve `404`. Três respostas diferentes para "o recurso já saiu do estado que você esperava".
 
 Nunca deduza da documentação **nem o path, nem o nome de um filtro, nem o
 nome de um campo do payload, nem o tipo de um id, nem o formato da
@@ -2056,7 +2200,7 @@ qualquer filtro que recebe. Se você mexer em `$filters` num
 | `contrato` | ✅ 6/6 (2026-08-19) — nenhum bug de filtro; payload de criação bem maior que o documentado e `delete` é lógico, não permanente |
 | `notas fiscais` | ✅ 4/4 (2026-08-19) — default de data que o próprio endpoint recusava |
 | `financeiro` | ✅ 16/16 (2026-08-19) — o grupo com mais defeitos de código da campanha: polling que nunca acontecia, delete que reportava falha ao dar certo, e um comando apontando para o endpoint errado |
-| `captura` | ⚠️ nunca exercitado — trate os filtros como suspeitos |
+| `captura` | ✅ 5/5 (2026-08-19) — a codificação de `ids` que o OpenAPI declara é recusada pela API, e o único limite de página que não é lista de valores |
 
 `venda list` quebrou a sequência: era o grupo de mais filtros e todos os oito
 existiam. Não conclua daí que dá para confiar na documentação — a mesma
@@ -2073,6 +2217,19 @@ não documentado, campo aninhado em lugar inesperado, chave de resposta com
 outro nome, contador que não conta, e dois pares de campos que trocam de
 lugar entre escrita e leitura.
 
-Lista autoritativa de operações: https://developers.contaazul.com/docs/financial-apis-openapi/v1 — o portal bloqueia `curl` e fetch automatizado (403), então abra no navegador. Só três specs aparecem linkadas em `/aboutapis` (financial, sales, contracts); produtos, serviços e pessoas **não têm spec pública encontrável**, e o caminho `/_bundle/open-api-docs/{slug}.json`, que já funcionou, hoje devolve 404 — na prática, esses grupos só se descobrem exercitando.
+Lista autoritativa de operações: https://developers.contaazul.com/docs/financial-apis-openapi/v1 — o portal bloqueia `curl` e fetch automatizado (403), então abra no navegador. Só três specs aparecem linkadas em `/aboutapis` (financial, sales, contracts); produtos, serviços e pessoas **não têm spec pública encontrável** e só se descobrem exercitando.
+
+O caminho `/_bundle/open-api-docs/{slug}.json` **voltou a funcionar** — pelo
+menos para `developer-platform-open-api-capture`, cuja spec inteira saiu por
+ele em 2026-08-19, com os schemas que a página renderizada só mostra clicando
+em "Show N properties". O truque é buscá-lo **de dentro da página**, com
+`fetch()` no console do navegador: como curl leva 403, a requisição precisa
+sair da origem já autenticada. A spec da Captura não é linkada em
+`/aboutapis`; a URL renderizada dela é
+`/open-api-docs/developer-platform-open-api-capture/v1`.
+
+E vale o aviso de sempre: **essa spec estava errada**. Ela declara `ids` com
+`explode: false`, forma que a própria API recusa com `400`. Ter a spec em
+JSON acelera a descoberta; não substitui exercitar.
 
 Ver também: [`README.md`](README.md) para instalação, configuração e OAuth; [`docs/financial-apis-openapi.yaml`](docs/financial-apis-openapi.yaml) para o inventário de endpoints usado na detecção de drift.

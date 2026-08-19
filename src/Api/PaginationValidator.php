@@ -33,6 +33,15 @@ final class PaginationValidator
    */
   public const int CAPPED_MAX_SIZE = 100;
 
+  /**
+   * Page size accepted by `GET /v1/captura/documentos/status`.
+   *
+   * Pairs with {@see PageSizeRule::AnySizeUpToMax}: this endpoint takes any
+   * integer in `1..20`, not the discrete steps the others insist on.
+   * Measured against production on 2026-08-19.
+   */
+  public const int CAPTURA_MAX_SIZE = 20;
+
   private const array VALID_SIZES = [10, 20, 50, 100, 200, 500, 1000];
 
   /**
@@ -44,9 +53,31 @@ final class PaginationValidator
    * widest list let `--tamanho-pagina 200` reach the API and come back
    * `400`, which defeats the point of validating locally at all.
    *
+   * `$rule` exists for the same reason one level down: the ceiling alone
+   * does not describe `captura status`, which accepts every integer below
+   * its own. Validating it against the discrete steps was wrong in both
+   * directions — it let `1000` through to a `400` and rejected `15`, which
+   * the endpoint answers `200`.
+   *
    * @throws CliException When the requested size is not accepted by this endpoint.
    */
-  public function validatePageSize(int $size, int $maxSize = self::DEFAULT_MAX_SIZE): void {
+  public function validatePageSize(
+      int $size,
+      int $maxSize = self::DEFAULT_MAX_SIZE,
+      PageSizeRule $rule = PageSizeRule::DiscreteSizes,
+  ): void {
+    if ($rule === PageSizeRule::AnySizeUpToMax) {
+      if ($size < 1 || $size > $maxSize) {
+        throw new CliException(
+            ErrorKind::ClientError,
+            false,
+            'Tamanho de página inválido: ' . $size . '. Valores aceitos: 1 a ' . $maxSize,
+        );
+      }
+
+      return;
+    }
+
     $accepted = $this->acceptedSizes($maxSize);
 
     if (! in_array($size, $accepted, true)) {

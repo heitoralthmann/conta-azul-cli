@@ -10,6 +10,7 @@ use ContaAzulCli\Output\Logger;
 use ContaAzulCli\Output\Redactor;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
+use function array_map;
 use function fopen;
 use function implode;
 use function rawurlencode;
@@ -20,7 +21,9 @@ use function rawurlencode;
  * Paths e schemas conferidos direto no OpenAPI renderizado
  * (https://developers.contaazul.com/open-api-docs/developer-platform-open-api-capture/v1),
  * via Chrome (`_bundle/open-api-docs/developer-platform-open-api-capture.json`),
- * já que o portal bloqueia `WebFetch`/`curl`; ainda não exercitado contra a API real.
+ * já que o portal bloqueia `WebFetch`/`curl`, e exercitados contra a API de
+ * produção em 2026-08-19 — quando a codificação de `ids` que aquele OpenAPI
+ * declara se mostrou errada (veja {@see self::statusDocumentos()}).
  */
 final class CapturaClient
 {
@@ -58,19 +61,33 @@ final class CapturaClient
   /**
    * Consulta o status de processamento de um ou mais documentos e das
    * capturas (extrações) geradas a partir deles. A API aceita até 20 ids
-   * por chamada, informados em um único parâmetro separado por vírgula.
+   * por chamada, cada um em uma repetição do parâmetro `ids`.
+   *
+   * O OpenAPI publicado declara `style: form, explode: false`, ou seja, os
+   * ids separados por vírgula em um único parâmetro — e a API responde
+   * `400` ("O valor informado para o campo 'ids' é inválido") a essa forma.
+   * Ela quer o parâmetro **repetido** (`ids=a&ids=b`). Com um id só as duas
+   * formas coincidem, e foi por isso que a divergência passou despercebida.
+   *
+   * A query vai montada na URL porque a opção `query` do Symfony indexa
+   * arrays (`ids[0]=a&ids[1]=b`); os demais parâmetros seguem por ela, que
+   * o cliente concatena ao que já estiver na URL.
    *
    * @param list<string> $ids
    *
    * @return array<mixed>
    */
   public function statusDocumentos(array $ids, int $pagina = 1, int $tamanhoPagina = 10): array {
+    $idsQuery = implode(
+        '&',
+        array_map(static fn (string $id): string => 'ids=' . rawurlencode($id), $ids),
+    );
+
     return $this->support->request(
         'GET',
-        '/v1/captura/documentos/status',
+        '/v1/captura/documentos/status?' . $idsQuery,
         [
           'query' => [
-            'ids'            => implode(',', $ids),
             'pagina'         => $pagina,
             'tamanho_pagina' => $tamanhoPagina,
           ],

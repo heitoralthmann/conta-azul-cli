@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Command\Support;
 
+use ContaAzulCli\Api\PageSizeRule;
 use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Error\CliException;
 use Symfony\Component\Console\Command\Command;
@@ -65,7 +66,8 @@ final readonly class PaginationOptions
   /**
    * Creates validated pagination options from already-resolved values.
    *
-   * @param int $maxPageSize Largest size the target endpoint accepts.
+   * @param int          $maxPageSize Largest size the target endpoint accepts.
+   * @param PageSizeRule $rule        How that endpoint decides which sizes are valid.
    *
    * @throws CliException when the page size is unsupported.
    */
@@ -74,8 +76,9 @@ final readonly class PaginationOptions
       int $pageSize,
       PaginationValidator $validator,
       int $maxPageSize = PaginationValidator::DEFAULT_MAX_SIZE,
+      PageSizeRule $rule = PageSizeRule::DiscreteSizes,
   ): self {
-    $validator->validatePageSize($pageSize, $maxPageSize);
+    $validator->validatePageSize($pageSize, $maxPageSize, $rule);
 
     return new self($page, $pageSize);
   }
