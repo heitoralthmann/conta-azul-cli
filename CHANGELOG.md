@@ -83,6 +83,23 @@ no [README](README.md#contrato-de-saída).
 
 ### Documented
 
+- **A marca `⚠️` do `COMMANDS.md` foi reescrita.** Ela dizia "path correto
+  conforme a documentação, mas nunca exercitado", o que sugere que só a
+  escrita é arriscada. Depois de dois dos três grupos verificados
+  aparecerem com filtros que não filtravam nada, isso é enganoso: num
+  comando `⚠️` desconfie do path, do nome do filtro, do nome do campo do
+  payload, do tipo do id e do formato da resposta.
+- **`COMMANDS.md` ganhou a receita de verificação de listagem** em "Notas
+  para quem for estender": baseline, parâmetro de controle inexistente
+  (`zzz_bogus`), valor discriminante por filtro e varredura de nomes. Junto
+  com o truque de `--debug` + `log.jsonl` para ver o status HTTP real, a
+  tabela de onde travar cada tipo de descoberta em teste, e o estado da
+  campanha por grupo. Antes, essa seção só listava as duas armadilhas de
+  path da era dos 404.
+- **`CONTRIBUTING.md` passou a exigir teste de mapeamento de filtro.** Os
+  testes de cliente não pegam nome de filtro errado — o cliente repassa
+  qualquer chave que recebe —, então quem mexer no `$filters` de um
+  `*CommandModule` precisa escrever o teste de módulo que inspeciona a URL.
 - **`--tamanho-pagina` é validado localmente com mais folga do que alguns
   endpoints aceitam.** O validador do CLI libera até `1000`, mas
   `servico list` (e, pela documentação, `nota-fiscal list` e

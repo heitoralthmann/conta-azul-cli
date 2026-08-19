@@ -47,6 +47,21 @@ deixa de servir ao propósito.
 Da mesma forma, ao adicionar ou alterar um comando, atualize
 [`COMMANDS.md`](COMMANDS.md), a referência canônica de todos os comandos.
 
+### Nunca confie na documentação da API sem exercitar
+
+As listagens da Conta Azul respondem `200` e **descartam em silêncio**
+parâmetros de query que não reconhecem. Um filtro com o nome errado não
+falha: devolve a coleção inteira, que parece resultado legítimo. Foi assim
+que `produto list --codigo` e três dos quatro filtros de `servico list`
+ficaram quebrados sem ninguém notar.
+
+Antes de marcar um endpoint como verificado em `COMMANDS.md`, siga a receita
+em [Notas para quem for
+estender](COMMANDS.md#notas-para-quem-for-estender) — baseline, parâmetro de
+controle inexistente, e um valor discriminante por filtro. O mesmo vale para
+nome de campo de payload, tipo de id e formato de resposta: os três já
+divergiram da documentação neste projeto.
+
 ### Acompanhando mudanças na API da Conta Azul
 
 `docs/financial-apis-openapi.yaml` é um **placeholder**: a Conta Azul ainda
@@ -70,6 +85,21 @@ lugar do transporte HTTP real — veja os helpers em
 - Exit code (`Command::SUCCESS` ou `Command::FAILURE`).
 - Que stdout contém **só** o payload JSON de sucesso.
 - Que stderr contém **só** o envelope de erro, com o `kind` esperado.
+
+### Filtros de listagem exigem um teste a mais
+
+Os testes de cliente (`tests/Unit/Api/*ClientTest.php`) **não pegam nome de
+filtro errado**: o cliente repassa qualquer chave que recebe, então o teste
+passa mandando `codigo` mesmo quando a API só entende `sku`.
+
+O mapeamento *opção da CLI → parâmetro de query* mora no `$filters` de cada
+`src/Command/Module/*CommandModule.php`, e é lá que os bugs de 2026-08-19
+estavam. Ao adicionar ou alterar um filtro, escreva também um teste em
+`tests/Integration/Command/Module/` que rode o comando com a opção e
+inspecione a URL de saída — veja
+`ProdutoCommandModuleTest::testListMapsCodigoOptionToTheSkuQueryParameter`
+e o equivalente em `ServicoCommandModuleTest`. Filtro removido por não
+existir na API merece asserção negativa, para não voltar por engano.
 
 ## Mutation testing
 

@@ -9,7 +9,23 @@ Convenção de leitura: `obrig.` marca o que falha sem valor; `padrão` é o que
 Cada endpoint traz uma marca de confiança:
 
 - **✅ verificado** — exercitado contra a API real e respondeu como documentado. As leituras financeiras foram verificadas em 2026-08-15; os grupos `pessoa`, `produto` e `servico` tiveram o CRUD completo (criar, ler, atualizar, excluir) exercitado em produção em 2026-08-19
-- **⚠️ não verificado** — path correto conforme a documentação, mas nunca exercitado; exige disparar escrita real
+- **⚠️ não verificado** — escrito a partir da documentação e **nunca exercitado**. Não leia isso como "provavelmente certo": leia como **não confiável**
+
+> ⚠️ **O que `⚠️` realmente significa, depois da campanha de verificação de
+> 2026-08-19.** A marca não cobre só "a escrita nunca foi disparada". Dos
+> três grupos verificados até agora, **dois tinham filtros que não
+> filtravam nada** — `produto list --codigo` mandava `codigo` onde a API
+> quer `sku`, e `servico list` expunha quatro filtros dos quais só um
+> existia, sob outro nome. Como as listagens **respondem 200 e descartam em
+> silêncio** parâmetro desconhecido (ver "Notas para quem for estender"),
+> esses comandos não davam erro: devolviam a lista inteira como se tudo
+> casasse.
+>
+> Ou seja: num comando `⚠️`, desconfie de **tudo** — path, nome de filtro,
+> nome de campo do payload, tipo do id e formato da resposta. Os filtros
+> listados nas seções `⚠️` abaixo saíram da documentação, não de uma
+> chamada real, e a taxa de acerto observada até agora foi de 2 em 3
+> grupos com pelo menos um erro.
 
 ---
 
@@ -1228,13 +1244,88 @@ Recursos que **não existem** na API v1 — não procure o comando, não há end
 
 ## Notas para quem for estender
 
-Duas armadilhas de nomenclatura, confirmadas em produção e responsáveis por praticamente todos os 404 da versão anterior:
+### A API falha em silêncio mais do que falha em voz alta
+
+**A armadilha mais cara deste projeto:** as listagens respondem `200` e
+**descartam sem avisar** qualquer parâmetro de query que não reconheçam. Um
+filtro com o nome errado não devolve `400` — devolve **a coleção inteira**,
+que parece um resultado legítimo. Foi assim que `produto list --codigo`
+(mandava `codigo`, a API quer `sku`) e três dos quatro filtros de
+`servico list` passaram despercebidos por várias versões.
+
+Comprovado com um parâmetro propositalmente inexistente (`zzz_bogus=abc`),
+que se comporta exatamente como os nomes errados que o CLI mandava.
+
+### Receita para verificar uma listagem
+
+Nunca conclua que um filtro funciona porque a chamada respondeu 200.
+
+1. **Baseline.** Pegue o total sem nenhum filtro.
+2. **Controle.** Mande `zzz_bogus=abc`. Se o total não mudar, o endpoint
+   descarta em silêncio e **todo** filtro precisa ser provado um a um.
+3. **Valor discriminante.** Teste cada filtro com um valor que case com
+   **um único registro** e confirme que o total cai. Um valor que casa com
+   tudo não distingue "funciona" de "ignorado" — `status=ATIVO` devolvendo
+   o catálogo inteiro é ambíguo quando todos os registros estão ativos;
+   `status=INATIVO` devolvendo `0` é prova.
+4. **Se falhar, varra nomes** antes de concluir que o filtro não existe:
+   singular/plural, prefixos (`id_`, `filtro_`), sufixos (`_textual`,
+   `_servico`), inglês, `[]`, repetido e separado por vírgula.
+
+O mesmo ceticismo vale para escrita: **a API valida um campo por vez**, então
+cada `400` revela só o *próximo* campo faltante. Descobrir o payload de um
+`PUT` é iterativo — veja a tabela de `pessoa update`, montada assim.
+
+### Ver o status HTTP real
+
+O stdout não expõe o código de status, e `204` vs `200` importa (um corpo
+vazio sai como `[]`, não `{}`). Use:
+
+```sh
+./bin/ca <comando> --debug …
+tail -5 ~/.cache/conta-azul-cli/log.jsonl
+```
+
+### Armadilhas de nomenclatura já confirmadas
 
 1. **O segmento `/financeiro/` só existe em parte dos recursos.** Categorias, centros de custo e contas financeiras ficam na raiz da `v1`.
 2. **A nomenclatura alterna plural e singular:** `categorias`, mas `centro-de-custo` e `conta-financeira`.
+3. **Leitura e escrita usam nomes diferentes para o mesmo dado.** `pessoa` lê `documento` e escreve `cpf`; o SKU de um produto é `codigo` na listagem, `codigo_sku` no detalhe e `sku` na query.
+4. **O mesmo registro tem dois ids, e comandos do mesmo grupo usam ids diferentes.** `servico get`/`update` querem o uuid; `servico delete` quer o `id_servico` inteiro.
+5. **Enums vão acentuados e capitalizados como na interface** (`Física`, `Cliente`), não em `SCREAMING_SNAKE_CASE`.
+6. **Exclusão não quer dizer a mesma coisa em todo grupo.** `produto delete` faz o `get` passar a 404; `servico delete` é lógico e o `get` continua respondendo 200 com `status` `ATIVO`.
 
-Nunca deduza um path da documentação sem exercitá-lo. `tests/Unit/Api/FinanceiroClientTest.php`, `tests/Unit/Api/PessoasClientTest.php` e `tests/Unit/Api/ProdutosServicosClientTest.php` travam os paths e parâmetros dos endpoints — estenda-os junto com qualquer endpoint novo.
+Nunca deduza da documentação **nem o path, nem o nome de um filtro, nem o
+nome de um campo do payload, nem o tipo de um id, nem o formato da
+resposta**, sem exercitar contra a API real.
 
-Lista autoritativa de operações: https://developers.contaazul.com/docs/financial-apis-openapi/v1 — o portal bloqueia `curl` e fetch automatizado (403), então abra no navegador.
+### Onde travar o que você descobrir
+
+| O que | Onde |
+|---|---|
+| Path e método de um endpoint | `tests/Unit/Api/*ClientTest.php` |
+| Mapeamento opção da CLI → parâmetro de query | `tests/Integration/Command/Module/*CommandModuleTest.php` |
+| Filtro removido por não existir | idem, com asserção negativa (`assertFalse(hasOption(...))`) |
+
+O segundo caso é o que pegou os bugs de 2026-08-19 e **não existia antes
+deles** — o teste de cliente passava feliz, porque o cliente repassa
+qualquer filtro que recebe. Se você mexer em `$filters` num
+`*CommandModule`, escreva o teste de mapeamento junto.
+
+### Estado da verificação
+
+| Grupo | Situação |
+|---|---|
+| Leituras financeiras | ✅ verificadas em 2026-08-15 |
+| `pessoa` | ✅ 10/10 (2026-08-19) — nenhum bug de código |
+| `produto` | ✅ 10/11 (2026-08-19) — 1 filtro errado, 2 inexistentes; falta `ecommerce-categorias` |
+| `servico` | ✅ 5/5 (2026-08-19) — 1 filtro errado, 3 inexistentes |
+| resto | ⚠️ nunca exercitado — trate os filtros como suspeitos |
+
+Os próximos grupos com muitos filtros (`venda list`, `orcamento list`,
+`contrato list`) são os de maior risco, pela mesma razão que produtos e
+serviços foram.
+
+Lista autoritativa de operações: https://developers.contaazul.com/docs/financial-apis-openapi/v1 — o portal bloqueia `curl` e fetch automatizado (403), então abra no navegador. Só três specs aparecem linkadas em `/aboutapis` (financial, sales, contracts); produtos, serviços e pessoas **não têm spec pública encontrável**, e o caminho `/_bundle/open-api-docs/{slug}.json`, que já funcionou, hoje devolve 404 — na prática, esses grupos só se descobrem exercitando.
 
 Ver também: [`README.md`](README.md) para instalação, configuração e OAuth; [`docs/financial-apis-openapi.yaml`](docs/financial-apis-openapi.yaml) para o inventário de endpoints usado na detecção de drift.
