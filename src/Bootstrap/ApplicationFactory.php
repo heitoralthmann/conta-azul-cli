@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Bootstrap;
 
+use ContaAzulCli\Api\CapturaClient;
 use ContaAzulCli\Api\ContratosClient;
 use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Api\NotasFiscaisClient;
@@ -18,6 +19,7 @@ use ContaAzulCli\Auth\CallbackServer;
 use ContaAzulCli\Auth\OAuthClient;
 use ContaAzulCli\Auth\TokenStore;
 use ContaAzulCli\Command\Module\AuthCommandModule;
+use ContaAzulCli\Command\Module\CapturaCommandModule;
 use ContaAzulCli\Command\Module\ContratoCommandModule;
 use ContaAzulCli\Command\Module\FinanceiroCommandModule;
 use ContaAzulCli\Command\Module\NotaFiscalCommandModule;
@@ -76,6 +78,7 @@ final class ApplicationFactory
     $notasFiscaisClient = new NotasFiscaisClient($config, $authManager, $this->logger, $redactor, $httpClient);
     $vendasClient       = new VendasClient($config, $authManager, $this->logger, $redactor, $httpClient);
     $orcamentosClient   = new OrcamentosClient($config, $authManager, $this->logger, $redactor, $httpClient);
+    $capturaClient      = new CapturaClient($config, $authManager, $this->logger, $redactor, $httpClient);
 
     return new ApplicationComponents(
         $this->logger,
@@ -110,6 +113,7 @@ final class ApplicationFactory
           ),
           new VendaCommandModule($vendasClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
           new OrcamentoCommandModule($orcamentosClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
+          new CapturaCommandModule($capturaClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
         ],
     );
   }

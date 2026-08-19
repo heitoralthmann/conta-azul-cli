@@ -82,6 +82,11 @@ Cada endpoint traz uma marca de confiança:
 | `orcamento create` | `POST /v1/orcamentos` | ⚠️ |
 | `orcamento get` | `GET /v1/orcamentos/{id}` | ⚠️ |
 | `orcamento excluir-lote` | `DELETE /v1/orcamentos` | ⚠️ |
+| `captura enviar` | `POST /v1/captura/documentos` | ⚠️ |
+| `captura status` | `GET /v1/captura/documentos/status` | ⚠️ |
+| `captura get` | `GET /v1/captura/{id}` | ⚠️ |
+| `captura aceitar` | `POST /v1/captura/{id}` | ⚠️ |
+| `captura recusar` | `DELETE /v1/captura/{id}` | ⚠️ |
 
 ---
 
@@ -786,15 +791,76 @@ Retorna `{id}` do orçamento criado.
 
 Resposta `204 No Content` — sem corpo.
 
+## Captura
+
+Fluxo da IA Captura: `captura enviar` sobe um arquivo e devolve o `id` do
+documento; `captura status` consulta esse `id` e, quando o processamento
+termina, devolve a `id_captura`; `captura get` traz a prévia extraída para
+essa `id_captura`; `captura aceitar`/`captura recusar` decidem o que fazer
+com a prévia.
+
+### `captura enviar` ⚠️
+
+`POST /v1/captura/documentos` — multipart/form-data.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<arquivo>` | **sim** | Argumento posicional. Caminho de um arquivo local (PDF, JPEG, PNG ou BMP; máximo de 10 MB) |
+| `--descricao` | não | Descrição do documento (máximo de 255 caracteres) |
+
+O CLI valida que o arquivo existe e é legível antes de enviar. Retorna `{id, nome}`, onde `id` identifica o documento para `captura status`.
+
+### `captura status` ⚠️
+
+`GET /v1/captura/documentos/status`
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--ids` | **sim** | — | IDs de documentos separados por vírgula (até 20) |
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `10` | Itens por página (máximo 20) |
+
+Retorna `{itens[], paginacao}`; cada item traz `status_documento` e a lista de `capturas` geradas (pode estar vazia). O processamento é assíncrono — repita a consulta até o status chegar a um estado final.
+
+### `captura get` ⚠️
+
+`GET /v1/captura/{id}`
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. `id_captura`, obtido em `captura status` |
+
+Retorna `{id, id_documento, status, previa_evento_financeiro, sugestao_evento_financeiro}`. A prévia e a sugestão só vêm preenchidas quando `status` é `PENDENTE`.
+
+### `captura aceitar` ⚠️
+
+`POST /v1/captura/{id}` — sem corpo.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. `id_captura` cuja prévia será aceita |
+
+Cria o evento financeiro a partir da prévia e retorna `{id, status, evento_financeiro}`.
+
+### `captura recusar` ⚠️
+
+`DELETE /v1/captura/{id}` — sem corpo.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | Argumento posicional. `id_captura` a ser recusada |
+
+Resposta `204 No Content` — sem corpo. Uma captura já aceita, ou ainda em processamento, não pode ser recusada.
+
 ---
 
 ## Fora do escopo do CLI
 
-Todos os endpoints da família Financeiro / Cobranças / Baixas e Protocolos já têm
-comando — veja a referência rápida no topo deste arquivo e `API_COVERAGE.md` para
-a lista completa por área (Captura segue fora do escopo declarado em
-`ESPECIFICACAO.md`; Contratos, Notas Fiscais, Vendas e Orçamentos já foram
-implementados além do escopo original).
+Quase todos os endpoints publicados no portal já têm comando — veja a
+referência rápida no topo deste arquivo e `API_COVERAGE.md` para a lista
+completa por área (Contratos, Notas Fiscais, Vendas, Orçamentos e Captura
+foram implementados além do escopo original). O único que falta é
+`POST /v1/centro-de-custo` (criar centro de custo).
 
 Recursos que **não existem** na API v1 — não procure o comando, não há endpoint:
 

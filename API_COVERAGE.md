@@ -2,7 +2,7 @@
 
 Arquivo de controle: todos os endpoints publicados no [Portal do Desenvolvedor Conta Azul](https://developers.contaazul.com/aboutapis), agrupados por área funcional, com o que o `ca` já implementa marcado.
 
-**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais**, **Vendas** e **Orçamentos**. A área restante (Captura) está listada por completude.
+**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, e as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais**, **Vendas**, **Orçamentos** e **Captura**. Todas as áreas publicadas no portal já têm comando.
 
 Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md`, `src/Api/FinanceiroClient.php`, `src/Api/PessoasClient.php`, `src/Api/ProdutosClient.php` e `src/Api/ServicosClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
 
@@ -166,13 +166,23 @@ API real. `orcamento list` só expõe os filtros escalares do endpoint
 
 ## 📥 Captura (Developer Platform)
 
-5 endpoints. Fora do escopo do CLI.
+5 endpoints. `src/Api/CapturaClient.php`.
+Sessão implementada em 2026-08-18; paths e schemas conferidos direto no
+OpenAPI renderizado
+(https://developers.contaazul.com/open-api-docs/developer-platform-open-api-capture/v1),
+via Chrome (`_bundle/open-api-docs/developer-platform-open-api-capture.json`),
+já que o portal bloqueia `WebFetch`/`curl` — ainda não exercitada contra a
+API real. Fluxo: `captura enviar` sobe o arquivo e devolve `id` (do
+documento); `captura status` consulta esse `id` e devolve, quando pronta, a
+`id_captura`; `captura get` traz a prévia extraída pela IA para essa
+`id_captura`; `captura aceitar`/`captura recusar` decidem o que fazer com a
+prévia.
 
-- [ ] `POST /v1/captura/documentos` — enviar documento para captura
-- [ ] `GET /v1/captura/documentos/status` — status de captura por documento
-- [ ] `GET /v1/captura/{id}` — buscar captura por id
-- [ ] `POST /v1/captura/{id}`
-- [ ] `DELETE /v1/captura/{id}` — excluir captura
+- [x] `POST /v1/captura/documentos` — `captura enviar`; multipart/form-data (`arquivo` obrigatório — PDF/JPEG/PNG/BMP até 10 MB —, `descricao` opcional)
+- [x] `GET /v1/captura/documentos/status` — `captura status`; `ids` aceita até 20 valores separados por vírgula
+- [x] `GET /v1/captura/{id}` — `captura get`; busca os dados extraídos por `id_captura`
+- [x] `POST /v1/captura/{id}` — `captura aceitar`; sem corpo, cria o evento financeiro a partir da prévia
+- [x] `DELETE /v1/captura/{id}` — `captura recusar`; sem corpo, resposta `204 No Content`
 
 ---
 
@@ -181,7 +191,7 @@ API real. `orcamento list` só expõe os filtros escalares do endpoint
 | Área | Implementados | Total |
 |---|---|---|
 | Autenticação | 3 | 3 |
-| Financeiro / Cobranças / Baixas | 15 | 17 |
+| Financeiro / Cobranças / Baixas | 16 | 17 |
 | Protocolos | 1 | 1 |
 | Contratos | 3 | 3 |
 | Pessoas / Fornecedores | 10 | 10 |
@@ -190,5 +200,5 @@ API real. `orcamento list` só expõe os filtros escalares do endpoint
 | Notas Fiscais | 4 | 4 |
 | Vendas | 9 | 9 |
 | Orçamentos | 4 | 4 |
-| Captura | 0 | 5 |
-| **Total** | **65** | **72** |
+| Captura | 5 | 5 |
+| **Total** | **71** | **72** |

@@ -9,6 +9,27 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-08-18
+
+### Added
+
+- Sessão de Captura (Developer Platform) completa: `captura enviar`
+  (`POST /v1/captura/documentos`, multipart/form-data — `arquivo`
+  obrigatório, PDF/JPEG/PNG/BMP até 10 MB, `descricao` opcional),
+  `captura status` (`GET /v1/captura/documentos/status`, até 20 ids
+  separados por vírgula), `captura get` (`GET /v1/captura/{id}`,
+  dados extraídos pela IA), `captura aceitar`
+  (`POST /v1/captura/{id}`, sem corpo, cria o evento financeiro a
+  partir da prévia) e `captura recusar` (`DELETE /v1/captura/{id}`,
+  sem corpo, resposta `204 No Content`). Era a última área listada
+  como "fora do escopo" em `API_COVERAGE.md` (71/72 endpoints agora
+  implementados — falta só criar centro de custo). Primeiro comando do
+  CLI a enviar um corpo `multipart/form-data`; nenhuma mudança foi
+  necessária no transporte HTTP, já que o Symfony HttpClient monta o
+  multipart sozinho a partir de um resource de arquivo. Paths e
+  schemas conferidos direto no OpenAPI renderizado (o portal bloqueia
+  `WebFetch`), ainda não exercitados contra a API real.
+
 ## [0.9.0] - 2026-08-18
 
 ### Added
@@ -188,7 +209,9 @@ Primeira versão tagueada.
 - `release.yml` corrigido: faltava `permissions: contents: write`, o que
   impedia a publicação do PHAR na release do GitHub.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.9.0...v0.10.0
+[0.9.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.5.0...v0.6.0

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ContaAzulCli\Tests\Integration\Support;
 
+use ContaAzulCli\Api\CapturaClient;
 use ContaAzulCli\Api\ContratosClient;
 use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Api\NotasFiscaisClient;
@@ -81,6 +82,11 @@ trait ApiClientFactory
   /** @param list<MockResponse> $responses */
   protected function orcamentosClient(array $responses, string $accessToken = 'test-access-token'): OrcamentosClient {
     return new OrcamentosClient(...$this->apiClientDependencies($responses, $accessToken));
+  }
+
+  /** @param list<MockResponse> $responses */
+  protected function capturaClient(array $responses, string $accessToken = 'test-access-token'): CapturaClient {
+    return new CapturaClient(...$this->apiClientDependencies($responses, $accessToken));
   }
 
   /** A 200 response with a JSON-encoded body. */
