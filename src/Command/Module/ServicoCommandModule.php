@@ -29,12 +29,13 @@ final class ServicoCommandModule implements CommandModuleInterface
 
   /** @return list<Command> */
   public function commands(): array {
-    $filters = [
-      'busca'  => 'busca',
-      'codigo' => 'codigo',
-      'ids'    => 'ids',
-      'status' => 'status',
-    ];
+    // A listagem de serviços aceita um único filtro, e o nome dele é
+    // `busca_textual` — `busca` (o nome usado em produtos e pessoas) não
+    // filtra nada aqui. Como `GET /v1/servicos` responde 200 e descarta em
+    // silêncio todo parâmetro desconhecido, o nome errado devolvia a lista
+    // inteira em vez de erro. `codigo`, `ids` e `status` foram removidos
+    // por não existirem sob nome nenhum neste endpoint.
+    $filters = ['busca' => 'busca_textual'];
 
     return [
       new ResourceListCommand(

@@ -8,7 +8,7 @@ Convenção de leitura: `obrig.` marca o que falha sem valor; `padrão` é o que
 
 Cada endpoint traz uma marca de confiança:
 
-- **✅ verificado** — exercitado contra a API real e respondeu como documentado. As leituras financeiras foram verificadas em 2026-08-15; os grupos `pessoa` e `produto` tiveram o CRUD completo (criar, ler, atualizar, excluir) exercitado em produção em 2026-08-19
+- **✅ verificado** — exercitado contra a API real e respondeu como documentado. As leituras financeiras foram verificadas em 2026-08-15; os grupos `pessoa`, `produto` e `servico` tiveram o CRUD completo (criar, ler, atualizar, excluir) exercitado em produção em 2026-08-19
 - **⚠️ não verificado** — path correto conforme a documentação, mas nunca exercitado; exige disparar escrita real
 
 ---
@@ -72,11 +72,11 @@ Cada endpoint traz uma marca de confiança:
 | `produto unidades-medida` | `GET /v1/produtos/unidades-medida` | ✅ |
 | `produto ecommerce-categorias` | `GET /v1/produtos/ecommerce-categorias` | ⚠️¹ |
 | `produto ecommerce-marcas` | `GET /v1/produtos/ecommerce-marcas` | ✅ |
-| `servico list` | `GET /v1/servicos` | ⚠️ |
-| `servico create` | `POST /v1/servicos` | ⚠️ |
-| `servico get` | `GET /v1/servicos/{id}` | ⚠️ |
-| `servico update` | `PATCH /v1/servicos/{id}` | ⚠️ |
-| `servico delete` | `DELETE /v1/servicos` | ⚠️ |
+| `servico list` | `GET /v1/servicos` | ✅ |
+| `servico create` | `POST /v1/servicos` | ✅ |
+| `servico get` | `GET /v1/servicos/{id}` | ✅ |
+| `servico update` | `PATCH /v1/servicos/{id}` | ✅ |
+| `servico delete` | `DELETE /v1/servicos` | ✅ |
 | `nota-fiscal list` | `GET /v1/notas-fiscais` | ⚠️ |
 | `nota-fiscal get` | `GET /v1/notas-fiscais/{chave}` | ⚠️ |
 | `nota-fiscal vincular-mdfe` | `POST /v1/notas-fiscais/vinculo-mdfe` | ⚠️ |
@@ -170,6 +170,25 @@ Onde há `--pagina` / `--tamanho-pagina`:
 | `--tamanho-pagina` | `50` | **`10`, `20`, `50`, `100`, `200`, `500`, `1000`** — qualquer outro é rejeitado localmente, sem chamar a API |
 
 A resposta traz `itens_totais` para você saber quantas páginas percorrer.
+
+> **A validação local é mais permissiva que alguns endpoints.** O CLI aceita
+> até `1000`, mas `servico list`, `nota-fiscal list` e
+> `nota-fiscal-servico list` só admitem `10`, `20`, `50` ou `100` — passar
+> `200` ou mais neles passa pela validação local e volta 400 da API.
+
+E o nome do campo de contagem **não é o mesmo em todo lugar**:
+
+| Formato | Onde |
+|---|---|
+| `{itens_totais, itens[]}` | comandos financeiros |
+| `{totalItems, items[]}` | `pessoa list`, `produto list` |
+| `{total_items, items[]}` | catálogos de `produto` (categorias, cest, ncm, …) |
+| `{itens[], paginacao{total_itens}}` | `servico list` |
+
+Os grupos ainda não verificados podem trazer outras variações — `contrato
+list` está documentado como `{itens_totais, items[]}` e `venda list` como
+`{totais, quantidades, total_itens, itens[]}`, mas nenhum dos dois foi
+exercitado ainda.
 
 ## Datas
 
@@ -838,33 +857,96 @@ Aceita `--pagina`, `--tamanho-pagina` e `--busca`.
 
 Os payloads seguem o schema da API e são enviados sem transformação.
 
-### `servico list` ⚠️
+> **Serviços têm duas identidades, e os comandos não usam a mesma.**
+> `id` é o uuid — é o que `servico get` e `servico update` consomem.
+> `id_servico` é o inteiro legado — é o que **`servico delete` exige**.
+> Trocar um pelo outro no delete devolve 400 reclamando de `int64`.
+
+### `servico list` ✅
 
 `GET /v1/servicos`
 
-Aceita `--pagina`, `--tamanho-pagina`, `--busca`, `--codigo`, `--ids` e `--status`.
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `50` | Itens por página — aqui **só `10`, `20`, `50` ou `100`** |
+| `--busca` | não | — | Busca textual pela descrição; vai para a API como `busca_textual` |
 
-### `servico create` ⚠️
+Retorna `{itens[], paginacao}` — **uma terceira convenção**, diferente do
+`{totalItems, items[]}` de `pessoa`/`produto list` e do
+`{total_items, items[]}` dos catálogos de produto. A contagem fica em
+`paginacao.total_itens`, ao lado de `pagina_atual`, `total_paginas` e
+`tamanho_pagina`.
 
-`POST /v1/servicos`
+Cada item traz `id`, `id_servico`, `codigo`, `descricao`, `preco`, `custo`,
+`status`, `tipo_servico`, `codigo_cnae`, `lei_116`,
+`codigo_municipio_servico`, `id_externo`, `lista_cenario_tributario[]` e
+`natureza_operacional`.
+
+> ⚠️ **`--tamanho-pagina` aceita menos valores aqui do que o validador do
+> CLI.** A validação local libera `200`, `500` e `1000`, mas este endpoint
+> os rejeita com 400 (`deve ser um dos seguintes valores: 10, 20, 50 ou
+> 100`). Mesma restrição de `nota-fiscal list`.
+
+> **Este endpoint honra um único filtro.** `GET /v1/servicos` responde 200 e
+> descarta em silêncio qualquer parâmetro que não reconheça, então um nome
+> errado devolve a lista inteira em vez de erro. `--codigo`, `--ids` e
+> `--status` existiram até 2026-08-19 e foram removidos: nenhum nome
+> testado (`codigo`, `codigos`, `codigo_servico`, `sku`, `ids`, `id`,
+> `uuid`, `uuids`, `id_servico`, `status`, `situacao`, `ativo`, …) filtrava
+> coisa alguma. Ordenação (`campo_ordenado_ascendente`/`descendente`) também
+> não existe aqui, diferente de `contrato list`.
+
+### `servico create` ✅
+
+`POST /v1/servicos` — resposta **201 Created** com o serviço completo.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
 | `--json` | **sim** | Objeto JSON do serviço |
 
-### `servico get` ⚠️ e `servico update` ⚠️
+Três campos são obrigatórios, cobrados um erro por vez:
 
-`GET /v1/servicos/{id}` e `PATCH /v1/servicos/{id}`.
+| Campo | Valores |
+|---|---|
+| `descricao` | texto livre |
+| `status` | `ATIVO` ou `INATIVO` |
+| `tipo_servico` | `PRESTADO`, `TOMADO` ou `AMBOS` |
 
-`servico get` recebe `<id>`. `servico update` recebe `<id>` e `--json` com os campos a atualizar.
+```json
+{"descricao":"…","status":"ATIVO","tipo_servico":"PRESTADO"}
+```
 
-### `servico delete` ⚠️
+> Diferente de `produto create`, que se vira só com `nome`, aqui não há
+> default: sem `status` e `tipo_servico` a criação falha.
 
-`DELETE /v1/servicos` — exclui serviços em lote.
+### `servico get` ✅ e `servico update` ✅
+
+`GET /v1/servicos/{id}` e `PATCH /v1/servicos/{id}` — ambos pelo **uuid**.
+
+`servico get` recebe `<id>`. `servico update` recebe `<id>` e `--json` com
+os campos a atualizar; responde **204 No Content** (renderizado como `[]`),
+então confirme o resultado com `servico get`.
+
+### `servico delete` ✅
+
+`DELETE /v1/servicos` — exclui serviços em lote. Resposta **204 No Content**
+(renderizada como `[]`).
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
-| `--json` | **sim** | Objeto JSON com os IDs dos serviços |
+| `--json` | **sim** | `{"ids":[…]}` com os **`id_servico` inteiros**, não os uuids |
+
+```json
+{"ids":[495926356]}
+```
+
+> **É exclusão lógica, e ela não aparece em `servico get`.** Depois do
+> delete o serviço some das listagens — `servico list` deixa de trazê-lo e a
+> contagem cai —, mas `servico get` pelo uuid **continua respondendo 200**
+> com o registro intacto e `status` ainda `ATIVO`. Não dá para descobrir por
+> `servico get` que um serviço foi excluído; use `servico list`. É o oposto
+> de `produto delete`, que passa a devolver 404.
 
 ---
 

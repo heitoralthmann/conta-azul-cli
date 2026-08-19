@@ -11,6 +11,13 @@ no [README](README.md#contrato-de-saída).
 
 ### Removed
 
+- **`servico list --codigo`, `--ids` e `--status`.** `GET /v1/servicos`
+  honra **um único filtro**. Nenhum nome testado para os outros três
+  (`codigo`, `codigos`, `codigo_servico`, `sku`, `ids`, `id`, `uuid`,
+  `uuids`, `id_servico`, `status`, `situacao`, `ativo`, `filtro_status`,
+  …) mudou o resultado, nem com valor exclusivo de um único registro.
+  Ordenação também não existe neste endpoint. Mesmo motivo do caso de
+  produtos: devolviam o catálogo inteiro fingindo filtrar.
 - **`produto list --ids` e `produto list --categoria-id`.** Exercitados
   contra a produção, nenhum dos dois filtrava: `GET /v1/produtos`
   responde `200` e **ignora em silêncio** todo parâmetro que não
@@ -24,6 +31,13 @@ no [README](README.md#contrato-de-saída).
 
 ### Fixed
 
+- **`servico list --busca` não filtrava nada.** A API chama esse filtro de
+  `busca_textual`, não `busca` (o nome que produtos e pessoas usam para a
+  mesma ideia); como a listagem descarta parâmetros desconhecidos em
+  silêncio, o comando devolvia os 26 serviços da conta em vez do único que
+  casava. `--busca` continua sendo o nome na CLI, por consistência com os
+  outros grupos, mas agora vai para a API como `busca_textual`, com teste
+  de módulo travando o mapeamento.
 - **`produto list --codigo` não filtrava nada.** A opção era enviada à
   API como `codigo`, mas o parâmetro aceito é `sku`; como a listagem
   descarta parâmetros desconhecidos sem erro, o comando devolvia os 420
@@ -32,6 +46,15 @@ no [README](README.md#contrato-de-saída).
 
 ### Changed
 
+- **Grupo `servico` verificado contra a produção (2026-08-19).** Os cinco
+  comandos foram exercitados num CRUD completo — criar, ler, atualizar e
+  excluir —, com o serviço de teste removido ao final, e passaram a ✅ em
+  `COMMANDS.md`. Documentadas três armadilhas confirmadas: `servico
+  delete` exige o `id_servico` **inteiro** (uuid devolve 400 pedindo
+  `int64`), enquanto `get`/`update` usam o uuid; a exclusão é **lógica** e
+  invisível para `servico get`, que continua respondendo 200 com `status`
+  `ATIVO` depois de o serviço sumir das listagens; e `servico list`
+  responde `{itens[], paginacao}`, uma terceira convenção de paginação.
 - **Grupo `produto` verificado contra a produção (2026-08-19).** Dez dos
   onze comandos foram exercitados num CRUD completo — criar, ler,
   atualizar, excluir, mais os cinco catálogos — com o produto de teste
@@ -60,6 +83,13 @@ no [README](README.md#contrato-de-saída).
 
 ### Documented
 
+- **`--tamanho-pagina` é validado localmente com mais folga do que alguns
+  endpoints aceitam.** O validador do CLI libera até `1000`, mas
+  `servico list` (e, pela documentação, `nota-fiscal list` e
+  `nota-fiscal-servico list`) só admitem `10`, `20`, `50` ou `100`:
+  valores maiores passam pela validação local e voltam 400 da API.
+  Registrado na seção de Paginação, junto com a tabela das quatro
+  convenções diferentes de campo de contagem já confirmadas.
 - Armadilhas do grupo `pessoa` confirmadas em produção: os enums vão
   acentuados como na interface (`Física`/`Jurídica`/`Estrangeira`,
   `Cliente`/`Fornecedor`/`Transportadora`) e não em maiúsculas;

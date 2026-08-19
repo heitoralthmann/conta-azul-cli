@@ -186,14 +186,20 @@ final class ProdutosServicosClientTest extends TestCase
     self::assertSame('CAFE-01', $query['sku'] ?? null);
   }
 
+  /**
+   * The ids here are integers on purpose: `DELETE /v1/servicos` wants the
+   * legacy `id_servico` (int64), not the uuid that identifies the service
+   * everywhere else in the group. Passing uuids answers 400 — verified
+   * against production on 2026-08-19.
+   */
   public function testServiceBatchDeleteSendsJsonPayload(): void {
     $captured = null;
     $client   = $this->serviceClientRecording($captured);
 
-    $client->deleteServicos(['ids' => ['s-1', 's-2']]);
+    $client->deleteServicos(['ids' => [495926356, 495926357]]);
 
     self::assertNotNull($captured);
-    self::assertSame(['ids' => ['s-1', 's-2']], json_decode((string) $captured['body'], true));
+    self::assertSame(['ids' => [495926356, 495926357]], json_decode((string) $captured['body'], true));
   }
 
   /** @param array<string, mixed>|null $captured */
