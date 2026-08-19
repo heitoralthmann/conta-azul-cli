@@ -23,6 +23,7 @@ use function dirname;
 use function getenv;
 use function glob;
 use function is_dir;
+use function json_decode;
 use function parse_str;
 use function parse_url;
 use function putenv;
@@ -189,6 +190,27 @@ final class FinanceiroClientTest extends TestCase
     self::assertSame('2026-03-31', $query['data_vencimento_ate'] ?? null);
   }
 
+  /**
+   * Escrita síncrona — diferente de `createContaAPagar`/`createContaAReceber`,
+   * a resposta já é o centro de custo criado, sem protocolo. Path e schema
+   * conferidos direto no OpenAPI renderizado (o portal bloqueia
+   * `WebFetch`/`curl`); ainda não exercitado contra a API real.
+   */
+  public function testCreateCentroDeCustoUsesTheDocumentedPathAndBody(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->createCentroDeCusto(['nome' => 'Contabilidade', 'codigo' => '1040']);
+
+    self::assertNotNull($captured);
+    self::assertSame('POST', $captured['method']);
+    self::assertSame('https://api-v2.contaazul.com/v1/centro-de-custo', strtok($captured['url'], '?'));
+    self::assertSame(
+        ['nome' => 'Contabilidade', 'codigo' => '1040'],
+        json_decode((string) $captured['body'], true),
+    );
+  }
+
   /** A API espera `'true'`/`'false'` literal, não o `1`/vazio do PHP nativo. */
   public function testSugestaoPadraoIsSentAsLiteralBooleanString(): void {
     $captured = null;
@@ -248,11 +270,11 @@ final class FinanceiroClientTest extends TestCase
     self::assertSame('25', $query['tamanho_pagina'] ?? null);
   }
 
-  /** @param array{method: string, url: string}|null $captured */
+  /** @param array{method: string, url: string, body: string|null}|null $captured */
   private function clientRecording(array|null &$captured): FinanceiroClient {
     $http = new MockHttpClient(
-        static function (string $method, string $url) use (&$captured) {
-          $captured = ['method' => $method, 'url' => $url];
+        static function (string $method, string $url, array $options) use (&$captured) {
+          $captured = ['method' => $method, 'url' => $url, 'body' => $options['body'] ?? null];
 
           return new MockResponse('{}', ['http_code' => 200]);
         },

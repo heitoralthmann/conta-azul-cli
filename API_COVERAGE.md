@@ -2,7 +2,7 @@
 
 Arquivo de controle: todos os endpoints publicados no [Portal do Desenvolvedor Conta Azul](https://developers.contaazul.com/aboutapis), agrupados por área funcional, com o que o `ca` já implementa marcado.
 
-**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, e as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais**, **Vendas**, **Orçamentos** e **Captura**. Todas as áreas publicadas no portal já têm comando.
+**Escopo do CLI.** O `ca` cobre a família **Financeiro** (Finanças + Baixas + Cobranças), o recurso de **Protocolos** que ela depende para escritas assíncronas, e as APIs de **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais**, **Vendas**, **Orçamentos** e **Captura**. Todos os 72 endpoints publicados no portal têm comando.
 
 Levantado em 2026-08-15 navegando a documentação (portal bloqueia `WebFetch`); referência cruzada com `COMMANDS.md`, `src/Api/FinanceiroClient.php`, `src/Api/PessoasClient.php`, `src/Api/ProdutosClient.php` e `src/Api/ServicosClient.php`. Ao adicionar um comando novo, marque o endpoint correspondente nesta lista no mesmo commit.
 
@@ -21,11 +21,12 @@ Fluxo Authorization Code (OAuth2). Implementado em `src/Auth/`.
 17 endpoints. `src/Api/FinanceiroClient.php`.
 Levantado em 2026-08-15; `transferencia list` acrescentado e validado contra a API real em 2026-08-18;
 `parcela list` acrescentado em 2026-08-18 (path e schema conferidos direto na doc, endpoint ainda não exercitado contra a API real);
-`financeiro saldo-inicial` acrescentado em 2026-08-18, completando a sessão (path e query params conferidos direto na doc, endpoint ainda não exercitado contra a API real).
+`financeiro saldo-inicial` acrescentado em 2026-08-18, completando a sessão (path e query params conferidos direto na doc, endpoint ainda não exercitado contra a API real);
+`centro-de-custo create` acrescentado em 2026-08-18, completando a sessão e a cobertura da API inteira (72/72) — path e schema conferidos direto no OpenAPI renderizado (https://developers.contaazul.com/docs/financial-apis-openapi/v1), endpoint ainda não exercitado contra a API real.
 
 ### Centros de custo
 - [x] `GET /v1/centro-de-custo` — `centro-de-custo list`
-- [ ] `POST /v1/centro-de-custo` — criar centro de custo
+- [x] `POST /v1/centro-de-custo` — `centro-de-custo create`; escrita síncrona (`nome` obrigatório, `codigo` opcional), sem protocolo
 
 ### Categorias
 - [x] `GET /v1/categorias` — `categoria list`
@@ -191,7 +192,7 @@ prévia.
 | Área | Implementados | Total |
 |---|---|---|
 | Autenticação | 3 | 3 |
-| Financeiro / Cobranças / Baixas | 16 | 17 |
+| Financeiro / Cobranças / Baixas | 17 | 17 |
 | Protocolos | 1 | 1 |
 | Contratos | 3 | 3 |
 | Pessoas / Fornecedores | 10 | 10 |
@@ -201,4 +202,4 @@ prévia.
 | Vendas | 9 | 9 |
 | Orçamentos | 4 | 4 |
 | Captura | 5 | 5 |
-| **Total** | **71** | **72** |
+| **Total** | **72** | **72** |

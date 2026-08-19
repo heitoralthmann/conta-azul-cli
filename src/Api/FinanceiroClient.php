@@ -278,6 +278,17 @@ final class FinanceiroClient
     );
   }
 
+  /**
+   * Escrita síncrona — a resposta já é o centro de custo criado, sem protocolo.
+   *
+   * @param array<string, mixed> $payload
+   *
+   * @return array<mixed>
+   */
+  public function createCentroDeCusto(array $payload): array {
+    return $this->support->request('POST', '/v1/centro-de-custo', ['json' => $payload]);
+  }
+
   // -------------------------------------------------------------------------
   // Eventos Financeiros / Alterações
   // -------------------------------------------------------------------------

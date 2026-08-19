@@ -9,6 +9,18 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-08-18
+
+### Added
+
+- Comando `centro-de-custo create` (`POST /v1/centro-de-custo`),
+  completando a sessão de Centros de custo. Escrita síncrona (`nome`
+  obrigatório, `codigo` opcional; a resposta já traz o centro de custo
+  criado, sem protocolo). Era o único endpoint que faltava em todo o
+  `API_COVERAGE.md` — os 72 endpoints publicados no portal têm comando
+  agora. Path e schema conferidos direto no OpenAPI renderizado (o
+  portal bloqueia `WebFetch`), ainda não exercitado contra a API real.
+
 ## [0.10.0] - 2026-08-18
 
 ### Added
@@ -209,7 +221,8 @@ Primeira versão tagueada.
 - `release.yml` corrigido: faltava `permissions: contents: write`, o que
   impedia a publicação do PHAR na release do GitHub.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.7.0...v0.8.0

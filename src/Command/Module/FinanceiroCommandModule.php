@@ -24,6 +24,7 @@ use ContaAzulCli\Command\Parcela\GetCommand as ParcelaGetCommand;
 use ContaAzulCli\Command\Parcela\ListCommand as ParcelaListCommand;
 use ContaAzulCli\Command\Protocolo\GetCommand as ProtocoloGetCommand;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
+use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Command\Transferencia\ListCommand as TransferenciaListCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
@@ -91,6 +92,14 @@ final class FinanceiroCommandModule implements CommandModuleInterface
           $this->errorEnvelope,
           $this->jsonRenderer,
           $this->paginationValidator,
+      ),
+      new ResourceJsonCommand(
+          'centro-de-custo create',
+          'Cria um centro de custo',
+          $this->client->createCentroDeCusto(...),
+          $this->errorEnvelope,
+          $this->jsonRenderer,
+          'Payload JSON do centro de custo (nome obrigatório; codigo opcional)',
       ),
       new AlteracoesCommand(
           $this->client,

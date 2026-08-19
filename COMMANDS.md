@@ -23,6 +23,7 @@ Cada endpoint traz uma marca de confiança:
 | `categoria configuracao-padrao` | `GET /v1/categorias/configuracao-padrao` | ✅ |
 | `categoria dre` | `GET /v1/financeiro/categorias-dre` | ✅ |
 | `centro-de-custo list` | `GET /v1/centro-de-custo` | ✅ |
+| `centro-de-custo create` | `POST /v1/centro-de-custo` | ⚠️ |
 | `conta-financeira list` | `GET /v1/conta-financeira` | ✅ |
 | `conta-financeira saldo` | `GET /v1/conta-financeira/{id}/saldo-atual` | ✅ |
 | `transferencia list` | `GET /v1/financeiro/transferencias` | ✅ |
@@ -222,6 +223,16 @@ Sem parâmetros. Retorna `{itens[]}` com a estrutura hierárquica da DRE (Demons
 | `--tamanho-pagina` | não | `50` | Itens por página |
 
 Cada item traz `id`, `codigo`, `nome`, `ativo`.
+
+### `centro-de-custo create` ⚠️
+
+`POST /v1/centro-de-custo` — **escrita síncrona**, sem protocolo.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Payload JSON do centro de custo (`nome` obrigatório; `codigo` opcional) |
+
+Retorna `{id, codigo, nome, ativo}` do centro de custo criado.
 
 ---
 
@@ -856,11 +867,11 @@ Resposta `204 No Content` — sem corpo. Uma captura já aceita, ou ainda em pro
 
 ## Fora do escopo do CLI
 
-Quase todos os endpoints publicados no portal já têm comando — veja a
+Todos os 72 endpoints publicados no portal já têm comando — veja a
 referência rápida no topo deste arquivo e `API_COVERAGE.md` para a lista
 completa por área (Contratos, Notas Fiscais, Vendas, Orçamentos e Captura
-foram implementados além do escopo original). O único que falta é
-`POST /v1/centro-de-custo` (criar centro de custo).
+foram implementados além do escopo original declarado em
+`ESPECIFICACAO.md`).
 
 Recursos que **não existem** na API v1 — não procure o comando, não há endpoint:
 
