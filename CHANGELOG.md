@@ -225,6 +225,22 @@ no [README](README.md#contrato-de-saída).
   desfazer nem como conferir. Um lote com uma chave válida e outra inexistente
   devolve `404` e deixa a atomicidade **indeterminada** — documentado como
   desconhecido em vez de suposto.
+- **A que serve `vincular-mdfe`, confirmado pela documentação de ajuda da
+  Conta Azul.** A plataforma **não emite MDF-e nativamente** — a emissão sai
+  por um parceiro externo, a LOG CT-e. Este endpoint é o caminho de volta
+  dessa integração: o emissor externo avisa a Conta Azul de que certas NF-e
+  foram manifestadas e em que estado o manifesto está. Isso explica o payload
+  magro e a ausência de `GET` — quem chama já é o dono do dado. A
+  documentação oficial descreve `status` como opcional ("também é possível
+  informar o status do vínculo"); produção o exige, e o valida primeiro.
+- **O vínculo trava o cancelamento da NF-e.** A Conta Azul documenta o erro
+  "Há um CT-e ou MDF-e vinculado a esta nota": cancelar uma nota manifestada
+  exige cancelar o manifesto antes. O artigo trata do vínculo **na SEFAZ**, e
+  não ficou testado se o ERP também consulta o registro interno gravado por
+  este endpoint. Não afeta as notas da verificação — o prazo de cancelamento
+  de NF-e é de 24 h, e nem o extemporâneo mais generoso entre as UFs (30 dias)
+  alcança notas de 2024 — mas muda a recomendação de uso: **não vincule uma
+  NF-e ainda dentro do prazo de cancelamento** sem manifesto real por trás.
 - **`nota-fiscal list` superconta pior que `orcamento list`.** O `total_itens`
   soma notas de todos os status, mas `itens` só traz `EMITIDA` e
   `CORRIGIDA_SUCESSO`; há janelas que devolvem `itens: []` ao lado de

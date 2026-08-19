@@ -1208,6 +1208,16 @@ Registra na Conta Azul que um conjunto de notas fiscais pertence a um MDF-e
 sistema. **Não emite MDF-e e não transmite nada à SEFAZ** — o payload não tem
 veículo, motorista nem percurso, que a SEFAZ exigiria.
 
+> **Para que este endpoint existe.** A Conta Azul [**não emite MDF-e
+> nativamente**](https://ajuda.contaazul.com/hc/pt-br/articles/42794589052301-Notas-fiscais-a-Conta-Azul-emite-CT-e-ou-MDF-e);
+> a emissão é feita por um parceiro externo, a **LOG CT-e**, contratada à
+> parte e conectada em *Integrações > Conecte-se por um parceiro > Emissão
+> fiscal e Obrigações*. Este endpoint é o **caminho de volta** dessa
+> integração: quem emitiu o manifesto lá fora avisa a Conta Azul de que
+> aquelas NF-e foram manifestadas, e em que estado o manifesto está. Isso
+> explica o formato do payload — chaves, um identificador opaco e o estado —
+> e explica por que não há `GET`: quem chama já é o dono do dado.
+
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
 | `--json` | **sim** | Payload JSON do vínculo |
@@ -1223,7 +1233,9 @@ Campos do payload — **os três são obrigatórios**:
 > **`status` é obrigatório**, ao contrário do que esta página afirmava até
 > 2026-08-19. Sem ele a API responde `400` com a lista de valores aceitos, e
 > ela valida esse campo **antes** dos demais — por isso ele é o primeiro erro
-> que aparece, mesmo faltando os outros dois.
+> que aparece, mesmo faltando os outros dois. O erro não era desta página: a
+> própria documentação oficial descreve o campo como "também é possível
+> informar o status do vínculo". Produção discorda.
 
 Ordem de validação observada, um campo por vez: `status` → campos obrigatórios
 (`chaves_acesso`, `identificador`) → existência das chaves.
@@ -1242,6 +1254,25 @@ Ordem de validação observada, um campo por vez: `status` → campos obrigatór
 | Chave inexistente | `404` |
 | Chave válida **junto de** uma inexistente | `404` (ver abaixo) |
 | `chaves_acesso: []` | **`500`**, não `400` |
+
+> **O vínculo tem uma consequência conhecida: ele trava o cancelamento da
+> NF-e.** A Conta Azul [documenta o erro "Há um CT-e ou MDF-e vinculado a esta
+> nota"](https://ajuda.contaazul.com/hc/pt-br/articles/115007937188-NF-e-Erro-H%C3%A1-um-CT-e-ou-MDF-e-vinculado-a-esta-nota):
+> para cancelar uma NF-e manifestada, o MDF-e precisa ser cancelado antes e o
+> cancelamento processado pela SEFAZ. O artigo trata do vínculo **que existe na
+> SEFAZ**, não do registro interno que este endpoint grava — se o ERP também
+> consulta o registro interno antes de deixar cancelar, não foi testado.
+>
+> Na prática isso **não afeta as notas usadas na verificação**, e não por
+> sorte de estado: o prazo de cancelamento de NF-e é de 24 h da autorização, e
+> mesmo o cancelamento extemporâneo mais generoso entre as UFs (30 dias, no
+> RJ) expirou há muito para notas de 2024. Uma nota velha não é cancelável por
+> ninguém, com ou sem manifesto. Todas as notas tocadas ficaram, além disso,
+> em estado `CANCELADO` — que é justamente o estado que destravaria o
+> cancelamento, se ele ainda fosse possível.
+>
+> Para uso real, a ordem importa: **não vincule uma NF-e que ainda esteja
+> dentro do prazo de cancelamento** sem que o manifesto exista de fato.
 
 > **O vínculo não é legível por lugar nenhum da API.** Não há `GET` do vínculo,
 > a nota não muda no `list`, e o XML devolvido por `nota-fiscal get` continua
