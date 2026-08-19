@@ -17,10 +17,17 @@ use ContaAzulCli\Command\Venda\VendedoresCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\JsonRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
+use Symfony\Component\HttpClient\Response\MockResponse;
+
+use function parse_str;
+use function parse_url;
+
+use const PHP_URL_QUERY;
 
 /**
- * Wiring-only: confirms each command name maps to the right class. The
- * generic Support classes' own behavior is already covered in
+ * Wiring plus the one thing wiring cannot prove: that `venda list` sends
+ * each filter under the name production honors. The generic Support
+ * classes' own behavior is already covered in
  * tests/Integration/Command/Support/, and the custom Venda commands have
  * their own tests, so this does not repeat that here.
  */
@@ -50,5 +57,52 @@ final class VendaCommandModuleTest extends CommandTestCase
     self::assertInstanceOf(VendedoresCommand::class, $byName['venda vendedores']);
     self::assertInstanceOf(ProximoNumeroCommand::class, $byName['venda proximo-numero']);
     self::assertInstanceOf(ResourceJsonCommand::class, $byName['venda excluir-lote']);
+  }
+
+  /**
+   * Locks the eight filter names `GET /v1/venda/busca` actually honors.
+   *
+   * The endpoint answers 200 and silently drops query parameters it does
+   * not recognize, so a renamed filter would return the whole collection
+   * instead of failing — the same trap that hid the `produto list --codigo`
+   * and `servico list --busca` bugs. Every name below was proven against
+   * production on 2026-08-19 with a value matching a single record.
+   */
+  public function testListSendsEveryFilterUnderTheNameProductionHonors(): void {
+    $response = new MockResponse('{"itens":[],"total_itens":0}', ['http_code' => 200]);
+    $output   = $this->newOutput();
+    $module   = new VendaCommandModule(
+        $this->vendasClient([$response]),
+        new ErrorEnvelope($output),
+        new JsonRenderer($output),
+        new PaginationValidator(),
+    );
+
+    $byName = [];
+    foreach ($module->commands() as $command) {
+      $byName[(string) $command->getName()] = $command;
+    }
+
+    $this->runCommand($byName['venda list'], [
+      '--campo-ordenado-ascendente'  => 'NUMERO',
+      '--campo-ordenado-descendente' => 'DATA',
+      '--data-criacao-ate'           => '2020-09-30',
+      '--data-criacao-de'            => '2020-09-01',
+      '--data-fim'                   => '2020-09-30',
+      '--data-inicio'                => '2020-09-01',
+      '--termo-busca'                => 'HOPE',
+      '--totais'                     => 'CANCELED',
+    ]);
+
+    parse_str((string) parse_url($response->getRequestUrl(), PHP_URL_QUERY), $query);
+
+    self::assertSame('HOPE', $query['termo_busca'] ?? null);
+    self::assertSame('2020-09-01', $query['data_inicio'] ?? null);
+    self::assertSame('2020-09-30', $query['data_fim'] ?? null);
+    self::assertSame('2020-09-01', $query['data_criacao_de'] ?? null);
+    self::assertSame('2020-09-30', $query['data_criacao_ate'] ?? null);
+    self::assertSame('DATA', $query['campo_ordenado_descendente'] ?? null);
+    self::assertSame('NUMERO', $query['campo_ordenado_ascendente'] ?? null);
+    self::assertSame('CANCELED', $query['totais'] ?? null);
   }
 }

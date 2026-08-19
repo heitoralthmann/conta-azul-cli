@@ -46,6 +46,26 @@ no [README](README.md#contrato-de-saída).
 
 ### Changed
 
+- **Grupo `venda` verificado contra a produção (2026-08-19).** Os nove
+  comandos foram exercitados num CRUD completo — três vendas de teste
+  criadas, uma atualizada e todas excluídas, com a listagem de volta ao
+  total de 6652 no final — e passaram a ✅ em `COMMANDS.md`. **Nenhum bug
+  de filtro:** `venda list` tem o maior conjunto de filtros do CLI e os
+  oito sobreviveram à receita completa (baseline, `zzz_bogus=abc`, valor
+  discriminante), o primeiro grupo em que isso acontece. As divergências
+  estavam na escrita, e estão documentadas: `condicao_pagamento` é
+  obrigatório no `create` e não constava da lista; `venda update` exige
+  `versao` mas **recusa o valor `0`** que toda venda recém-criada tem, e
+  ignora o número enviado (não é trava otimista, o servidor incrementa o
+  próprio contador); `venda create` responde com o enum em inglês
+  (`IN_PROCESS`) enquanto `venda get` responde `EM_ANDAMENTO` para a mesma
+  venda; `venda vendedores` não devolve o `id_legado` prometido; `venda
+  get` não traz os itens, só contagens; e `excluir-lote` é **exclusão
+  lógica** — `get` e `itens` seguem em 200, `status` vira `CANCELADO` e
+  `situacao` fica como estava, então só o sumiço da listagem prova a
+  remoção. Registrado também que `venda list` e `venda itens` aceitam
+  `--tamanho-pagina 1000`, ou seja, não são afetados pelo limite de 100 de
+  `servico list` e das notas fiscais.
 - **Grupo `servico` verificado contra a produção (2026-08-19).** Os cinco
   comandos foram exercitados num CRUD completo — criar, ler, atualizar e
   excluir —, com o serviço de teste removido ao final, e passaram a ✅ em

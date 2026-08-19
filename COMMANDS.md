@@ -97,15 +97,15 @@ Cada endpoint traz uma marca de confiança:
 | `nota-fiscal get` | `GET /v1/notas-fiscais/{chave}` | ⚠️ |
 | `nota-fiscal vincular-mdfe` | `POST /v1/notas-fiscais/vinculo-mdfe` | ⚠️ |
 | `nota-fiscal-servico list` | `GET /v1/notas-fiscais-servico` | ⚠️ |
-| `venda list` | `GET /v1/venda/busca` | ⚠️ |
-| `venda create` | `POST /v1/venda` | ⚠️ |
-| `venda get` | `GET /v1/venda/{id}` | ⚠️ |
-| `venda update` | `PUT /v1/venda/{id}` | ⚠️ |
-| `venda imprimir` | `GET /v1/venda/{id}/imprimir` | ⚠️ |
-| `venda itens` | `GET /v1/venda/{id_venda}/itens` | ⚠️ |
-| `venda vendedores` | `GET /v1/venda/vendedores` | ⚠️ |
-| `venda proximo-numero` | `GET /v1/venda/proximo-numero` | ⚠️ |
-| `venda excluir-lote` | `POST /v1/venda/exclusao-lote` | ⚠️ |
+| `venda list` | `GET /v1/venda/busca` | ✅ |
+| `venda create` | `POST /v1/venda` | ✅ |
+| `venda get` | `GET /v1/venda/{id}` | ✅ |
+| `venda update` | `PUT /v1/venda/{id}` | ✅ |
+| `venda imprimir` | `GET /v1/venda/{id}/imprimir` | ✅ |
+| `venda itens` | `GET /v1/venda/{id_venda}/itens` | ✅ |
+| `venda vendedores` | `GET /v1/venda/vendedores` | ✅ |
+| `venda proximo-numero` | `GET /v1/venda/proximo-numero` | ✅ |
+| `venda excluir-lote` | `POST /v1/venda/exclusao-lote` | ✅ |
 | `orcamento list` | `GET /v1/orcamentos` | ⚠️ |
 | `orcamento create` | `POST /v1/orcamentos` | ⚠️ |
 | `orcamento get` | `GET /v1/orcamentos/{id}` | ⚠️ |
@@ -200,11 +200,13 @@ E o nome do campo de contagem **não é o mesmo em todo lugar**:
 | `{totalItems, items[]}` | `pessoa list`, `produto list` |
 | `{total_items, items[]}` | catálogos de `produto` (categorias, cest, ncm, …) |
 | `{itens[], paginacao{total_itens}}` | `servico list` |
+| `{totais, quantidades, total_itens, itens[]}` | `venda list` |
+| `{itens[], itens_totais, totais}` | `venda itens` |
 
-Os grupos ainda não verificados podem trazer outras variações — `contrato
-list` está documentado como `{itens_totais, items[]}` e `venda list` como
-`{totais, quantidades, total_itens, itens[]}`, mas nenhum dos dois foi
-exercitado ainda.
+`venda` sozinha traz duas dessas variações — a listagem e os itens de uma
+venda usam formatos diferentes. Os grupos ainda não verificados podem trazer
+outras: `contrato list` está documentado como `{itens_totais, items[]}`, mas
+não foi exercitado ainda.
 
 ## Datas
 
@@ -1034,7 +1036,13 @@ Diferente de `nota-fiscal list`, retorna NFS-e em qualquer status.
 
 Os payloads de criação e atualização seguem o schema da API e são enviados sem transformação. Use `--json` com um objeto JSON.
 
-### `venda list` ⚠️
+**Verificado contra produção em 2026-08-19** — os nove comandos, incluindo o
+ciclo completo de escrita (criar, atualizar e excluir três vendas de teste).
+`venda list` foi o primeiro grupo em que **todos** os filtros documentados
+existiam de verdade: os oito passaram na receita de baseline + `zzz_bogus` +
+valor discriminante. As armadilhas do grupo estão na escrita, não na leitura.
+
+### `venda list` ✅
 
 `GET /v1/venda/busca`
 
@@ -1046,15 +1054,75 @@ Os payloads de criação e atualização seguem o schema da API e são enviados 
 
 Diferente de `contrato list`, o intervalo de datas é opcional — a API não o exige. Retorna `{totais, quantidades, total_itens, itens[]}`.
 
-### `venda create` ⚠️
+Detalhes confirmados exercitando:
+
+- `--termo-busca` casa **nome do cliente e número da venda**, não as
+  observações. Buscar por `TESTE HEITOR` (o texto em `observacoes` das
+  vendas de teste) devolveu `0`; buscar pelo número devolveu exatamente 1.
+- `--data-inicio`/`--data-fim` filtram a **data da venda**;
+  `--data-criacao-de`/`--data-criacao-ate` filtram a data de criação. São
+  intervalos distintos e o mesmo par de datas deu totais diferentes (27 vs 19).
+- `--totais` é um **filtro de situação**, apesar do nome. `--totais CANCELED`
+  reduziu 6652 para 1. Valor fora do enum devolve `400` — é dos poucos
+  parâmetros que a API valida em vez de descartar.
+- `--campo-ordenado-*` não muda a contagem (é ordenação), mas um valor
+  inválido devolve `400` com a lista de valores aceitos — foi assim que se
+  provou que o parâmetro é reconhecido.
+- Aceita `--tamanho-pagina 1000`: **não** é afetado pelo limite de 100 que
+  atinge `servico list` e as notas fiscais.
+
+### `venda create` ✅
 
 `POST /v1/venda` — **escrita síncrona**, sem protocolo.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
-| `--json` | **sim** | Payload JSON da venda (`id_cliente`, `numero`, `situacao`, `data_venda` e `itens` são obrigatórios) |
+| `--json` | **sim** | Payload JSON da venda (ver campos obrigatórios abaixo) |
 
-### `venda get` ⚠️
+A documentação lista cinco campos obrigatórios; a API cobra **seis**, e
+`condicao_pagamento` não estava na lista. Descobertos um a um, cada `400`
+revelando só o próximo:
+
+| Campo | Formato |
+|---|---|
+| `id_cliente` | uuid da pessoa |
+| `numero` | inteiro (use `venda proximo-numero`) |
+| `situacao` | `EM_ANDAMENTO` ou `APROVADO` — nada mais |
+| `data_venda` | `YYYY-MM-DD` |
+| `itens` | array de `{id, quantidade, valor}` — `id` é o uuid do produto ou serviço, **não** `id_item` |
+| `condicao_pagamento` | `{opcao_condicao_pagamento, parcelas[]}` |
+
+`opcao_condicao_pagamento` aceita `À vista` (acentuado e capitalizado assim),
+`Nx` (`1x`, `12x`) ou dias separados por vírgula (`30`, `30,60`, `15,30,45`).
+Cada parcela é `{data_vencimento, valor}`.
+
+Payload mínimo que passou:
+
+```json
+{
+  "id_cliente": "a1523431-f1be-44c4-8413-fdb5e50643e3",
+  "numero": 7297,
+  "situacao": "EM_ANDAMENTO",
+  "data_venda": "2026-08-19",
+  "observacoes": "TESTE HEITOR",
+  "itens": [{ "id": "1a1b7957-12c7-4064-9809-5af7bbb40f57", "quantidade": 1, "valor": 10 }],
+  "condicao_pagamento": {
+    "opcao_condicao_pagamento": "À vista",
+    "parcelas": [{ "data_vencimento": "2026-08-19", "valor": 10 }]
+  }
+}
+```
+
+**A resposta do `POST` e a do `GET` falam enums diferentes.** O `create`
+devolve `situacao.nome` em inglês (`IN_PROCESS`) e chama o campo de
+`pendencia`; o `get` devolve `EM_ANDAMENTO` e `tipo_pendencia` para a mesma
+venda. Não deduza o vocabulário de um a partir do outro.
+
+Retorna `{id, id_legado, numero, origem, data_venda, situacao, pendencia,
+valor_composicao, condicao_pagamento, …}` — o `id` é o uuid a usar nos
+demais comandos.
+
+### `venda get` ✅
 
 `GET /v1/venda/{id}`
 
@@ -1062,16 +1130,40 @@ Diferente de `contrato list`, o intervalo de datas é opcional — a API não o 
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. Uuid ou id legado da venda |
 
-### `venda update` ⚠️
+Aceita os dois ids (confirmado com uuid e com `id_legado`). A resposta é um
+**envelope**, não a venda solta: `{evento_financeiro, notificacao,
+natureza_operacao, contrato, cliente, vendedor, venda}` — os campos da venda
+ficam sob a chave `venda`.
+
+**`get` não devolve os itens.** `venda.total_itens` é um objeto de contagens
+(`{contagem_produtos, contagem_servicos, contagem_nao_conciliados}`), não uma
+lista nem um número. Para os itens, use `venda itens`.
+
+### `venda update` ✅
 
 `PUT /v1/venda/{id}` — **escrita síncrona**; a API não expõe `PATCH` para vendas, então o payload precisa trazer o objeto completo, incluindo `versao`.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
-| `<id>` | **sim** | Argumento posicional. Uuid da venda |
+| `<id>` | **sim** | Argumento posicional. Uuid da venda — id legado devolve `400` |
 | `--json` | **sim** | Payload JSON completo da venda |
 
-### `venda imprimir` ⚠️
+Mesmos campos obrigatórios do `create`, mais `versao`. E aqui está a
+armadilha mais desagradável do grupo:
+
+> **`versao` precisa ser diferente de zero.** Uma venda recém-criada nasce
+> com `versao: 0`; devolver esse valor no `PUT` responde
+> `O campo 'versao' é obrigatório` — o validador não distingue zero de
+> ausente. Mandar `1` funciona.
+
+E `versao` **não é trava otimista**: o valor enviado é ignorado. Com a venda
+em `versao: 1`, tanto `1` quanto `99` foram aceitos e o servidor apenas
+incrementou o próprio contador (1 → 2 → 3). Ou seja, o campo é obrigatório e
+inútil — mande qualquer inteiro positivo.
+
+Retorna só `{id, id_legado}`.
+
+### `venda imprimir` ✅
 
 `GET /v1/venda/{id}/imprimir`
 
@@ -1079,9 +1171,9 @@ Diferente de `contrato list`, o intervalo de datas é opcional — a API não o 
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. Uuid ou id legado da venda |
 
-A resposta da API é um PDF binário, não JSON. Para manter o contrato de stdout do CLI, o comando devolve `{"content_base64", "content_type"}` — decodifique `content_base64` para obter os bytes originais.
+A resposta da API é um PDF binário, não JSON. Para manter o contrato de stdout do CLI, o comando devolve `{"content_base64", "content_type"}` — decodifique `content_base64` para obter os bytes originais. Confirmado: `content_type` é `application/pdf` e os bytes decodificados começam com `%PDF-1.5`.
 
-### `venda itens` ⚠️
+### `venda itens` ✅
 
 `GET /v1/venda/{id_venda}/itens`
 
@@ -1093,19 +1185,25 @@ A resposta da API é um PDF binário, não JSON. Para manter o contrato de stdou
 
 Retorna `{itens[], itens_totais, totais}`.
 
-### `venda vendedores` ⚠️
+Só aceita uuid: passar o `id_legado` devolve `400` ("o valor informado para o
+ID precisa ser do tipo UUID") — mesmo id que `get` e `imprimir` aceitam sem
+reclamar. Cada item traz `{id, id_item, nome, descricao, tipo, quantidade,
+valor, custo, id_centro_custo}`, onde `id` é o id da linha da venda e
+`id_item` é o uuid do produto ou serviço. Aceita `--tamanho-pagina 1000`.
+
+### `venda vendedores` ✅
 
 `GET /v1/venda/vendedores`
 
-Sem parâmetros e sem paginação: devolve o array completo de vendedores cadastrados (`id`, `nome`, `id_legado`).
+Sem parâmetros e sem paginação: devolve o array completo de vendedores cadastrados. Cada item traz apenas `{id, nome}` — o `id_legado` que a documentação promete **não vem na resposta**.
 
-### `venda proximo-numero` ⚠️
+### `venda proximo-numero` ✅
 
 `GET /v1/venda/proximo-numero`
 
-Sem parâmetros. Retorna o próximo número de venda disponível como um inteiro solto (ou `null`), não um objeto — mesmo formato de `contrato proximo-numero`.
+Sem parâmetros. Retorna o próximo número de venda disponível como um inteiro solto (ou `null`), não um objeto — mesmo formato de `contrato proximo-numero`. O contador **volta atrás** quando as vendas são excluídas: passou de 7297 para 7298 assim que a venda 7297 foi criada e voltou a 7297 depois que as três vendas de teste foram removidas.
 
-### `venda excluir-lote` ⚠️
+### `venda excluir-lote` ✅
 
 `POST /v1/venda/exclusao-lote` — exclui vendas em lote.
 
@@ -1113,7 +1211,19 @@ Sem parâmetros. Retorna o próximo número de venda disponível como um inteiro
 |---|---|---|
 | `--json` | **sim** | Payload JSON com `{"ids": [...]}` — de 1 a 10 uuids por chamada |
 
-Retorna `{atualizados, ignorados}`.
+Retorna `{atualizados, ignorados}` com `200` (não `204`).
+
+Os dois limites são cobrados de verdade: `[]` devolve `400`
+("deve conter ao menos 1 item") e 11 ids devolvem `400`
+("não pode conter mais de 10 itens"). Um uuid inexistente **não** é erro —
+entra em `ignorados` e a chamada responde `200`, então confira o contador em
+vez de confiar no status.
+
+**A exclusão é lógica**, como em `servico` e ao contrário de `produto`:
+depois do `exclusao-lote`, `venda get` e `venda itens` continuam
+respondendo `200` com o registro completo. O que muda é `venda.status`, que
+passa a `CANCELADO` — enquanto `venda.situacao` **continua** `EM_ANDAMENTO`,
+que é o par de campos que engana. A prova confiável é o sumiço da listagem.
 
 ---
 
@@ -1293,7 +1403,9 @@ tail -5 ~/.cache/conta-azul-cli/log.jsonl
 3. **Leitura e escrita usam nomes diferentes para o mesmo dado.** `pessoa` lê `documento` e escreve `cpf`; o SKU de um produto é `codigo` na listagem, `codigo_sku` no detalhe e `sku` na query.
 4. **O mesmo registro tem dois ids, e comandos do mesmo grupo usam ids diferentes.** `servico get`/`update` querem o uuid; `servico delete` quer o `id_servico` inteiro.
 5. **Enums vão acentuados e capitalizados como na interface** (`Física`, `Cliente`), não em `SCREAMING_SNAKE_CASE`.
-6. **Exclusão não quer dizer a mesma coisa em todo grupo.** `produto delete` faz o `get` passar a 404; `servico delete` é lógico e o `get` continua respondendo 200 com `status` `ATIVO`.
+6. **Exclusão não quer dizer a mesma coisa em todo grupo.** `produto delete` faz o `get` passar a 404; `servico delete` é lógico e o `get` continua respondendo 200 com `status` `ATIVO`; `venda excluir-lote` também é lógico e vira `status` `CANCELADO` — mas deixa `situacao` como estava.
+7. **A resposta da escrita não fala a mesma língua que a da leitura.** `venda create` devolve `situacao.nome` em inglês (`IN_PROCESS`) para a venda que `venda get` mostra como `EM_ANDAMENTO`.
+8. **Zero pode ser lido como ausente.** `venda update` exige `versao` e recusa `0` com "campo obrigatório" — justamente o valor que uma venda recém-criada tem.
 
 Nunca deduza da documentação **nem o path, nem o nome de um filtro, nem o
 nome de um campo do payload, nem o tipo de um id, nem o formato da
@@ -1320,10 +1432,18 @@ qualquer filtro que recebe. Se você mexer em `$filters` num
 | `pessoa` | ✅ 10/10 (2026-08-19) — nenhum bug de código |
 | `produto` | ✅ 10/11 (2026-08-19) — 1 filtro errado, 2 inexistentes; falta `ecommerce-categorias` |
 | `servico` | ✅ 5/5 (2026-08-19) — 1 filtro errado, 3 inexistentes |
+| `venda` | ✅ 9/9 (2026-08-19) — nenhum bug de filtro; as armadilhas estavam na escrita |
 | resto | ⚠️ nunca exercitado — trate os filtros como suspeitos |
 
-Os próximos grupos com muitos filtros (`venda list`, `orcamento list`,
-`contrato list`) são os de maior risco, pela mesma razão que produtos e
+`venda list` quebrou a sequência: era o grupo de mais filtros e todos os oito
+existiam. Não conclua daí que dá para confiar na documentação — a mesma
+verificação achou um campo obrigatório que ela não lista
+(`condicao_pagamento`), um `versao` que rejeita o próprio valor do registro,
+e um `id_legado` prometido em `venda vendedores` que não vem na resposta. O
+risco só mudou de lugar.
+
+Os próximos grupos com muitos filtros (`orcamento list`, `contrato list`)
+continuam sendo os de maior risco de leitura, pela mesma razão que produtos e
 serviços foram.
 
 Lista autoritativa de operações: https://developers.contaazul.com/docs/financial-apis-openapi/v1 — o portal bloqueia `curl` e fetch automatizado (403), então abra no navegador. Só três specs aparecem linkadas em `/aboutapis` (financial, sales, contracts); produtos, serviços e pessoas **não têm spec pública encontrável**, e o caminho `/_bundle/open-api-docs/{slug}.json`, que já funcionou, hoje devolve 404 — na prática, esses grupos só se descobrem exercitando.

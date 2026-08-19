@@ -17,9 +17,10 @@ use function rawurlencode;
 /**
  * Cliente dos endpoints de vendas da API Conta Azul.
  *
- * Paths e schemas conferidos direto na documentação renderizada
- * (https://developers.contaazul.com/docs/sales-apis-openapi/v1), já que o
- * portal bloqueia `WebFetch`/`curl`; ainda não exercitados contra a API real.
+ * Os nove endpoints foram exercitados contra a API de produção em
+ * 2026-08-19, incluindo o ciclo completo de escrita (`POST`, `PUT` e
+ * `POST /exclusao-lote`). Paths, filtros e formatos de resposta conferem
+ * com o que está em `COMMANDS.md`.
  */
 final class VendasClient
 {
