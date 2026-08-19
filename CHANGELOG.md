@@ -9,6 +9,39 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+### Changed
+
+- **Grupo `pessoa` verificado contra a produção (2026-08-19).** Os dez
+  comandos (`list`, `create`, `get`, `legado`, `update`, `patch`,
+  `ativar`, `inativar`, `excluir`, `conta-conectada`) foram exercitados
+  em um CRUD completo — criar, ler, atualizar, ativar/inativar e
+  excluir, com o registro de teste removido ao final — e passaram a
+  ✅ em `COMMANDS.md`. Nenhuma mudança de código foi necessária: todos
+  os paths e payloads já estavam corretos.
+
+### Fixed
+
+- **Documentação:** `COMMANDS.md` afirmava que uma resposta `204 No
+  Content` é renderizada como `{}`. Ela sai como `[]` — um corpo vazio
+  (e também um `{}` vindo da API) vira array PHP vazio e volta a ser
+  serializado como array. Corrigido em `nota-fiscal vincular-mdfe` e
+  registrado como nota geral no contrato de saída, já que afeta todos
+  os comandos que respondem `204`.
+
+### Documented
+
+- Armadilhas do grupo `pessoa` confirmadas em produção: os enums vão
+  acentuados como na interface (`Física`/`Jurídica`/`Estrangeira`,
+  `Cliente`/`Fornecedor`/`Transportadora`) e não em maiúsculas;
+  `pessoa list` responde `{totalItems, items[]}` em camelCase, com
+  `items: null` quando nada casa; `--data-criacao-*` usa `YYYY-MM-DD`
+  enquanto `--data-alteracao-*` exige ISO 8601 sem timezone; `pessoa
+  legado` consome o `uuid_legado`, não o `id_legado`; e `pessoa update`
+  (PUT) é substituição real, exigindo `cpf` (não `documento`) mais
+  `codigo`, `rg`, `data_nascimento`, `email`, `telefone_comercial`,
+  `observacao`, `inscricoes[]`, `outros_contatos[]` e `enderecos[]`
+  não vazios.
+
 ## [0.14.0] - 2026-08-19
 
 ### Added

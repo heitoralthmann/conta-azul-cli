@@ -8,7 +8,7 @@ Convenção de leitura: `obrig.` marca o que falha sem valor; `padrão` é o que
 
 Cada endpoint traz uma marca de confiança:
 
-- **✅ verificado** — chamado contra a API real e respondeu 200 (2026-08-15)
+- **✅ verificado** — exercitado contra a API real e respondeu como documentado. As leituras financeiras foram verificadas em 2026-08-15; o grupo `pessoa` teve o CRUD completo (criar, ler, atualizar, ativar/inativar, excluir) exercitado em produção em 2026-08-19
 - **⚠️ não verificado** — path correto conforme a documentação, mas nunca exercitado; exige disparar escrita real
 
 ---
@@ -51,16 +51,16 @@ Cada endpoint traz uma marca de confiança:
 | `contrato get` | `GET /v1/contratos/{id}` | ⚠️ |
 | `contrato delete` | `DELETE /v1/contratos/{id}` | ⚠️ |
 | `contrato encerrar` | `POST /v1/contratos/{id}/encerrar` | ⚠️ |
-| `pessoa list` | `GET /v1/pessoas` | ⚠️ |
-| `pessoa create` | `POST /v1/pessoas` | ⚠️ |
-| `pessoa get` | `GET /v1/pessoas/{id}` | ⚠️ |
-| `pessoa update` | `PUT /v1/pessoas/{id}` | ⚠️ |
-| `pessoa patch` | `PATCH /v1/pessoas/{id}` | ⚠️ |
-| `pessoa legado` | `GET /v1/pessoas/legado/{id}` | ⚠️ |
-| `pessoa ativar` | `POST /v1/pessoas/ativar` | ⚠️ |
-| `pessoa inativar` | `POST /v1/pessoas/inativar` | ⚠️ |
-| `pessoa excluir` | `POST /v1/pessoas/excluir` | ⚠️ |
-| `pessoa conta-conectada` | `GET /v1/pessoas/conta-conectada` | ⚠️ |
+| `pessoa list` | `GET /v1/pessoas` | ✅ |
+| `pessoa create` | `POST /v1/pessoas` | ✅ |
+| `pessoa get` | `GET /v1/pessoas/{id}` | ✅ |
+| `pessoa update` | `PUT /v1/pessoas/{id}` | ✅ |
+| `pessoa patch` | `PATCH /v1/pessoas/{id}` | ✅ |
+| `pessoa legado` | `GET /v1/pessoas/legado/{id}` | ✅ |
+| `pessoa ativar` | `POST /v1/pessoas/ativar` | ✅ |
+| `pessoa inativar` | `POST /v1/pessoas/inativar` | ✅ |
+| `pessoa excluir` | `POST /v1/pessoas/excluir` | ✅ |
+| `pessoa conta-conectada` | `GET /v1/pessoas/conta-conectada` | ✅ |
 | `produto list` | `GET /v1/produtos` | ⚠️ |
 | `produto create` | `POST /v1/produtos` | ⚠️ |
 | `produto get` | `GET /v1/produtos/{id}` | ⚠️ |
@@ -111,6 +111,13 @@ Vale para **todos** os comandos:
 | `stdout` | Só o payload JSON compacto. Nada mais — seguro para `\| jq`. |
 | `stderr` | Envelopes JSON de erro e de aviso. |
 | exit code | `0` sucesso, `1` falha. Binário. |
+
+> **Resposta sem corpo sai como `[]`, não `{}`.** Um `204 No Content` — e
+> também um `{}` vindo da API — é decodificado para um array PHP vazio, que
+> volta a ser serializado como `[]`. Quem consome com `jq` deve tratar
+> `[]` como "nenhum conteúdo" nos comandos marcados `204` (`pessoa patch`,
+> `pessoa excluir`, `contrato delete`, `orcamento excluir-lote`,
+> `captura recusar`, `nota-fiscal vincular-mdfe`).
 
 **Envelope de erro** (stderr, exit 1):
 
@@ -606,7 +613,12 @@ Desativa o contrato: ele para de gerar novas cobranças, mas não é excluído (
 
 Os payloads de criação e atualização seguem o schema da API e são enviados sem transformação. Use `--json` com um objeto JSON.
 
-### `pessoa list` ⚠️
+> **Os enums vão acentuados e capitalizados como na interface**, não em
+> `SCREAMING_SNAKE_CASE`: `tipo_pessoa` aceita `Física`, `Jurídica` ou
+> `Estrangeira`; `tipo_perfil` aceita `Cliente`, `Fornecedor` ou
+> `Transportadora`. Enviar `FISICA` ou `CLIENTE` devolve **400**.
+
+### `pessoa list` ✅
 
 `GET /v1/pessoas`
 
@@ -616,7 +628,18 @@ Os payloads de criação e atualização seguem o schema da API e são enviados 
 | `--tamanho-pagina` | não | `50` | Itens por página |
 | filtros da API | não | — | `--busca`, `--ids`, `--documentos`, `--paises`, `--cidades`, `--ufs`, `--codigos-pessoa`, `--emails`, `--tipos-pessoa`, `--nomes`, `--telefones`, `--data-criacao-inicio`, `--data-criacao-fim`, `--data-alteracao-de`, `--data-alteracao-ate`, `--tipo-perfil`, `--tipo-ordenacao`, `--ordem-ordenacao`, `--com-endereco` |
 
-### `pessoa create` ⚠️
+Retorna `{totalItems, items[]}` — **camelCase e em inglês**, diferente do
+`{itens_totais, itens[]}` dos comandos financeiros. Quando nada casa,
+`items` vem `null`, não `[]`.
+
+> **Os dois pares de data não usam o mesmo formato**, e trocá-los devolve 400:
+>
+> | Filtro | Formato | Exemplo |
+> |---|---|---|
+> | `--data-criacao-inicio` / `--data-criacao-fim` | `YYYY-MM-DD` | `2026-08-19` |
+> | `--data-alteracao-de` / `--data-alteracao-ate` | ISO 8601 **sem timezone** | `2026-08-19T00:00:00` |
+
+### `pessoa create` ✅
 
 `POST /v1/pessoas`
 
@@ -624,7 +647,17 @@ Os payloads de criação e atualização seguem o schema da API e são enviados 
 |---|---|---|
 | `--json` | **sim** | Objeto JSON da pessoa |
 
-### `pessoa get` ⚠️, `pessoa legado` ⚠️
+O mínimo aceito é `nome`, `tipo_pessoa` e `perfis`:
+
+```json
+{"nome":"…","tipo_pessoa":"Física","perfis":[{"tipo_perfil":"Cliente"}]}
+```
+
+Retorna `{id, tipo_pessoa, nome, ativo, origem, perfis, estrangeiro}`. A
+criação é bem mais permissiva que `pessoa update` — nem documento, nem
+endereço, nem contato são exigidos aqui.
+
+### `pessoa get` ✅, `pessoa legado` ✅
 
 `GET /v1/pessoas/{id}` e `GET /v1/pessoas/legado/{id}`
 
@@ -632,7 +665,11 @@ Os payloads de criação e atualização seguem o schema da API e são enviados 
 |---|---|---|
 | `<id>` | **sim** | ID atual ou legado da pessoa |
 
-### `pessoa update` ⚠️ e `pessoa patch` ⚠️
+> `pessoa legado` consome o **`uuid_legado`** (o uuid que `pessoa list`
+> devolve nesse campo, e que `pessoa get` aninha em `pessoas_legado[].uuid`),
+> não o `id_legado` inteiro do mesmo item.
+
+### `pessoa update` ✅ e `pessoa patch` ✅
 
 `PUT /v1/pessoas/{id}` substitui o cadastro; `PATCH /v1/pessoas/{id}` atualiza apenas os campos enviados.
 
@@ -641,7 +678,26 @@ Os payloads de criação e atualização seguem o schema da API e são enviados 
 | `<id>` | **sim** | ID da pessoa |
 | `--json` | **sim** | Objeto JSON da atualização |
 
-### `pessoa ativar`, `pessoa inativar` e `pessoa excluir` ⚠️
+`pessoa patch` responde **204 No Content** (renderizado como `[]`) e aplica
+só o que foi enviado — confirme o resultado com `pessoa get`.
+
+`pessoa update` é substituição de verdade: responde **200** com o cadastro
+completo, mas exige o objeto inteiro. Para uma pessoa Física a API cobra,
+um erro de cada vez, todos estes campos:
+
+| Campo | Observação |
+|---|---|
+| `nome`, `tipo_pessoa`, `perfis` | como em `pessoa create` |
+| `cpf` | **não** `documento` — o campo de leitura (`documento`) e o de escrita (`cpf`) têm nomes diferentes |
+| `codigo`, `rg`, `data_nascimento`, `email`, `telefone_comercial`, `observacao` | strings vazias são rejeitadas |
+| `inscricoes[]` | ex: `[{"indicador_inscricao_estadual":"NAO CONTRIBUINTE","inscricao_estadual":"","inscricao_municipal":"","inscricao_suframa":""}]` |
+| `outros_contatos[]` | não pode ser vazio; cada item exige `telefone_celular` |
+| `enderecos[]` | não pode ser vazio; `complemento` também é obrigatório |
+
+> Por isso, para mexer em um ou dois campos use `pessoa patch`. `pessoa
+> update` só compensa quando você já tem o cadastro completo em mãos.
+
+### `pessoa ativar` ✅, `pessoa inativar` ✅ e `pessoa excluir` ✅
 
 `POST /v1/pessoas/ativar`, `/inativar` e `/excluir`. O payload esperado pela API é `{"uuids":[...]}`.
 
@@ -649,9 +705,16 @@ Os payloads de criação e atualização seguem o schema da API e são enviados 
 |---|---|---|
 | `--json` | **sim** | Objeto JSON com os IDs |
 
-### `pessoa conta-conectada` ⚠️
+`ativar` e `inativar` respondem **200** com `{todos[], ativos[], inativos[]}`
+— o balde que não se aplica à operação vem `null`. `excluir` responde
+**204 No Content** (renderizado como `[]`) e a exclusão é permanente:
+`pessoa get` passa a devolver 404.
+
+### `pessoa conta-conectada` ✅
 
 `GET /v1/pessoas/conta-conectada` — retorna os dados da empresa vinculada ao token.
+
+Sem parâmetros. Retorna `{id_empresa, documento, razao_social, nome_fantasia, data_fundacao, email}`.
 
 ---
 
@@ -770,7 +833,7 @@ A resposta da API é binária (o XML da NF-e ou, quando há carta de correção,
 
 ### `nota-fiscal vincular-mdfe` ⚠️
 
-`POST /v1/notas-fiscais/vinculo-mdfe` — **escrita síncrona**, resposta `204 No Content` (renderizada como `{}`).
+`POST /v1/notas-fiscais/vinculo-mdfe` — **escrita síncrona**, resposta `204 No Content` (renderizada como `[]`).
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
