@@ -19,6 +19,13 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
   desenvolvimento — um cliente e um produto — por placeholders sintéticos
   (`11111111-…`, `22222222-…`). Não eram exploráveis sem um token do mesmo
   tenant, mas quem copiasse o exemplo tomava `404`.
+- **Marcadores de teste despersonalizados.** Os payloads de exemplo passam a
+  usar `TESTE CLI CONTA AZUL` no lugar de um nome próprio, e as fixtures de
+  `HomeDirectoryTest` usam `testuser` em vez do usuário da máquina do autor.
+  Onde a string era **afirmação de fato** — a busca que devolveu `0` em
+  `venda list`, as notas de 2024 exercitadas em `vincular-mdfe` — a frase foi
+  reescrita para não nomear o marcador, em vez de trocá-lo: renomear ali
+  descreveria um experimento que não foi o que aconteceu.
 - `docs/desenvolvimento/going-live.md` reescrito: deixou de se declarar
   privado, ganhou o passo de habilitar o GitHub Pages, a ordem forçada entre
   os passos (proteção de branch e Private Vulnerability Reporting são
@@ -192,8 +199,8 @@ grupo, com as armadilhas de cada um, mora em
 - **`nota-fiscal vincular-mdfe` exercitado em produção, com autorização
   explícita do titular da conta.** Era a única escrita do CLI que jamais tinha
   retornado sucesso. O ciclo completo (`AUTORIZADO` → `ENCERRADO` →
-  `CANCELADO`) foi executado sobre notas de 2024 marcadas com `identificador`
-  `TESTE HEITOR`, confirmando o `204 No Content` que a documentação afirmava
+  `CANCELADO`) foi executado sobre notas de 2024 marcadas com um
+  `identificador` de teste, confirmando o `204 No Content` que a documentação afirmava
   sem prova. Também foram medidos o array plural, a repetição da mesma chave, a
   reautorização depois do cancelamento e o lote misto com chave inexistente.
   O XML das quatro notas envolvidas foi conferido por SHA-256 antes e depois:

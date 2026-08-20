@@ -36,37 +36,37 @@ final class HomeDirectoryTest extends TestCase
   }
 
   public function testPrefersHome(): void {
-    putenv('HOME=/home/heitor');
-    putenv('USERPROFILE=C:\Users\heitor');
+    putenv('HOME=/home/testuser');
+    putenv('USERPROFILE=C:\Users\testuser');
 
-    self::assertSame('/home/heitor', HomeDirectory::resolve());
+    self::assertSame('/home/testuser', HomeDirectory::resolve());
   }
 
   public function testFallsBackToUserProfileOnWindows(): void {
     // Windows sets USERPROFILE and leaves HOME unset.
-    putenv('USERPROFILE=C:\Users\heitor');
+    putenv('USERPROFILE=C:\Users\testuser');
 
-    self::assertSame('C:\Users\heitor', HomeDirectory::resolve());
+    self::assertSame('C:\Users\testuser', HomeDirectory::resolve());
   }
 
   public function testFallsBackToHomeDriveAndHomePath(): void {
     putenv('HOMEDRIVE=C:');
-    putenv('HOMEPATH=\Users\heitor');
+    putenv('HOMEPATH=\Users\testuser');
 
-    self::assertSame('C:\Users\heitor', HomeDirectory::resolve());
+    self::assertSame('C:\Users\testuser', HomeDirectory::resolve());
   }
 
   public function testIgnoresEmptyValues(): void {
     putenv('HOME=');
-    putenv('USERPROFILE=C:\Users\heitor');
+    putenv('USERPROFILE=C:\Users\testuser');
 
-    self::assertSame('C:\Users\heitor', HomeDirectory::resolve());
+    self::assertSame('C:\Users\testuser', HomeDirectory::resolve());
   }
 
   public function testStripsTrailingSeparators(): void {
-    putenv('HOME=/home/heitor/');
+    putenv('HOME=/home/testuser/');
 
-    self::assertSame('/home/heitor', HomeDirectory::resolve());
+    self::assertSame('/home/testuser', HomeDirectory::resolve());
   }
 
   public function testTrailingSeparatorOnlyPathIsPreserved(): void {

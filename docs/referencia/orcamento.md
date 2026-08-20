@@ -113,7 +113,7 @@ Payload mínimo que passou:
   "id_cliente": "11111111-1111-4111-8111-111111111111",
   "data_orcamento": "2026-08-19",
   "data_validade": "2026-09-19",
-  "descricao": "TESTE HEITOR",
+  "descricao": "TESTE CLI CONTA AZUL",
   "itens": [{ "id": "22222222-2222-4222-8222-222222222222", "quantidade": 1, "valor": 10 }]
 }
 ```

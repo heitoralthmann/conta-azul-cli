@@ -31,8 +31,8 @@ sections:
       Detalhes confirmados exercitando:
 
       - `--termo-busca` casa **nome do cliente e número da venda**, não as
-        observações. Buscar por `TESTE HEITOR` (o texto em `observacoes` das
-        vendas de teste) devolveu `0`; buscar pelo número devolveu exatamente 1.
+        observações. Buscar pelo texto gravado em `observacoes` das vendas de
+        teste devolveu `0`; buscar pelo número devolveu exatamente 1.
       - `--data-inicio`/`--data-fim` filtram a **data da venda**;
         `--data-criacao-de`/`--data-criacao-ate` filtram a data de criação. São
         intervalos distintos e o mesmo par de datas deu totais diferentes (27 vs 19).
@@ -82,7 +82,7 @@ sections:
         "numero": 7297,
         "situacao": "EM_ANDAMENTO",
         "data_venda": "2026-08-19",
-        "observacoes": "TESTE HEITOR",
+        "observacoes": "TESTE CLI CONTA AZUL",
         "itens": [{ "id": "22222222-2222-4222-8222-222222222222", "quantidade": 1, "valor": 10 }],
         "condicao_pagamento": {
           "opcao_condicao_pagamento": "À vista",
