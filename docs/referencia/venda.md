@@ -33,8 +33,9 @@ Diferente de `contrato list`, o intervalo de datas é opcional — a API não o 
 Detalhes confirmados exercitando:
 
 - `--termo-busca` casa **nome do cliente e número da venda**, não as
-  observações. Buscar pelo texto gravado em `observacoes` das vendas de
-  teste devolveu `0`; buscar pelo número devolveu exatamente 1.
+  observações. Buscar por `TESTE CLI CONTA AZUL` — o texto gravado em
+  `observacoes` das vendas de teste — devolveu `0`; buscar pelo número
+  devolveu exatamente 1.
 - `--data-inicio`/`--data-fim` filtram a **data da venda**;
   `--data-criacao-de`/`--data-criacao-ate` filtram a data de criação. São
   intervalos distintos e o mesmo par de datas deu totais diferentes (27 vs 19).

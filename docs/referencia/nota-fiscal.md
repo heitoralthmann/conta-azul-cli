@@ -7,7 +7,8 @@ A API só suporta **consulta** (NFe de produto emitida e NFS-e de serviço) e v�
 
 **Verificado contra produção em 2026-08-19** — os quatro comandos, incluindo o
 ciclo completo de `vincular-mdfe` (`AUTORIZADO` → `ENCERRADO` → `CANCELADO`)
-sobre notas de 2024 marcadas com um `identificador` de teste.
+sobre notas de 2024 marcadas com o `identificador` de teste
+`TESTE CLI CONTA AZUL`.
 
 > **As duas listagens limitam o intervalo a 15 dias**, não só a de serviço.
 > `nota-fiscal list` respondia `400` em *toda* invocação sem datas, porque o

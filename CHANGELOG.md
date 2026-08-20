@@ -22,10 +22,15 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 - **Marcadores de teste despersonalizados.** Os payloads de exemplo passam a
   usar `TESTE CLI CONTA AZUL` no lugar de um nome próprio, e as fixtures de
   `HomeDirectoryTest` usam `testuser` em vez do usuário da máquina do autor.
-  Onde a string era **afirmação de fato** — a busca que devolveu `0` em
-  `venda list`, as notas de 2024 exercitadas em `vincular-mdfe` — a frase foi
-  reescrita para não nomear o marcador, em vez de trocá-lo: renomear ali
-  descreveria um experimento que não foi o que aconteceu.
+  Vale também onde a string era afirmação de fato — a busca que devolveu `0`
+  em `venda list`, as notas de 2024 exercitadas em `vincular-mdfe`: por decisão
+  do titular da conta, o registro guarda a intenção e o achado, não qual string
+  literal foi usada na sessão.
+- **O marcador virou convenção documentada**, em
+  [Notas para quem for estender](docs/guia/estendendo.md): todo registro criado
+  para teste leva `TESTE CLI CONTA AZUL` no campo de texto livre que o recurso
+  oferecer, marcar não substitui limpar, e o caminho de volta se confere antes
+  da primeira escrita — a API não publica `DELETE` para todo recurso.
 - `docs/desenvolvimento/going-live.md` reescrito: deixou de se declarar
   privado, ganhou o passo de habilitar o GitHub Pages, a ordem forçada entre
   os passos (proteção de branch e Private Vulnerability Reporting são
@@ -199,8 +204,8 @@ grupo, com as armadilhas de cada um, mora em
 - **`nota-fiscal vincular-mdfe` exercitado em produção, com autorização
   explícita do titular da conta.** Era a única escrita do CLI que jamais tinha
   retornado sucesso. O ciclo completo (`AUTORIZADO` → `ENCERRADO` →
-  `CANCELADO`) foi executado sobre notas de 2024 marcadas com um
-  `identificador` de teste, confirmando o `204 No Content` que a documentação afirmava
+  `CANCELADO`) foi executado sobre notas de 2024 marcadas com o `identificador`
+  de teste `TESTE CLI CONTA AZUL`, confirmando o `204 No Content` que a documentação afirmava
   sem prova. Também foram medidos o array plural, a repetição da mesma chave, a
   reautorização depois do cancelamento e o lote misto com chave inexistente.
   O XML das quatro notas envolvidas foi conferido por SHA-256 antes e depois:

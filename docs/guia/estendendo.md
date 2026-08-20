@@ -56,6 +56,24 @@ O mesmo ceticismo vale para escrita: **a API valida um campo por vez**, então
 cada `400` revela só o *próximo* campo faltante. Descobrir o payload de um
 `PUT` é iterativo — veja a tabela de `pessoa update`, montada assim.
 
+## Marque todo registro de teste
+
+Verificar contra a produção significa **criar registro numa conta real**. Todo
+registro criado para teste leva o marcador `TESTE CLI CONTA AZUL` no campo de
+texto livre que o recurso oferecer — `descricao`, `observacoes`, `identificador`
+—, para que ele seja reconhecível depois por quem não estava na sessão.
+
+Marcar não substitui limpar: apague ao final e prove que o baseline voltou ao
+valor de antes, contando `len(itens)`. O marcador existe para o caso em que a
+limpeza falha, ou em que o recurso não tem `DELETE` — e há vários que não têm.
+
+!!! warning "Verifique se existe caminho de volta antes de criar"
+
+    A API não publica `DELETE` para evento financeiro nem para centro de
+    custo, e exclusão em alguns grupos é lógica, não permanente. Registro
+    fiscal, então, é imutável por definição. Decida até onde vale exercitar
+    **antes** da primeira escrita, não depois.
+
 ## Ver o status HTTP real
 
 O stdout não expõe o código de status, e `204` vs `200` importa (um corpo
