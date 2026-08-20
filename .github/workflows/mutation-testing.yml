@@ -6,6 +6,12 @@ name: Mutation Testing
 on:
   workflow_dispatch:
 
+# Somente leitura: nenhum destes jobs escreve no repositório.
+# Explícito em vez de herdar o default do repo, que é uma
+# configuração que pode mudar sem ninguém revisar os workflows.
+permissions:
+  contents: read
+
 jobs:
   infection:
     runs-on: ubuntu-latest

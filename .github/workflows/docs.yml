@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+# Read-only by default; the two jobs that need more declare it themselves.
+permissions:
+  contents: read
+
 # Allow one deploy at a time, and let a newer commit supersede a queued one
 # instead of publishing an older site after it.
 concurrency:

@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main]
 
+# Somente leitura: nenhum destes jobs escreve no repositório.
+# Explícito em vez de herdar o default do repo, que é uma
+# configuração que pode mudar sem ninguém revisar os workflows.
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest

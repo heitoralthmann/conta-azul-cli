@@ -107,7 +107,7 @@ Payload mínimo que passou:
 
 ```json
 {
-  "id_cliente": "a1523431-f1be-44c4-8413-fdb5e50643e3",
+  "id_cliente": "11111111-1111-4111-8111-111111111111",
   "termos": {
     "tipo_frequencia": "MENSAL",
     "tipo_expiracao": "DATA",
@@ -122,7 +122,7 @@ Payload mínimo que passou:
     "dia_vencimento": 10,
     "primeira_data_vencimento": "2026-09-10"
   },
-  "itens": [{ "id": "1a1b7957-12c7-4064-9809-5af7bbb40f57", "quantidade": 1, "valor": 10 }]
+  "itens": [{ "id": "22222222-2222-4222-8222-222222222222", "quantidade": 1, "valor": 10 }]
 }
 ```
 

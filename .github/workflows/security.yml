@@ -9,6 +9,12 @@ on:
     # Catches a CVE published in an existing dependency after the last commit.
     - cron: '0 9 * * 1' # Every Monday 9am UTC
 
+# Somente leitura: nenhum destes jobs escreve no repositório.
+# Explícito em vez de herdar o default do repo, que é uma
+# configuração que pode mudar sem ninguém revisar os workflows.
+permissions:
+  contents: read
+
 jobs:
   audit:
     runs-on: ubuntu-latest

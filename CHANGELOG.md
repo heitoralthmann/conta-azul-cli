@@ -9,6 +9,22 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+### Changed
+
+- **Preparação para o repositório público.** Os sete workflows passam a
+  declarar `permissions: contents: read` explicitamente. Hoje o default do
+  repositório já é `read`, mas isso é uma configuração que pode mudar sem
+  ninguém revisar os workflows; declarar torna a intenção parte do arquivo.
+- Os payloads de exemplo da referência trocaram dois ids reais da conta de
+  desenvolvimento — um cliente e um produto — por placeholders sintéticos
+  (`11111111-…`, `22222222-…`). Não eram exploráveis sem um token do mesmo
+  tenant, mas quem copiasse o exemplo tomava `404`.
+- `docs/desenvolvimento/going-live.md` reescrito: deixou de se declarar
+  privado, ganhou o passo de habilitar o GitHub Pages, a ordem forçada entre
+  os passos (proteção de branch e Private Vulnerability Reporting são
+  indisponíveis enquanto o repo é privado) e o aviso de que proteger a `main`
+  encerra o push direto.
+
 ### Fixed
 
 - **O workflow `Docs` não fica mais vermelho por Pages ainda não existir.** O
