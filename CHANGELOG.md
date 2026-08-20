@@ -9,6 +9,19 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- **O workflow `Docs` não fica mais vermelho por Pages ainda não existir.** O
+  GitHub Pages precisa ser habilitado uma vez à mão em Settings → Pages, e no
+  plano Free isso só é oferecido para repositório público; até lá a API de
+  deploy responde `404` e pintava de vermelho todo push na `main` por um
+  motivo que nada tem a ver com o código — que é como se ensina alguém a
+  ignorar o CI. Um job novo consulta a API de Pages e o deploy só roda quando
+  ela responde. A distinção importa: **só `Not Found` pula**; qualquer outra
+  resposta (permissão, indisponibilidade) falha alto, para que um deploy real
+  quebrado nunca se disfarce de "ainda não configurado". Quando o job pula,
+  emite um `::notice` dizendo o que fazer.
+
 ## [0.16.0] - 2026-08-20
 
 Reestrutura a documentação: a referência de comandos deixa de ser escrita à

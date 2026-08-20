@@ -63,11 +63,53 @@ jobs:
         with:
           path: site
 
-  deploy:
-    name: Deploy to Pages
+  # GitHub Pages has to be turned on by hand once, in Settings -> Pages, and on
+  # the Free plan that is only offered for public repositories. Until then the
+  # deploy API answers 404, and letting that fail the run would paint every
+  # push red for a reason that has nothing to do with the code — which is how
+  # people learn to ignore CI. So the deploy is skipped while Pages is absent,
+  # and still fails loudly once it exists.
+  pages-enabled:
+    name: Pages configured?
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    permissions:
+      pages: read
+
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+
+    steps:
+      - name: Query the Pages API
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          if response=$(gh api "repos/$REPO/pages" 2>&1); then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Only a missing site is an expected answer. Anything else — a
+          # permissions problem, an outage — must not masquerade as "not
+          # configured yet", or a real deploy would be skipped in silence.
+          if grep -q 'Not Found' <<< "$response"; then
+            echo 'enabled=false' >> "$GITHUB_OUTPUT"
+            echo "::notice title=Deploy pulado::GitHub Pages ainda não foi habilitado para $REPO. O site foi construído e validado, mas não publicado. Habilite em Settings -> Pages com Source: GitHub Actions (requer repositório público no plano Free)."
+            exit 0
+          fi
+
+          echo "$response" >&2
+          exit 1
+
+  deploy:
+    name: Deploy to Pages
+    runs-on: ubuntu-latest
+    needs: [build, pages-enabled]
+    if: needs.pages-enabled.outputs.enabled == 'true'
 
     permissions:
       pages: write
