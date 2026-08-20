@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Renders normalized CLI errors as machine-readable diagnostics.
  *
  * The envelope schema is stable; only the serialization format follows the
- * selected response formatter (TOON by default, JSON with `--raw`).
+ * selected response formatter (TOON by default, JSON with `--format=json`).
  */
 final class ErrorEnvelope
 {

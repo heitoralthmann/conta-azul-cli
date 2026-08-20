@@ -10,7 +10,7 @@ CLI em PHP/Symfony que expõe as famílias **Financeiro** (Finanças, Baixas, Co
 
 Cada invocação é de curta duração: faz uma chamada, escreve **TOON** em `stdout` e sai. Toda a complexidade de OAuth2 — fluxo inicial, persistência, refresh, rotação de token — fica encapsulada dentro do CLI.
 
-O consumidor primário é um **agente**, não um humano. Por isso a saída padrão é [TOON](https://github.com/toon-format/toon) (mais compacto em tokens que JSON), o exit code é binário e os erros vêm em envelope estruturado com um campo `kind` estável. JSON compacto continua disponível com `--raw` ou `--format=json`.
+O consumidor primário é um **agente**, não um humano. Por isso a saída padrão é [TOON](https://github.com/toon-format/toon) (mais compacto em tokens que JSON), o exit code é binário e os erros vêm em envelope estruturado com um campo `kind` estável. JSON compacto continua disponível com `--format=json`; `--format=toon` seleciona explicitamente o padrão.
 
 > **Projeto não oficial.** Este CLI não é mantido, endossado ou afiliado à Conta Azul. É um cliente de terceiros para a API pública da Conta Azul.
 
@@ -188,7 +188,7 @@ kind: warning
 message: Intervalo de vencimento não informado por completo; usando 2026-08-01 a 2026-08-31. …
 ```
 
-O stdout continua contendo só o payload, então o aviso não se mistura com o resultado. Com `--raw`, o mesmo aviso sai em JSON compacto e o pipeline `| jq` volta a funcionar. Informar as duas opções silencia o aviso.
+O stdout continua contendo só o payload, então o aviso não se mistura com o resultado. Com `--format=json`, o mesmo aviso sai em JSON compacto e o pipeline `| jq` volta a funcionar. Informar as duas opções silencia o aviso.
 
 Em `financeiro alteracoes` as datas vão em ISO 8601 **sem timezone** (`2026-08-01T00:00:00`); com sufixo `Z` ou offset a API responde 400.
 
@@ -219,11 +219,16 @@ protocol_id: null
 retryable: false
 ```
 
-JSON compacto (stdout e stderr) só sai com `--raw` ou `--format=json`. `--json` continua sendo o payload de **entrada** das escritas, não o seletor de formato.
+JSON compacto (stdout e stderr) só sai com `--format=json`. `--json` continua sendo o payload de **entrada** das escritas, não o seletor de formato.
 
 ```bash
-ca pessoa list --raw | jq '.itens'
+ca pessoa list --format=json | jq '.itens'
 ```
+
+Os comandos de descoberta `list` e `help` são os comandos nativos do Symfony:
+usam texto por padrão, têm formatos próprios (`txt`, `xml`, `json`, `md` e
+`rst`) e preservam o `--raw` nativo de texto sem decoração. TOON não se aplica
+a esses dois comandos.
 
 O exit code é **binário** por design: o agente despacha sobre `kind`, não sobre o número.
 

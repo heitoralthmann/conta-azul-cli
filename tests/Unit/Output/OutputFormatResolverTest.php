@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\ArgvInput;
 
 /**
- * Verifies `--raw` / `--format` resolution before the command is bound.
+ * Verifies `--format` resolution before the command is bound.
  */
 final class OutputFormatResolverTest extends TestCase
 {
@@ -21,17 +21,12 @@ final class OutputFormatResolverTest extends TestCase
     $this->resolver = new OutputFormatResolver(FormatterRegistry::withDefaults());
   }
 
-  /** Omitting both flags keeps the registry default (TOON). */
+  /** Omitting the option keeps the registry default (TOON). */
   public function testDefaultIsToon(): void {
     self::assertSame('toon', $this->resolver->resolve($this->input('pessoa', 'list')));
   }
 
-  /** `--raw` is the JSON alias. */
-  public function testRawSelectsJson(): void {
-    self::assertSame('json', $this->resolver->resolve($this->input('pessoa', 'list', '--raw')));
-  }
-
-  /** `--format=json` selects JSON without `--raw`. */
+  /** `--format=json` selects JSON. */
   public function testFormatEqualsJson(): void {
     self::assertSame('json', $this->resolver->resolve($this->input('pessoa', 'list', '--format=json')));
   }
@@ -46,22 +41,9 @@ final class OutputFormatResolverTest extends TestCase
     self::assertSame('toon', $this->resolver->resolve($this->input('pessoa', 'list', '--format=toon')));
   }
 
-  /** `--raw` and `--format=json` agree, so JSON wins without error. */
-  public function testRawWithFormatJsonIsJson(): void {
-    self::assertSame('json', $this->resolver->resolve($this->input('pessoa', 'list', '--raw', '--format=json')));
-  }
-
-  /** Global `--format=json` before the command name is still seen. */
+  /** Raw argv resolution sees `--format=json` before the command name. */
   public function testFormatBeforeCommandName(): void {
     self::assertSame('json', $this->resolver->resolve($this->input('--format=json', 'pessoa', 'list')));
-  }
-
-  /** `--raw` contradicting `--format=toon` is a client error. */
-  public function testRawContradictsToon(): void {
-    $this->expectException(CliException::class);
-    $this->expectExceptionMessage('--raw seleciona JSON');
-
-    $this->resolver->resolve($this->input('pessoa', 'list', '--raw', '--format=toon'));
   }
 
   /** Unknown `--format` values list the registered names. */

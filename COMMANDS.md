@@ -127,7 +127,7 @@ escrevem texto para o operador, não este envelope):
 
 | Canal | Conteúdo |
 |---|---|
-| `stdout` | Só o payload. Padrão: **TOON**. JSON compacto com `--raw` ou `--format=json`. |
+| `stdout` | Só o payload. Padrão: **TOON**. JSON compacto com `--format=json`. |
 | `stderr` | Envelopes de erro e de aviso, no **mesmo** formato do stdout. |
 | exit code | `0` sucesso, `1` falha. Binário. |
 
@@ -136,7 +136,7 @@ escrevem texto para o operador, não este envelope):
 > **Resposta sem corpo sai como lista vazia, não objeto vazio.** Um `204 No
 > Content` — e também um `{}` vindo da API — é decodificado para um array PHP
 > vazio, serializado como `[]` em JSON e como lista vazia em TOON. Quem
-> consome com `jq` (logo `--raw`) deve tratar `[]` como "nenhum conteúdo"
+> consome com `jq` (logo `--format=json`) deve tratar `[]` como "nenhum conteúdo"
 > nos comandos marcados `204` (`pessoa patch`, `pessoa excluir`,
 > `contrato delete`, `orcamento excluir-lote`, `captura recusar`,
 > `nota-fiscal vincular-mdfe`).
@@ -174,19 +174,22 @@ message: Intervalo de vencimento não informado por completo; usando 2026-08-01 
 
 Quando `kind` é `ambiguous`, `poll_timeout_known_id` ou `poll_drop_known_id`, **não reenvie a escrita cegamente**: o CLI não deduplica. Use o `protocol_id` do envelope.
 
-## Opções globais
+## Opções comuns
 
-Aceitas por qualquer comando:
+Aceitas por todos os comandos da Conta Azul:
 
 | Opção | Efeito |
 |---|---|
-| `--format` | Formato da resposta: `toon` (padrão) ou `json`. |
-| `--raw` | Atalho para `--format=json`. |
+| `--format` | Formato da resposta: `toon` (padrão) ou `json`. `--format=toon` também é válido. |
 | `--debug` | Grava log estruturado em `~/.cache/conta-azul-cli/log.jsonl`. Credenciais são redigidas. |
 | `-q, --quiet` | Suprime tudo exceto erros. |
 | `-h, --help` | Ajuda do comando. |
 | `-V, --version` | Versão do CLI. |
 | `-n, --no-interaction` | Não faz perguntas interativas. |
+
+`list` e `help` ficam fora desse contrato: são os comandos nativos do Symfony,
+usam texto por padrão e mantêm seus próprios `--format=txt|xml|json|md|rst` e
+`--raw` (texto sem decoração). Eles não oferecem TOON.
 
 ## Paginação
 

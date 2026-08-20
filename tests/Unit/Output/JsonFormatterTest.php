@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 use const NAN;
 
 /**
- * Verifies compact JSON encoding used by `--raw` / `--format=json`.
+ * Verifies compact JSON encoding used by `--format=json`.
  */
 final class JsonFormatterTest extends TestCase
 {

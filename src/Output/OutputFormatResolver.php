@@ -13,7 +13,7 @@ use function is_string;
 use function str_starts_with;
 
 /**
- * Maps `--raw` / `--format` to a registered formatter name.
+ * Maps `--format` to a registered formatter name.
  *
  * Resolution happens from raw argv so it works before Symfony binds the
  * command definition — the same moment {@see \ContaAzulCli\ContaAzulApplication}
@@ -28,26 +28,13 @@ final class OutputFormatResolver
   /**
    * Returns the formatter name selected by this invocation.
    *
-   * @throws CliException When `--format` is missing a value, unknown, or contradicts `--raw`.
+   * @throws CliException When `--format` is missing a value or unknown.
    */
   public function resolve(InputInterface $input): string {
-    $raw            = $input->hasParameterOption(['--raw'], true);
     $explicitFormat = $input->hasParameterOption(['--format'], true);
 
     if ($explicitFormat) {
       $format = $this->readFormat($input);
-      if ($raw && $format !== JsonFormatter::NAME) {
-        throw new CliException(
-            ErrorKind::ClientError,
-            false,
-            'A opção --raw seleciona JSON e não pode ser combinada com --format=' . $format . '.',
-        );
-      }
-
-      if ($raw) {
-        return JsonFormatter::NAME;
-      }
-
       if (! $this->registry->has($format)) {
         throw new CliException(
             ErrorKind::ClientError,
@@ -58,10 +45,6 @@ final class OutputFormatResolver
       }
 
       return $format;
-    }
-
-    if ($raw) {
-      return JsonFormatter::NAME;
     }
 
     return $this->registry->default()->name();

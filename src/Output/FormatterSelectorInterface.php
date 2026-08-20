@@ -8,7 +8,7 @@ namespace ContaAzulCli\Output;
  * Holds the formatter used for the current CLI invocation.
  *
  * Commands compose a selector instead of a concrete formatter so the
- * application shell can switch formats from `--raw` / `--format` without
+ * application shell can switch formats from `--format` without
  * rebuilding the command graph.
  */
 interface FormatterSelectorInterface
