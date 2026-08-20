@@ -1,0 +1,8 @@
+# Dependências do site de documentação (MkDocs + Material).
+#
+# Pinado em minor para que um build de hoje e um de daqui a seis meses
+# produzam o mesmo site. A equipe do Material publicou um aviso sobre o
+# MkDocs 2.0 remover o sistema de plugins sem caminho de migração; enquanto
+# isso não se resolve, ficar preso a uma faixa conhecida é o comportamento
+# seguro.
+mkdocs-material>=9.5,<10

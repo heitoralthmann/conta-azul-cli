@@ -7,8 +7,10 @@
 /phpstan.neon        export-ignore
 /composer-dependency-analyser.php export-ignore
 /infection.json5    export-ignore
-/ESPECIFICACAO.md    export-ignore
-/GOING_LIVE_NOTES.md export-ignore
+/tools               export-ignore
+/docs/_data          export-ignore
+/docs/requirements.txt export-ignore
+/mkdocs.yml          export-ignore
 /.editorconfig       export-ignore
 /.gitattributes      export-ignore
 /.gitignore          export-ignore

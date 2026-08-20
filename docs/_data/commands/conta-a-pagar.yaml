@@ -1,0 +1,64 @@
+title: 'Contas a pagar'
+sections:
+  -
+    commands:
+      - 'conta-a-pagar list'
+    status: verified
+    endpoints:
+      'conta-a-pagar list': 'GET /v1/financeiro/eventos-financeiros/contas-a-pagar/buscar'
+    params:
+      data-vencimento-de:
+        label: '`--data-vencimento-de`'
+        required: não¹
+        default: '1º dia do mês corrente'
+        description: 'Vencimento inicial (`YYYY-MM-DD`)'
+      data-vencimento-ate:
+        label: '`--data-vencimento-ate`'
+        required: não¹
+        default: 'último dia do mês corrente'
+        description: 'Vencimento final (`YYYY-MM-DD`)'
+      pagina:
+        label: '`--pagina`'
+        required: não
+        default: '`1`'
+        description: 'Número da página'
+      tamanho-pagina:
+        label: '`--tamanho-pagina`'
+        required: não
+        default: '`50`'
+        description: 'Itens por página'
+    body: |
+      ¹ A API exige o intervalo; o CLI supre com o mês corrente e avisa em stderr.
+
+      > O `id` de cada item é o da **parcela**, mesma regra de `conta-a-receber list`.
+
+      Formato de resposta igual ao de contas a receber, trocando `cliente` por fornecedor.
+  -
+    commands:
+      - 'conta-a-pagar create'
+    status: verified
+    endpoints:
+      'conta-a-pagar create': 'POST /v1/financeiro/eventos-financeiros/contas-a-pagar'
+    endpoint_note: '**escrita assíncrona**.'
+    params:
+      json:
+        label: '`--json`'
+        required: '**sim**'
+        default: —
+        description: 'Payload JSON, repassado à API **verbatim**'
+      poll-timeout:
+        label: '`--poll-timeout`'
+        required: não
+        default: '`60`'
+        description: 'Segundos aguardando a confirmação assíncrona'
+      no-wait:
+        label: '`--no-wait`'
+        required: não
+        default: —
+        description: 'Retorna o protocolo na hora, sem aguardar'
+    body: |
+      Mesmo payload de `conta-a-receber create` (inclusive `detalhe_valor` e o
+      `condicao_pagamento.parcelas`), trocando a categoria do rateio por uma de
+      `tipo` `DESPESA`. Vale a mesma advertência: **a API não publica `DELETE` de
+      evento financeiro**, então conta a pagar criada por engano só sai pela
+      interface web.

@@ -5,9 +5,64 @@ Todas as mudanças notáveis deste projeto são documentadas neste arquivo.
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 A política de versionamento do enum `kind` do envelope de erro está descrita
-no [README](README.md#contrato-de-saída).
+no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
+
+## [0.16.0] - 2026-08-20
+
+Reestrutura a documentação: a referência de comandos deixa de ser escrita à
+mão e passa a ser **gerada a partir do próprio CLI**, e o conjunto vira um
+site publicado no GitHub Pages. Nenhuma mudança em `src/` — o comportamento
+do CLI é idêntico ao da `0.15.2`.
+
+### Added
+
+- **Gerador da referência de comandos** (`tools/DocsGenerator/`, entrada em
+  `tools/generate-docs.php`). A metade mecânica da referência — nomes,
+  argumentos, opções, defaults — é lida de volta de
+  `bin/ca list --format=json`, então não pode divergir do código. A metade
+  que nenhuma introspecção conhece — o endpoint que cada comando chama, a
+  marca de verificação e as armadilhas descobertas exercitando — vive em
+  `docs/_data/commands/<grupo>.yaml` e é mesclada por cima.
+- **`composer docs:generate` e `composer docs:check`.** O `docs:check` roda
+  no CI e falha em três situações: uma nota curada cita um comando ou
+  parâmetro que o CLI não tem mais; um comando existente não está
+  documentado em fragmento nenhum; um grupo novo não aparece no `nav` do
+  `mkdocs.yml` (o MkDocs descarta página fora do `nav` em silêncio). Os três
+  guardas foram exercitados negativamente.
+- **Site de documentação** em MkDocs Material (`mkdocs.yml`,
+  `docs/requirements.txt`), com busca em português, alternância de tema e
+  build em `--strict` — link interno quebrado vira falha de CI.
+- **Superfície legível por máquina**, publicada na raiz do site:
+  `docs/commands.json` (manifesto dos 83 comandos com argumentos, opções e
+  endpoints), `docs/llms.txt` e `docs/llms-full.txt` na convenção
+  [llmstxt.org](https://llmstxt.org). O consumidor primário do projeto é um
+  agente; fazer parsing de Markdown para recuperar uma lista de opções era
+  trabalho que ele não deveria ter.
+- **Workflow `docs.yml`**: verifica a referência, constrói o site e publica
+  no GitHub Pages a cada push na `main`.
+- `symfony/yaml` como dependência de desenvolvimento, usada pelo gerador.
+
+### Changed
+
+- **`COMMANDS.md` foi decomposto e removido.** As 2.298 linhas viraram 21
+  páginas geradas em `docs/referencia/`, 20 fragmentos curados em
+  `docs/_data/commands/` e 11 páginas de guia em `docs/guia/`. A prosa foi
+  extraída por parsing, não redigitada, e conferida linha a linha contra o
+  original.
+- **`README.md` reduzido de 333 para 158 linhas.** O que era referência e
+  guia migrou para `docs/`; o README ficou com panorama, instalação,
+  configuração mínima e ponteiros.
+- `API_COVERAGE.md`, `ESPECIFICACAO.md` e `GOING_LIVE_NOTES.md` saíram da
+  raiz para `docs/desenvolvimento/`. A raiz agora tem só os arquivos que a
+  convenção de open source espera encontrar nela.
+- `phpcs.xml.dist` passa a cobrir `./tools`, e o gerador nasceu sob o mesmo
+  padrão (Doctrine, 2 espaços) e sob PHPStan.
+- `.gitattributes` deixa de exportar `tools/`, `mkdocs.yml`,
+  `docs/_data/` e `docs/requirements.txt` no pacote Composer;
+  `docs/commands.json` continua sendo distribuído, para o agente lê-lo
+  localmente sem rede.
 
 ## [0.15.2] - 2026-08-20
 
@@ -44,7 +99,8 @@ Concentra a **campanha de verificação de endpoints** (2026-08-15 a
 de produção, um a um, e **todos tinham pelo menos um defeito**. As entradas
 abaixo foram agrupadas por tipo, não por grupo verificado; o histórico por
 grupo, com as armadilhas de cada um, mora em
-[`COMMANDS.md`](COMMANDS.md#notas-para-quem-for-estender).
+[Notas para quem for estender](docs/guia/estendendo.md) (na época,
+`COMMANDS.md`).
 
 ### Added
 
@@ -718,7 +774,8 @@ Primeira versão tagueada.
 - Pacote renomeado de `contaazul-cli/cli` para `heitoralthmann/conta-azul-cli`,
   com aviso de não-oficialidade adicionado ao README.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.15.2...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.15.2...v0.16.0
 [0.15.2]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.15.1...v0.15.2
 [0.15.1]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.14.0...v0.15.0

@@ -1,0 +1,35 @@
+title: Transferências
+sections:
+  -
+    commands:
+      - 'transferencia list'
+    status: verified
+    endpoints:
+      'transferencia list': 'GET /v1/financeiro/transferencias'
+    params:
+      data-inicio:
+        label: '`--data-inicio`'
+        required: não¹
+        default: '1º dia do mês corrente'
+        description: 'Início do intervalo (`YYYY-MM-DD`)'
+      data-fim:
+        label: '`--data-fim`'
+        required: não¹
+        default: 'último dia do mês corrente'
+        description: 'Fim do intervalo (`YYYY-MM-DD`)'
+      pagina:
+        label: '`--pagina`'
+        required: não
+        default: '`1`'
+        description: 'Número da página'
+      tamanho-pagina:
+        label: '`--tamanho-pagina`'
+        required: não
+        default: '`50`'
+        description: 'Itens por página'
+    body: |
+      ¹ A API exige o intervalo; o CLI supre com o mês corrente e avisa em stderr.
+
+      > As datas vão em `YYYY-MM-DD` puro, diferente de `financeiro alteracoes` (mesmo domínio `/financeiro/`), que exige o instante ISO 8601 completo.
+
+      Cada item traz `id`, `descricao`, `valor`, `data`, e os blocos `origem`/`destino` com `data`, `composicao_valor` (`valor_bruto`, `juros`, `multa`, `valor_liquido`, `desconto`, `taxa`) e `conta_financeira` (`id`, `nome`, `instituicao_bancaria`).

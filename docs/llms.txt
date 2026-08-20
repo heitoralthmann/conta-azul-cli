@@ -1,0 +1,51 @@
+# Conta Azul CLI
+
+> CLI não oficial em PHP para as APIs da Conta Azul (Financeiro, Pessoas,
+> Produtos, Serviços, Contratos, Notas Fiscais, Vendas, Orçamentos e
+> Captura). Projetado para consumo por agentes: cada invocação faz uma
+> chamada, escreve TOON em stdout e sai com código binário.
+
+A saída padrão é TOON, mais compacto em tokens que JSON; `--format=json`
+devolve JSON compacto. Erros vão para stderr num envelope estruturado com
+um campo `kind` estável.
+
+Para a superfície completa em forma de dados, prefira `commands.json` a
+fazer parsing destes documentos.
+
+## Referência
+
+- [Manifesto de comandos (JSON)](commands.json): todos os comandos, argumentos, opções e endpoints
+- [Referência completa (texto)](llms-full.txt): esta documentação inteira em um arquivo
+
+## Grupos de comandos
+
+- [Autenticação](referencia/auth.md): auth login, auth logout
+- [Categorias](referencia/categoria.md): categoria list, categoria configuracao-padrao, categoria dre
+- [Centros de custo](referencia/centro-de-custo.md): centro-de-custo list, centro-de-custo create
+- [Contas financeiras](referencia/conta-financeira.md): conta-financeira list, conta-financeira saldo
+- [Transferências](referencia/transferencia.md): transferencia list
+- [Contas a receber](referencia/conta-a-receber.md): conta-a-receber list, conta-a-receber create
+- [Cobranças](referencia/cobranca.md): cobranca create, cobranca get, cobranca delete
+- [Contas a pagar](referencia/conta-a-pagar.md): conta-a-pagar list, conta-a-pagar create
+- [Parcelas](referencia/parcela.md): parcela get, parcela update, parcela baixar, parcela list
+- [Baixas](referencia/baixa.md): baixa create, baixa list, baixa get, baixa update, baixa delete
+- [Eventos financeiros](referencia/financeiro.md): financeiro alteracoes, financeiro saldo-inicial
+- [Protocolos](referencia/protocolo.md): protocolo get
+- [Contratos](referencia/contrato.md): contrato list, contrato create, contrato proximo-numero, contrato get, contrato delete, contrato encerrar
+- [Pessoas / Fornecedores](referencia/pessoa.md): pessoa list, pessoa create, pessoa get, pessoa legado, pessoa update, pessoa patch, pessoa ativar, pessoa inativar, pessoa excluir, pessoa conta-conectada
+- [Produtos](referencia/produto.md): produto list, produto create, produto get, produto delete, produto update, produto categorias, produto cest, produto ncm, produto unidades-medida, produto ecommerce-marcas, produto ecommerce-categorias
+- [Serviços](referencia/servico.md): servico list, servico create, servico get, servico update, servico delete
+- [Notas fiscais](referencia/nota-fiscal.md): nota-fiscal list, nota-fiscal get, nota-fiscal vincular-mdfe, nota-fiscal-servico list
+- [Vendas](referencia/venda.md): venda list, venda create, venda get, venda update, venda imprimir, venda itens, venda vendedores, venda proximo-numero, venda excluir-lote
+- [Orçamentos](referencia/orcamento.md): orcamento list, orcamento create, orcamento get, orcamento excluir-lote
+- [Captura](referencia/captura.md): captura enviar, captura status, captura get, captura aceitar, captura recusar
+
+## Guia
+
+- [Contrato de saída](guia/contrato-de-saida.md): formatos, exit codes, envelope de erro e valores de `kind`
+- [Opções comuns](guia/opcoes-comuns.md): opções aceitas por todos os comandos
+- [Paginação](guia/paginacao.md): limites por listagem e nomes do campo de contagem
+- [Datas](guia/datas.md): os dois formatos aceitos e os intervalos obrigatórios
+- [Autenticação](guia/autenticacao.md): OAuth2, callback HTTPS e ambientes headless
+- [Escritas assíncronas](guia/escritas-assincronas.md): polling, idempotência e retries
+- [Notas para quem for estender](guia/estendendo.md): as armadilhas confirmadas da API

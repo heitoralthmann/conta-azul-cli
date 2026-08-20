@@ -10,6 +10,7 @@
   <file>./tests</file>
   <file>./bin</file>
   <file>./phpcs-sniffs</file>
+  <file>./tools</file>
 
   <exclude-pattern>*/vendor/*</exclude-pattern>
   <exclude-pattern>*/node_modules/*</exclude-pattern>

@@ -1,0 +1,95 @@
+title: Parcelas
+sections:
+  -
+    commands:
+      - 'parcela get'
+    status: verified
+    endpoints:
+      'parcela get': 'GET /v1/financeiro/eventos-financeiros/parcelas/{id}'
+    params:
+      id:
+        label: '`<id>`'
+        required: '**sim**'
+        description: 'Argumento posicional. ID da parcela — o `id` devolvido pelas buscas de contas'
+    body: |
+      Retorna a parcela com o evento financeiro aninhado em `evento`, incluindo `evento.id`, `condicao_pagamento` e `rateio[]`.
+  -
+    commands:
+      - 'parcela update'
+    status: verified
+    endpoints:
+      'parcela update': 'PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}'
+    endpoint_note: '**escrita síncrona** (`200`).'
+    params:
+      id:
+        label: '`<id>`'
+        required: '**sim**'
+        description: 'Argumento posicional. Uuid da parcela'
+      json:
+        label: '`--json`'
+        required: '**sim**'
+        description: 'Payload JSON da parcela; `versao` (a versão atual) é obrigatório'
+    body: |
+      Atualiza `nota`, `descricao`, `vencimento`, `composicao_valor`,
+      `data_pagamento_esperado`, `metodo_pagamento`, `perda`, `nsu`,
+      `pagamento_agendado` e `id_conta_financeira`. Devolve a parcela atualizada,
+      já com a `versao` nova.
+
+      **Controle de concorrência otimista:** sem `versao` a resposta é **`409`**,
+      não `400` — mesma regra de `baixa update`.
+
+      > **Este endpoint não dá baixa.** Ele atualiza a parcela. Até 2026-08-19 o
+      > CLI o chamava como se quitasse (`parcela baixar`, mandando `{valor, data}`)
+      > e, exercitado, ele respondeu `200` sem registrar pagamento nenhum: nenhum
+      > dos dois campos existe no schema, e a API descarta campo desconhecido em
+      > silêncio também **no corpo da escrita**, não só na query. O `409` por falta
+      > de `versao` escondia isso — o comando nunca chegava a "funcionar" errado.
+  -
+    commands:
+      - 'parcela baixar'
+    status: verified
+    endpoints:
+      'parcela baixar': 'POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa'
+    endpoint_note: '**escrita síncrona** (`200`). Atalho para `baixa create`, montando o payload mínimo a partir de três opções.'
+    params:
+      id:
+        label: '`<id>`'
+        required: '**sim**'
+        description: 'Argumento posicional. Uuid da parcela'
+      valor:
+        label: '`--valor`'
+        required: '**sim**'
+        description: 'Valor da baixa (ex: `100.50`)'
+      data:
+        label: '`--data`'
+        required: '**sim**'
+        description: 'Data da baixa (`YYYY-MM-DD`)'
+      conta-financeira:
+        label: '`--conta-financeira`'
+        required: '**sim**'
+        description: 'Uuid da conta financeira que recebe a baixa'
+    body: |
+      síncrona** (`200`). Atalho para `baixa create`, montando o payload mínimo a
+      partir de três opções.
+
+
+      > O subrecurso `/baixa` **existe** — a nota anterior, de que a baixa seria um
+      > `PATCH` na parcela, estava errada. `--poll-timeout` e `--no-wait` saíram:
+      > a escrita é síncrona e nunca devolveu protocolo.
+  -
+    commands:
+      - 'parcela list'
+    status: verified
+    endpoints:
+      'parcela list': 'GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas'
+    params:
+      id-evento:
+        label: '`<id-evento>`'
+        required: '**sim**'
+        description: 'Argumento posicional. ID do evento financeiro (`evento.id` aninhado na resposta de `parcela get`)'
+    body: |
+      Sem paginação: a API devolve **um array puro**, não um envelope — não há
+      `itens` nem contador. Cada item tem o mesmo formato de `parcela get`.
+
+      > O `id` do evento sai de `parcela get` → `evento.id`, ou do
+      > `evento_financeiro_id` que `protocolo get` devolve depois de uma criação.

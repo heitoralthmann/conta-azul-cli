@@ -1,0 +1,35 @@
+title: 'Contas financeiras'
+sections:
+  -
+    commands:
+      - 'conta-financeira list'
+    status: verified
+    endpoints:
+      'conta-financeira list': 'GET /v1/conta-financeira'
+    endpoint_note: '**singular**.'
+    params:
+      pagina:
+        label: '`--pagina`'
+        required: não
+        default: '`1`'
+        description: 'Número da página'
+      tamanho-pagina:
+        label: '`--tamanho-pagina`'
+        required: não
+        default: '`50`'
+        description: 'Itens por página'
+    body: |
+      Cada item traz `id`, `nome`, `banco`, `tipo`, `ativo`, `conta_padrao`.
+  -
+    commands:
+      - 'conta-financeira saldo'
+    status: verified
+    endpoints:
+      'conta-financeira saldo': 'GET /v1/conta-financeira/{id}/saldo-atual'
+    params:
+      id:
+        label: '`--id`'
+        required: '**sim**'
+        description: 'ID da conta financeira (de `conta-financeira list`)'
+    body: |
+      Retorna `{"saldo_atual": 5931.64}`. É opção `--id`, não argumento posicional.

@@ -1,0 +1,132 @@
+site_name: Conta Azul CLI
+site_description: >-
+  CLI não oficial em PHP para as APIs da Conta Azul, projetado para consumo por
+  agentes de IA.
+site_url: https://heitoralthmann.github.io/conta-azul-cli/
+site_author: Heitor Althmann
+
+repo_url: https://github.com/heitoralthmann/conta-azul-cli
+repo_name: heitoralthmann/conta-azul-cli
+edit_uri: edit/main/docs/
+
+copyright: Apache 2.0 &middot; projeto não oficial, sem afiliação com a Conta Azul
+
+theme:
+  name: material
+  language: pt-BR
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.action.edit
+  palette:
+    # A escolha do sistema, com alternância explícita nos dois sentidos.
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Alternar para o modo claro
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Alternar para o modo escuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Seguir a preferência do sistema
+
+plugins:
+  - search:
+      lang: pt
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Link para esta seção
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/heitoralthmann/conta-azul-cli
+      name: Repositório no GitHub
+
+nav:
+  - Início: index.md
+  - Guia:
+      - Instalação: guia/instalacao.md
+      - Configuração: guia/configuracao.md
+      - Autenticação: guia/autenticacao.md
+      - Contrato de saída: guia/contrato-de-saida.md
+      - Opções comuns: guia/opcoes-comuns.md
+      - Paginação: guia/paginacao.md
+      - Datas: guia/datas.md
+      - Escritas assíncronas: guia/escritas-assincronas.md
+      - Observabilidade: guia/observabilidade.md
+      - Solução de problemas: guia/solucao-de-problemas.md
+  - Referência:
+      - Todos os comandos: referencia/index.md
+      - Autenticação: referencia/auth.md
+      - Categorias: referencia/categoria.md
+      - Centros de custo: referencia/centro-de-custo.md
+      - Contas financeiras: referencia/conta-financeira.md
+      - Transferências: referencia/transferencia.md
+      - Contas a receber: referencia/conta-a-receber.md
+      - Cobranças: referencia/cobranca.md
+      - Contas a pagar: referencia/conta-a-pagar.md
+      - Parcelas: referencia/parcela.md
+      - Baixas: referencia/baixa.md
+      - Eventos financeiros: referencia/financeiro.md
+      - Protocolos: referencia/protocolo.md
+      - Contratos: referencia/contrato.md
+      - Pessoas / Fornecedores: referencia/pessoa.md
+      - Produtos: referencia/produto.md
+      - Serviços: referencia/servico.md
+      - Notas fiscais: referencia/nota-fiscal.md
+      - Vendas: referencia/venda.md
+      - Orçamentos: referencia/orcamento.md
+      - Captura: referencia/captura.md
+  - Desenvolvimento:
+      - Notas para quem for estender: guia/estendendo.md
+      - Cobertura da API: desenvolvimento/cobertura-da-api.md
+      - Especificação: desenvolvimento/especificacao.md
+      - Notas de go-live: desenvolvimento/going-live.md
+
+# Fontes do gerador e dependências de build vivem sob docs/ por conveniência,
+# mas não fazem parte do site publicado.
+exclude_docs: |
+  _data/
+  requirements.txt
+
+# Regenerar um fragmento deve recarregar o `mkdocs serve` em execução.
+watch:
+  - docs/_data

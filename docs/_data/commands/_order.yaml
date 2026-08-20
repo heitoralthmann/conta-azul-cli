@@ -1,0 +1,21 @@
+groups:
+  - auth
+  - categoria
+  - centro-de-custo
+  - conta-financeira
+  - transferencia
+  - conta-a-receber
+  - cobranca
+  - conta-a-pagar
+  - parcela
+  - baixa
+  - financeiro
+  - protocolo
+  - contrato
+  - pessoa
+  - produto
+  - servico
+  - nota-fiscal
+  - venda
+  - orcamento
+  - captura

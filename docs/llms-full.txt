@@ -1,294 +1,27 @@
-# Referência de comandos
+# Conta Azul CLI — referência completa
 
-Documentação canônica da superfície do `ca`: todos os comandos, agrupados pelo endpoint que consomem, com seus parâmetros.
+Gerado por tools/generate-docs.php. Contém a referência de todos os
+comandos. Para a superfície em forma de dados, use commands.json.
 
-**Este arquivo é a fonte de verdade sobre o que o CLI faz.** Ao alterar a integração — endpoint novo, filtro novo, comando removido — atualize-o no mesmo commit. Se ele divergir do código, ele deixa de servir ao propósito.
+==============================================================================
 
-Convenção de leitura: `obrig.` marca o que falha sem valor; `padrão` é o que o CLI assume quando você omite.
+# Autenticação
 
-Cada endpoint traz uma marca de confiança:
-
-- **✅ verificado** — exercitado contra a API real e respondeu como documentado. **Todos os nove grupos** foram verificados entre 2026-08-15 e 2026-08-19, com o CRUD completo onde o grupo tem escrita; o estado por grupo está em [Estado da verificação](#estado-da-verificação)
-- **⚠️ não verificado** — escrito a partir da documentação e **nunca exercitado**. Não leia isso como "provavelmente certo": leia como **não confiável**
-
-> ⚠️ **O que `⚠️` realmente significa.** A marca não quer dizer só "a escrita
-> nunca foi disparada". Ela quer dizer **não confiável em todos os eixos**:
-> path, nome de filtro, nome de campo do payload, tipo do id e formato da
-> resposta. Os filtros listados numa seção `⚠️` saíram da documentação, não de
-> uma chamada real.
->
-> Isso não é pessimismo de ofício: a campanha de verificação exercitou os nove
-> grupos do CLI contra a produção e **todos tinham pelo menos um defeito** —
-> filtros que devolviam a coleção inteira fingindo filtrar, campos
-> obrigatórios que a documentação não lista, um comando apontado para o
-> endpoint errado, e um caso que passava em qualquer teste razoável. O
-> apanhado está em
-> [Notas para quem for estender](#notas-para-quem-for-estender), e é leitura
-> obrigatória antes de mexer em qualquer integração.
-
----
-
-## Referência rápida
-
-| Comando | Endpoint | |
-|---|---|---|
-| `auth login` | OAuth2 (navegador) | ✅ |
-| `auth logout` | — (local) | ✅ |
-| `categoria list` | `GET /v1/categorias` | ✅ |
-| `categoria configuracao-padrao` | `GET /v1/categorias/configuracao-padrao` | ✅ |
-| `categoria dre` | `GET /v1/financeiro/categorias-dre` | ✅ |
-| `centro-de-custo list` | `GET /v1/centro-de-custo` | ✅ |
-| `centro-de-custo create` | `POST /v1/centro-de-custo` | ✅ |
-| `conta-financeira list` | `GET /v1/conta-financeira` | ✅ |
-| `conta-financeira saldo` | `GET /v1/conta-financeira/{id}/saldo-atual` | ✅ |
-| `transferencia list` | `GET /v1/financeiro/transferencias` | ✅ |
-| `conta-a-receber list` | `GET /v1/financeiro/eventos-financeiros/contas-a-receber/buscar` | ✅ |
-| `conta-a-receber create` | `POST /v1/financeiro/eventos-financeiros/contas-a-receber` | ✅ |
-| `cobranca create` | `POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca` | ✅ |
-| `cobranca get` | `GET /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}` | ✅ |
-| `cobranca delete` | `DELETE /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}` | ✅ |
-| `conta-a-pagar list` | `GET /v1/financeiro/eventos-financeiros/contas-a-pagar/buscar` | ✅ |
-| `conta-a-pagar create` | `POST /v1/financeiro/eventos-financeiros/contas-a-pagar` | ✅ |
-| `parcela get` | `GET /v1/financeiro/eventos-financeiros/parcelas/{id}` | ✅ |
-| `parcela update` | `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` | ✅ |
-| `parcela baixar` | `POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` | ✅ |
-| `parcela list` | `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas` | ✅ |
-| `baixa create` | `POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` | ✅ |
-| `baixa list` | `GET /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` | ✅ |
-| `baixa get` | `GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ✅ |
-| `baixa update` | `PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ✅ |
-| `baixa delete` | `DELETE /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ✅ |
-| `financeiro alteracoes` | `GET /v1/financeiro/eventos-financeiros/alteracoes` | ✅ |
-| `financeiro saldo-inicial` | `GET /v1/financeiro/eventos-financeiros/saldo-inicial` | ✅ |
-| `protocolo get` | `GET /v1/protocolo/{id}` | ✅ |
-| `contrato list` | `GET /v1/contratos` | ✅ |
-| `contrato create` | `POST /v1/contratos` | ✅ |
-| `contrato proximo-numero` | `GET /v1/contratos/proximo-numero` | ✅ |
-| `contrato get` | `GET /v1/contratos/{id}` | ✅ |
-| `contrato delete` | `DELETE /v1/contratos/{id}` | ✅ |
-| `contrato encerrar` | `POST /v1/contratos/{id}/encerrar` | ✅ |
-| `pessoa list` | `GET /v1/pessoas` | ✅ |
-| `pessoa create` | `POST /v1/pessoas` | ✅ |
-| `pessoa get` | `GET /v1/pessoas/{id}` | ✅ |
-| `pessoa update` | `PUT /v1/pessoas/{id}` | ✅ |
-| `pessoa patch` | `PATCH /v1/pessoas/{id}` | ✅ |
-| `pessoa legado` | `GET /v1/pessoas/legado/{id}` | ✅ |
-| `pessoa ativar` | `POST /v1/pessoas/ativar` | ✅ |
-| `pessoa inativar` | `POST /v1/pessoas/inativar` | ✅ |
-| `pessoa excluir` | `POST /v1/pessoas/excluir` | ✅ |
-| `pessoa conta-conectada` | `GET /v1/pessoas/conta-conectada` | ✅ |
-| `produto list` | `GET /v1/produtos` | ✅ |
-| `produto create` | `POST /v1/produtos` | ✅ |
-| `produto get` | `GET /v1/produtos/{id}` | ✅ |
-| `produto update` | `PATCH /v1/produtos/{id}` | ✅ |
-| `produto delete` | `DELETE /v1/produtos/{id}` | ✅ |
-| `produto categorias` | `GET /v1/produtos/categorias` | ✅ |
-| `produto cest` | `GET /v1/produtos/cest` | ✅ |
-| `produto ncm` | `GET /v1/produtos/ncm` | ✅ |
-| `produto unidades-medida` | `GET /v1/produtos/unidades-medida` | ✅ |
-| `produto ecommerce-categorias` | `GET /v1/produtos/ecommerce-categorias` | ⚠️¹ |
-| `produto ecommerce-marcas` | `GET /v1/produtos/ecommerce-marcas` | ✅ |
-| `servico list` | `GET /v1/servicos` | ✅ |
-| `servico create` | `POST /v1/servicos` | ✅ |
-| `servico get` | `GET /v1/servicos/{id}` | ✅ |
-| `servico update` | `PATCH /v1/servicos/{id}` | ✅ |
-| `servico delete` | `DELETE /v1/servicos` | ✅ |
-| `nota-fiscal list` | `GET /v1/notas-fiscais` | ✅ |
-| `nota-fiscal get` | `GET /v1/notas-fiscais/{chave}` | ✅ |
-| `nota-fiscal vincular-mdfe` | `POST /v1/notas-fiscais/vinculo-mdfe` | ✅ |
-| `nota-fiscal-servico list` | `GET /v1/notas-fiscais-servico` | ✅ |
-| `venda list` | `GET /v1/venda/busca` | ✅ |
-| `venda create` | `POST /v1/venda` | ✅ |
-| `venda get` | `GET /v1/venda/{id}` | ✅ |
-| `venda update` | `PUT /v1/venda/{id}` | ✅ |
-| `venda imprimir` | `GET /v1/venda/{id}/imprimir` | ✅ |
-| `venda itens` | `GET /v1/venda/{id_venda}/itens` | ✅ |
-| `venda vendedores` | `GET /v1/venda/vendedores` | ✅ |
-| `venda proximo-numero` | `GET /v1/venda/proximo-numero` | ✅ |
-| `venda excluir-lote` | `POST /v1/venda/exclusao-lote` | ✅ |
-| `orcamento list` | `GET /v1/orcamentos` | ✅ |
-| `orcamento create` | `POST /v1/orcamentos` | ✅ |
-| `orcamento get` | `GET /v1/orcamentos/{id}` | ✅ |
-| `orcamento excluir-lote` | `DELETE /v1/orcamentos` | ✅ |
-| `captura enviar` | `POST /v1/captura/documentos` | ✅ |
-| `captura status` | `GET /v1/captura/documentos/status` | ✅ |
-| `captura get` | `GET /v1/captura/{id}` | ✅ |
-| `captura aceitar` | `POST /v1/captura/{id}` | ✅ |
-| `captura recusar` | `DELETE /v1/captura/{id}` | ✅ |
-
-¹ `produto ecommerce-categorias` foi exercitado e **respondeu 400 em todas as tentativas**, inclusive sem nenhum parâmetro. Ver a seção de Produtos.
-
----
-
-## Contrato de saída
-
-Vale para **todos** os comandos estruturados (`auth login` / `auth logout`
-escrevem texto para o operador, não este envelope):
-
-| Canal | Conteúdo |
-|---|---|
-| `stdout` | Só o payload. Padrão: **TOON**. JSON compacto com `--format=json`. |
-| `stderr` | Envelopes de erro e de aviso, no **mesmo** formato do stdout. |
-| exit code | `0` sucesso, `1` falha. Binário. |
-
-`--json` nas escritas é payload de **entrada**. Não escolhe o formato de saída.
-
-> **Resposta sem corpo sai como lista vazia, não objeto vazio.** Um `204 No
-> Content` — e também um `{}` vindo da API — é decodificado para um array PHP
-> vazio, serializado como `[]` em JSON e como lista vazia em TOON. Quem
-> consome com `jq` (logo `--format=json`) deve tratar `[]` como "nenhum conteúdo"
-> nos comandos marcados `204` (`pessoa patch`, `pessoa excluir`,
-> `contrato delete`, `orcamento excluir-lote`, `captura recusar`,
-> `nota-fiscal vincular-mdfe`).
-
-**Envelope de erro** (stderr, exit 1), padrão TOON:
-
-```
-correlation_id: a1b2…
-http_status: 404
-kind: client_error
-message: …
-protocol_id: null
-retryable: false
-```
-
-**Envelope de aviso** (stderr, exit 0 — a operação teve sucesso):
-
-```
-kind: warning
-message: Intervalo de vencimento não informado por completo; usando 2026-08-01 a 2026-08-31. …
-```
-
-### Valores de `kind`
-
-| `kind` | Significado | `retryable` |
-|---|---|---|
-| `client_error` | Requisição inválida (4xx). Corrija os argumentos. | `false` |
-| `auth_failed` | Falha de autenticação. Rode `ca auth login`. | `false` |
-| `rate_limited` | Limite de requisições atingido. | `true` |
-| `transient` | Erro de rede ou 5xx transitório. | `true` |
-| `server_error` | Erro do servidor não recuperável. | `false` |
-| `ambiguous` | Resposta perdida após envio. **A escrita pode ter sido aplicada** — reconcilie via `financeiro alteracoes`. | `false` |
-| `poll_timeout_known_id` | Escrita aceita, polling estourou. Retome com `protocolo get <protocol_id>`. | `false` |
-| `poll_drop_known_id` | Polling interrompido. Retome com `protocolo get <protocol_id>`. | `false` |
-
-Quando `kind` é `ambiguous`, `poll_timeout_known_id` ou `poll_drop_known_id`, **não reenvie a escrita cegamente**: o CLI não deduplica. Use o `protocol_id` do envelope.
-
-## Opções comuns
-
-Aceitas por todos os comandos da Conta Azul:
-
-| Opção | Efeito |
-|---|---|
-| `--format` | Formato da resposta: `toon` (padrão) ou `json`. `--format=toon` também é válido. |
-| `--debug` | Grava log estruturado em `~/.cache/conta-azul-cli/log.jsonl`. Credenciais são redigidas. |
-| `-q, --quiet` | Suprime tudo exceto erros. |
-| `-h, --help` | Ajuda do comando. |
-| `-V, --version` | Versão do CLI. |
-| `-n, --no-interaction` | Não faz perguntas interativas. |
-
-`list` e `help` ficam fora desse contrato: são os comandos nativos do Symfony,
-usam texto por padrão e mantêm seus próprios `--format=txt|xml|json|md|rst` e
-`--raw` (texto sem decoração). Eles não oferecem TOON.
-
-## Paginação
-
-Onde há `--pagina` / `--tamanho-pagina`:
-
-| Parâmetro | Padrão | Valores aceitos |
-|---|---|---|
-| `--pagina` | `1` | Qualquer inteiro positivo |
-| `--tamanho-pagina` | `50` | **`10`, `20`, `50`, `100`, `200`, `500`, `1000`** — qualquer outro é rejeitado localmente, sem chamar a API |
-
-**Três listagens param em `100`**, e a validação local sabe disso desde
-2026-08-19:
-
-| Listagem | Máximo |
-|---|---|
-| `servico list`, `nota-fiscal list`, `nota-fiscal-servico list` | `100` |
-| todas as outras | `1000` |
-
-Nessas três, `--tamanho-pagina 200` falha na hora com
-`Valores aceitos: 10, 20, 50, 100`, sem gastar uma ida à API. Antes a
-validação usava a lista larga para todo mundo, então o `200` passava aqui e
-voltava `400` de lá — justamente o que validar localmente deveria evitar.
-
-**E uma listagem não usa lista discreta nenhuma.** `captura status` aceita
-**qualquer inteiro de 1 a 20** — `1`, `5` e `15` respondem `200`, e só `21`
-para cima responde `400` ("O valor do atributo 'tamanho_pagina' deve ser no
-máximo 20"). Medido em 2026-08-19, depois que um id de documento real
-finalmente permitiu chamar o endpoint. Validá-lo contra os degraus discretos
-errava **nos dois sentidos**: deixava `1000` chegar na API (que recusa) e
-recusava `15` (que a API aceita). Por isso a validação passou a distinguir a
-*forma* da regra, não só o teto — veja `PageSizeRule`.
-
-| Listagem | Regra |
-|---|---|
-| `captura status` | qualquer inteiro em `1..20` |
-| todas as outras | os degraus discretos acima |
-
-Os limites foram **medidos** endpoint a endpoint contra a produção, não
-deduzidos: aceitam `1000` as listagens de produtos (e seus catálogos),
-pessoas, vendas, itens de venda, orçamentos, contratos, transferências,
-contas a pagar/receber, categorias, centros de custo e contas financeiras.
-
-E o nome do campo de contagem **não é o mesmo em todo lugar**:
-
-| Formato | Onde |
-|---|---|
-| `{itens_totais, itens[]}` | comandos financeiros |
-| `{totalItems, items[]}` | `pessoa list`, `produto list` |
-| `{total_items, items[]}` | catálogos de `produto` (categorias, cest, ncm, …) |
-| `{itens[], paginacao{total_itens}}` | `servico list`, `nota-fiscal list`, `nota-fiscal-servico list` |
-| `{totais, quantidades, total_itens, itens[]}` | `venda list` |
-| `{itens[], itens_totais, totais}` | `venda itens` |
-| `{itens[], total_itens}` | `orcamento list` |
-| `{itens_totais, itens[]}` | `contrato list` |
-| `{itens[], paginacao{pagina_atual, tamanho_pagina, total_itens, total_paginas}}` | `captura status` |
-
-`venda` sozinha traz duas dessas variações — a listagem e os itens de uma
-venda usam formatos diferentes. E `contrato list` mostra por que nem o nome
-da chave se deduz: estava documentado como `{itens_totais, items[]}` e a API
-devolve `itens`, não `items`.
-
-E o campo de contagem **pode simplesmente estar errado**: o `total_itens` de
-`orcamento list` ignora os orçamentos em `ORCAMENTO_RECUSADO` que a mesma
-resposta devolve dentro de `itens`. Ao verificar uma listagem, conte
-`len(itens)` em vez de confiar no total — foi só assim que essa divergência
-apareceu.
-
-## Datas
-
-Dois formatos, e eles não são intercambiáveis:
-
-| Contexto | Formato | Exemplo |
-|---|---|---|
-| Vencimento e baixa | `YYYY-MM-DD` | `2026-08-01` |
-| `financeiro alteracoes` | ISO 8601 **sem timezone** | `2026-08-01T00:00:00` |
-
-> Em `alteracoes`, sufixo `Z` ou offset (`-03:00`) faz a API responder **400**.
-
-Onde há intervalo de datas, a API o **exige**. Omitir as opções não causa erro: o CLI assume o **mês corrente** e avisa em stderr qual recorte aplicou. Informar ambas as opções silencia o aviso. Exceção: as **duas listagens de notas fiscais** (`nota-fiscal list` e `nota-fiscal-servico list`), cujo intervalo é limitado a **15 dias** pela API — o default nelas são os **últimos 15 dias**, não o mês corrente.
-
----
-
-## Autenticação
-
-### `auth login` ✅
+## `auth login` ✅ { #auth-login }
 
 Sem parâmetros. Imprime uma URL, sobe um listener HTTPS local na porta **9876** e aguarda o redirect. Tokens vão para `~/.config/conta-azul-cli/tokens.json` com permissão `0600`.
 
 O refresh é automático e invisível — não existe comando para isso. Renovação preventiva a menos de 60 s da expiração, e reativa uma vez em caso de `401`.
 
-### `auth logout` ✅
+## `auth logout` ✅ { #auth-logout }
 
 Sem parâmetros. Remove as credenciais locais.
 
----
+==============================================================================
 
-## Categorias
+# Categorias
 
-### `categoria list` ✅
+## `categoria list` ✅ { #categoria-list }
 
 `GET /v1/categorias`
 
@@ -299,27 +32,28 @@ Sem parâmetros. Remove as credenciais locais.
 
 Retorna `{itens_totais, itens[]}`. Cada item traz `id`, `nome`, `tipo` (`RECEITA`/`DESPESA`), `categoria_pai` e `entrada_dre`.
 
-### `categoria configuracao-padrao` ✅
+## `categoria configuracao-padrao` ✅ { #categoria-configuracao-padrao }
 
 `GET /v1/categorias/configuracao-padrao`
 
 | Parâmetro | Obrig. | Padrão | Descrição |
 |---|---|---|---|
 | `--sugestao-padrao` / `--no-sugestao-padrao` | não | `--sugestao-padrao` | Inclui (ou omite) a sugestão padrão de categoria em cada item |
+| `--no-sugestao-padrao` | não | — | Negate the "--sugestao-padrao" option |
 
 Retorna uma lista de de-para entre operação financeira (`tipo_operacao`, ex: `FRETES_RECEBIDOS`, `JUROS_PAGOS`) e a categoria configurada para ela (`id_categoria`, `nome_categoria`). Com `--no-sugestao-padrao`, o campo `sugestao_padrao` de cada item vem `null`.
 
-### `categoria dre` ✅
+## `categoria dre` ✅ { #categoria-dre }
 
 `GET /v1/financeiro/categorias-dre`
 
 Sem parâmetros. Retorna `{itens[]}` com a estrutura hierárquica da DRE (Demonstração do Resultado do Exercício): cada item traz `descricao`, `codigo`, `subitens[]` e `categorias_financeiras[]` associadas.
 
----
+==============================================================================
 
-## Centros de custo
+# Centros de custo
 
-### `centro-de-custo list` ✅
+## `centro-de-custo list` ✅ { #centro-de-custo-list }
 
 `GET /v1/centro-de-custo` — note o **singular** no path.
 
@@ -330,7 +64,7 @@ Sem parâmetros. Retorna `{itens[]}` com a estrutura hierárquica da DRE (Demons
 
 Cada item traz `id`, `codigo`, `nome`, `ativo`.
 
-### `centro-de-custo create` ✅
+## `centro-de-custo create` ✅ { #centro-de-custo-create }
 
 `POST /v1/centro-de-custo` — **escrita síncrona** (`200`), sem protocolo.
 
@@ -346,11 +80,11 @@ registros criados pela interface trazem `""`, não `null`.
 > o `404` genérico de rota inexistente. Centro de custo criado por engano só
 > sai pela interface web.
 
----
+==============================================================================
 
-## Contas financeiras
+# Contas financeiras
 
-### `conta-financeira list` ✅
+## `conta-financeira list` ✅ { #conta-financeira-list }
 
 `GET /v1/conta-financeira` — **singular**.
 
@@ -361,7 +95,7 @@ registros criados pela interface trazem `""`, não `null`.
 
 Cada item traz `id`, `nome`, `banco`, `tipo`, `ativo`, `conta_padrao`.
 
-### `conta-financeira saldo` ✅
+## `conta-financeira saldo` ✅ { #conta-financeira-saldo }
 
 `GET /v1/conta-financeira/{id}/saldo-atual`
 
@@ -371,11 +105,11 @@ Cada item traz `id`, `nome`, `banco`, `tipo`, `ativo`, `conta_padrao`.
 
 Retorna `{"saldo_atual": 5931.64}`. É opção `--id`, não argumento posicional.
 
----
+==============================================================================
 
-## Transferências
+# Transferências
 
-### `transferencia list` ✅
+## `transferencia list` ✅ { #transferencia-list }
 
 `GET /v1/financeiro/transferencias`
 
@@ -392,11 +126,11 @@ Retorna `{"saldo_atual": 5931.64}`. É opção `--id`, não argumento posicional
 
 Cada item traz `id`, `descricao`, `valor`, `data`, e os blocos `origem`/`destino` com `data`, `composicao_valor` (`valor_bruto`, `juros`, `multa`, `valor_liquido`, `desconto`, `taxa`) e `conta_financeira` (`id`, `nome`, `instituicao_bancaria`).
 
----
+==============================================================================
 
-## Contas a receber
+# Contas a receber
 
-### `conta-a-receber list` ✅
+## `conta-a-receber list` ✅ { #conta-a-receber-list }
 
 `GET /v1/financeiro/eventos-financeiros/contas-a-receber/buscar`
 
@@ -413,7 +147,7 @@ Cada item traz `id`, `descricao`, `valor`, `data`, e os blocos `origem`/`destino
 
 Cada item traz `id`, `status` (`ACQUITTED`, `OVERDUE`, …), `status_traduzido`, `total`, `pago`, `nao_pago`, `data_vencimento`, `data_competencia`, `descricao`, `categorias[]`, `centros_de_custo[]`, `cliente`. A resposta ainda inclui um bloco `totais` com somatórios por situação.
 
-### `conta-a-receber create` ✅
+## `conta-a-receber create` ✅ { #conta-a-receber-create }
 
 `POST /v1/financeiro/eventos-financeiros/contas-a-receber` — **escrita assíncrona**.
 
@@ -470,13 +204,13 @@ Armadilhas confirmadas:
 > `404` genérico de rota inexistente em ambos). Conta a receber criada por
 > engano só sai pela interface web.
 
----
+==============================================================================
 
-## Cobranças
+# Cobranças
 
 Gera cobrança (boleto, PIX ou link de pagamento) para a parcela de uma conta a receber. Spec OpenAPI próprio (`charge-apis-openapi`), separado do núcleo Financeiro.
 
-### `cobranca create` ✅
+## `cobranca create` ✅ { #cobranca-create }
 
 `POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca` — **escrita síncrona** (`200`), sem protocolo.
 
@@ -504,7 +238,7 @@ documentados conferem. Retorna `{id, url, status}`, mas:
 - Cliente sem CPF/e-mail leva a cobrança a `INVALIDO` alguns segundos depois
   de criada. O endpoint funcionou; quem recusou foi o provedor.
 
-### `cobranca get` ✅
+## `cobranca get` ✅ { #cobranca-get }
 
 `GET /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}`
 
@@ -519,7 +253,7 @@ As cobranças de uma parcela também aparecem em
 `parcela get` → `solicitacoes_cobrancas[]`, com mais campos
 (`status_solicitacao_cobranca`, `tipo_solicitacao_cobranca`, `valor_composicao`).
 
-### `cobranca delete` ✅
+## `cobranca delete` ✅ { #cobranca-delete }
 
 `DELETE /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}` — recomendado só para cobrança gerada incorretamente ou a invalidar antes do pagamento.
 
@@ -539,11 +273,11 @@ respondendo `200`. Logo depois do `DELETE` há uma janela em que o `get`
 devolve `404` — é transitório, não indica exclusão permanente. Como em
 `servico delete`, o teste confiável é o **status**, não o `404`.
 
----
+==============================================================================
 
-## Contas a pagar
+# Contas a pagar
 
-### `conta-a-pagar list` ✅
+## `conta-a-pagar list` ✅ { #conta-a-pagar-list }
 
 `GET /v1/financeiro/eventos-financeiros/contas-a-pagar/buscar`
 
@@ -560,7 +294,7 @@ devolve `404` — é transitório, não indica exclusão permanente. Como em
 
 Formato de resposta igual ao de contas a receber, trocando `cliente` por fornecedor.
 
-### `conta-a-pagar create` ✅
+## `conta-a-pagar create` ✅ { #conta-a-pagar-create }
 
 `POST /v1/financeiro/eventos-financeiros/contas-a-pagar` — **escrita assíncrona**.
 
@@ -576,11 +310,11 @@ Mesmo payload de `conta-a-receber create` (inclusive `detalhe_valor` e o
 evento financeiro**, então conta a pagar criada por engano só sai pela
 interface web.
 
----
+==============================================================================
 
-## Parcelas
+# Parcelas
 
-### `parcela get` ✅
+## `parcela get` ✅ { #parcela-get }
 
 `GET /v1/financeiro/eventos-financeiros/parcelas/{id}`
 
@@ -590,7 +324,7 @@ interface web.
 
 Retorna a parcela com o evento financeiro aninhado em `evento`, incluindo `evento.id`, `condicao_pagamento` e `rateio[]`.
 
-### `parcela update` ✅
+## `parcela update` ✅ { #parcela-update }
 
 `PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}` — **escrita síncrona** (`200`).
 
@@ -614,11 +348,9 @@ não `400` — mesma regra de `baixa update`.
 > silêncio também **no corpo da escrita**, não só na query. O `409` por falta
 > de `versao` escondia isso — o comando nunca chegava a "funcionar" errado.
 
-### `parcela baixar` ✅
+## `parcela baixar` ✅ { #parcela-baixar }
 
-`POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` — **escrita
-síncrona** (`200`). Atalho para `baixa create`, montando o payload mínimo a
-partir de três opções.
+`POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` — **escrita síncrona** (`200`). Atalho para `baixa create`, montando o payload mínimo a partir de três opções.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
@@ -627,11 +359,15 @@ partir de três opções.
 | `--data` | **sim** | Data da baixa (`YYYY-MM-DD`) |
 | `--conta-financeira` | **sim** | Uuid da conta financeira que recebe a baixa |
 
+síncrona** (`200`). Atalho para `baixa create`, montando o payload mínimo a
+partir de três opções.
+
+
 > O subrecurso `/baixa` **existe** — a nota anterior, de que a baixa seria um
 > `PATCH` na parcela, estava errada. `--poll-timeout` e `--no-wait` saíram:
 > a escrita é síncrona e nunca devolveu protocolo.
 
-### `parcela list` ✅
+## `parcela list` ✅ { #parcela-list }
 
 `GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas`
 
@@ -645,13 +381,13 @@ Sem paginação: a API devolve **um array puro**, não um envelope — não há
 > O `id` do evento sai de `parcela get` → `evento.id`, ou do
 > `evento_financeiro_id` que `protocolo get` devolve depois de uma criação.
 
----
+==============================================================================
 
-## Baixas
+# Baixas
 
 Recurso dedicado de baixa (quitação) de uma parcela — mais rico que o `PATCH` direto de `parcela baixar`: registra data, valor, juros, multa, desconto e método de pagamento. Uma parcela pode ter mais de uma baixa (pagamento parcial). Spec OpenAPI próprio (`acquittance-apis-openapi`), separado do núcleo Financeiro.
 
-### `baixa create` ✅
+## `baixa create` ✅ { #baixa-create }
 
 `POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa` — **escrita síncrona** (`200`), sem protocolo.
 
@@ -680,7 +416,7 @@ documentados conferem — este spec acertou.
   uma mensagem de validação. Leia como "falta alguma coisa", sem pista de o
   quê.
 
-### `baixa list` ✅
+## `baixa list` ✅ { #baixa-list }
 
 `GET /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa`
 
@@ -691,7 +427,7 @@ documentados conferem — este spec acertou.
 Sem paginação: **array puro**, sem envelope nem contador. As mesmas baixas
 também vêm aninhadas em `parcela get` → `baixas[]`.
 
-### `baixa get` ✅
+## `baixa get` ✅ { #baixa-get }
 
 `GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}`
 
@@ -702,7 +438,7 @@ também vêm aninhadas em `parcela get` → `baixas[]`.
 Traz `valor_composicao` (não `composicao_valor`) e `conta_financeira` como
 objeto. Baixa excluída responde `404` **com corpo vazio**.
 
-### `baixa update` ✅
+## `baixa update` ✅ { #baixa-update }
 
 `PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}`
 
@@ -718,7 +454,7 @@ objeto. Baixa excluída responde `404` **com corpo vazio**.
 > de **escrita** (`composicao_valor`, `conta_financeira` como uuid), não os
 > de leitura.
 
-### `baixa delete` ✅
+## `baixa delete` ✅ { #baixa-delete }
 
 `DELETE /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` — use com cautela: impacta o saldo e o histórico financeiro da parcela associada.
 
@@ -737,30 +473,29 @@ da conta financeira volta junto — na verificação, a conta saiu de `35004,34`
 e voltou a `35003,34` ao excluir a baixa de `1,00`. **É assim que se desfaz
 uma baixa: não existe "estornar".**
 
----
+==============================================================================
 
-## Eventos financeiros
+# Eventos financeiros
 
-### `financeiro alteracoes` ✅
+## `financeiro alteracoes` ✅ { #financeiro-alteracoes }
 
-`GET /v1/financeiro/eventos-financeiros/alteracoes`
-
-Feed de alterações no período — o caminho para reconciliar escritas que terminaram em `ambiguous`.
+`ISO 8601 **sem timezone**`
 
 | Parâmetro | Obrig. | Padrão | Descrição |
 |---|---|---|---|
 | `--data-inicio` | não¹ | início do mês corrente | ISO 8601 **sem timezone** |
 | `--data-fim` | não¹ | fim do mês corrente | ISO 8601 **sem timezone** |
 
+Feed de alterações no período — o caminho para reconciliar escritas que terminaram em `ambiguous`.
+
+
 ¹ A API exige o intervalo; o CLI supre com o mês corrente e avisa em stderr.
 
 Retorna `{itens_totais, itens[]}`, onde cada item traz apenas o `id` do evento alterado. Use `parcela get` para hidratar.
 
-### `financeiro saldo-inicial` ✅
+## `financeiro saldo-inicial` ✅ { #financeiro-saldo-inicial }
 
 `GET /v1/financeiro/eventos-financeiros/saldo-inicial`
-
-Saldos iniciais das contas financeiras no período.
 
 | Parâmetro | Obrig. | Padrão | Descrição |
 |---|---|---|---|
@@ -768,6 +503,9 @@ Saldos iniciais das contas financeiras no período.
 | `--data-fim` | não¹ | fim do mês corrente | ISO 8601 **sem timezone** |
 | `--pagina` | não | `1` | Número da página |
 | `--tamanho-pagina` | não | `50` | Itens por página |
+
+Saldos iniciais das contas financeiras no período.
+
 
 ¹ A API exige o intervalo; o CLI supre com o mês corrente e avisa em stderr.
 
@@ -786,11 +524,11 @@ Retorna `{itens_totais, itens[]}`, com `{tipo, id_conta_financeira, data_compete
   (comprovado com `zzz_bogus=abc`: o total não muda). Paginação funciona e
   aceita `tamanho_pagina` até `1000`.
 
----
+==============================================================================
 
-## Protocolos
+# Protocolos
 
-### `protocolo get` ✅
+## `protocolo get` ✅ { #protocolo-get }
 
 `GET /v1/protocolo/{id}`
 
@@ -818,9 +556,9 @@ Retorna `{id, resposta, status, evento_financeiro_id}`:
 > assíncrona devolvia o envelope `PENDING` cru, e `--no-wait` e
 > `--poll-timeout` não tinham efeito observável. Corrigido.
 
----
+==============================================================================
 
-## Contratos
+# Contratos
 
 **Verificado contra produção em 2026-08-19** — os seis comandos, com dois
 contratos de teste criados, um encerrado e ambos excluídos. Os seis
@@ -845,7 +583,7 @@ parâmetros de `contrato list` passaram na receita completa (baseline,
 > prática não havia nada para aplicar. Um id malformado, esse sim, devolve
 > `400`.
 
-### `contrato list` ✅
+## `contrato list` ✅ { #contrato-list }
 
 `GET /v1/contratos`
 
@@ -877,7 +615,7 @@ contrato de número 2. Ordenação inválida devolve `400` listando
 `[DATA_INICIO, DATA_FIM]`, que é como se prova que o parâmetro é lido e não
 descartado; mandando as duas ordenações juntas, a ascendente vence.
 
-### `contrato create` ✅
+## `contrato create` ✅ { #contrato-create }
 
 `POST /v1/contratos` — **escrita síncrona**, diferente das escritas financeiras: não devolve protocolo, o `id` do contrato já vem na resposta.
 
@@ -948,7 +686,7 @@ Payload mínimo que passou:
 A `descricao` de um item **propaga para as vendas geradas**, o que a torna o
 lugar prático para marcar um contrato de teste.
 
-### `contrato proximo-numero` ✅
+## `contrato proximo-numero` ✅ { #contrato-proximo-numero }
 
 `GET /v1/contratos/proximo-numero`
 
@@ -959,7 +697,7 @@ subiu para `2` depois do contrato de número 1 e voltou a `1` quando os
 contratos de teste foram excluídos. Ao contrário de `venda`, esse número
 **não** é atribuído sozinho — é você quem manda `termos.numero` no `create`.
 
-### `contrato get` ✅
+## `contrato get` ✅ { #contrato-get }
 
 `GET /v1/contratos/{id}`
 
@@ -975,7 +713,7 @@ condicao_pagamento, local_prestacao_servico, composicao_valor, observacoes}`.
 `status` é `ATIVO`, `INATIVO` (depois de `encerrar`) ou `DELETADO` (depois de
 `delete`). Uuid inexistente devolve `500`; id malformado, `400`.
 
-### `contrato delete` ✅
+## `contrato delete` ✅ { #contrato-delete }
 
 `DELETE /v1/contratos/{id}` — exclusão **lógica**, apesar do nome.
 
@@ -993,7 +731,7 @@ depois do `delete`. Funciona também em contrato já encerrado.
 
 Contratos em reajuste de valor não podem ser removidos.
 
-### `contrato encerrar` ✅
+## `contrato encerrar` ✅ { #contrato-encerrar }
 
 `POST /v1/contratos/{id}/encerrar` — sem corpo.
 
@@ -1010,9 +748,9 @@ repetida num contrato já `INATIVO`, responde `204` de novo.
 
 Contratos em reajuste de valor não podem ser encerrados.
 
----
+==============================================================================
 
-## Pessoas / Fornecedores
+# Pessoas / Fornecedores
 
 Os payloads de criação e atualização seguem o schema da API e são enviados sem transformação. Use `--json` com um objeto JSON.
 
@@ -1021,15 +759,33 @@ Os payloads de criação e atualização seguem o schema da API e são enviados 
 > `Estrangeira`; `tipo_perfil` aceita `Cliente`, `Fornecedor` ou
 > `Transportadora`. Enviar `FISICA` ou `CLIENTE` devolve **400**.
 
-### `pessoa list` ✅
+## `pessoa list` ✅ { #pessoa-list }
 
 `GET /v1/pessoas`
 
 | Parâmetro | Obrig. | Padrão | Descrição |
 |---|---|---|---|
+| `--tipo-ordenacao` | não | — | Campo de ordenação |
+| `--ordem-ordenacao` | não | — | Direção da ordenação |
+| `--busca` | não | — | Busca por nome ou documento |
+| `--ids` | não | — | IDs das pessoas |
+| `--documentos` | não | — | Documentos das pessoas |
+| `--paises` | não | — | Países das pessoas |
+| `--cidades` | não | — | Cidades das pessoas |
+| `--ufs` | não | — | UFs das pessoas |
+| `--codigos-pessoa` | não | — | Códigos das pessoas |
+| `--emails` | não | — | Emails das pessoas |
+| `--tipos-pessoa` | não | — | Tipos de pessoa |
+| `--nomes` | não | — | Nomes das pessoas |
+| `--telefones` | não | — | Telefones das pessoas |
+| `--data-criacao-inicio` | não | — | Data inicial de criação |
+| `--data-criacao-fim` | não | — | Data final de criação |
+| `--data-alteracao-de` | não | — | Data inicial de alteração |
+| `--data-alteracao-ate` | não | — | Data final de alteração |
+| `--tipo-perfil` | não | — | Perfil da pessoa |
+| `--com-endereco` | não | — | Retorna apenas pessoas com endereço |
 | `--pagina` | não | `1` | Número da página |
 | `--tamanho-pagina` | não | `50` | Itens por página |
-| filtros da API | não | — | `--busca`, `--ids`, `--documentos`, `--paises`, `--cidades`, `--ufs`, `--codigos-pessoa`, `--emails`, `--tipos-pessoa`, `--nomes`, `--telefones`, `--data-criacao-inicio`, `--data-criacao-fim`, `--data-alteracao-de`, `--data-alteracao-ate`, `--tipo-perfil`, `--tipo-ordenacao`, `--ordem-ordenacao`, `--com-endereco` |
 
 Retorna `{totalItems, items[]}` — **camelCase e em inglês**, diferente do
 `{itens_totais, itens[]}` dos comandos financeiros. Quando nada casa,
@@ -1042,7 +798,7 @@ Retorna `{totalItems, items[]}` — **camelCase e em inglês**, diferente do
 > | `--data-criacao-inicio` / `--data-criacao-fim` | `YYYY-MM-DD` | `2026-08-19` |
 > | `--data-alteracao-de` / `--data-alteracao-ate` | ISO 8601 **sem timezone** | `2026-08-19T00:00:00` |
 
-### `pessoa create` ✅
+## `pessoa create` ✅ { #pessoa-create }
 
 `POST /v1/pessoas`
 
@@ -1060,9 +816,11 @@ Retorna `{id, tipo_pessoa, nome, ativo, origem, perfis, estrangeiro}`. A
 criação é bem mais permissiva que `pessoa update` — nem documento, nem
 endereço, nem contato são exigidos aqui.
 
-### `pessoa get` ✅, `pessoa legado` ✅
+<a id="pessoa-legado"></a>
+## `pessoa get`, `pessoa legado` ✅ { #pessoa-get }
 
-`GET /v1/pessoas/{id}` e `GET /v1/pessoas/legado/{id}`
+- `pessoa get` — `GET /v1/pessoas/{id}`
+- `pessoa legado` — `GET /v1/pessoas/legado/{id}`
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
@@ -1072,9 +830,13 @@ endereço, nem contato são exigidos aqui.
 > devolve nesse campo, e que `pessoa get` aninha em `pessoas_legado[].uuid`),
 > não o `id_legado` inteiro do mesmo item.
 
-### `pessoa update` ✅ e `pessoa patch` ✅
+<a id="pessoa-patch"></a>
+## `pessoa update`, `pessoa patch` ✅ { #pessoa-update }
 
-`PUT /v1/pessoas/{id}` substitui o cadastro; `PATCH /v1/pessoas/{id}` atualiza apenas os campos enviados.
+- `pessoa update` — `PUT /v1/pessoas/{id}`
+- `pessoa patch` — `PATCH /v1/pessoas/{id}`
+
+`PUT` substitui o cadastro inteiro; `PATCH` atualiza apenas os campos enviados.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
@@ -1100,9 +862,15 @@ um erro de cada vez, todos estes campos:
 > Por isso, para mexer em um ou dois campos use `pessoa patch`. `pessoa
 > update` só compensa quando você já tem o cadastro completo em mãos.
 
-### `pessoa ativar` ✅, `pessoa inativar` ✅ e `pessoa excluir` ✅
+<a id="pessoa-inativar"></a>
+<a id="pessoa-excluir"></a>
+## `pessoa ativar`, `pessoa inativar`, `pessoa excluir` ✅ { #pessoa-ativar }
 
-`POST /v1/pessoas/ativar`, `/inativar` e `/excluir`. O payload esperado pela API é `{"uuids":[...]}`.
+- `pessoa ativar` — `POST /v1/pessoas/ativar`
+- `pessoa inativar` — `POST /v1/pessoas/inativar`
+- `pessoa excluir` — `POST /v1/pessoas/excluir`
+
+O payload esperado pela API é `{"uuids":[...]}`.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
@@ -1124,15 +892,15 @@ um erro de cada vez, todos estes campos:
 > exclusão parou de ser possível. Nesses casos o caminho é `pessoa inativar`,
 > que continua funcionando.
 
-### `pessoa conta-conectada` ✅
+## `pessoa conta-conectada` ✅ { #pessoa-conta-conectada }
 
 `GET /v1/pessoas/conta-conectada` — retorna os dados da empresa vinculada ao token.
 
 Sem parâmetros. Retorna `{id_empresa, documento, razao_social, nome_fantasia, data_fundacao, email}`.
 
----
+==============================================================================
 
-## Produtos
+# Produtos
 
 Os payloads de criação e atualização seguem o schema da API e são enviados sem transformação. Use `--json` com um objeto JSON.
 
@@ -1142,7 +910,7 @@ Os payloads de criação e atualização seguem o schema da API e são enviados 
 > foram confirmados contra a produção — `--ids` e `--categoria-id`
 > existiram até 2026-08-19 e foram removidos por não filtrarem nada.
 
-### `produto list` ✅
+## `produto list` ✅ { #produto-list }
 
 `GET /v1/produtos`
 
@@ -1162,7 +930,7 @@ traz `id`, `id_legado`, `nome`, `codigo`, `tipo`, `status`, `saldo`,
 > O SKU aparece como `codigo` em `produto list` e como `codigo_sku` em
 > `produto get` — três nomes para o mesmo dado, contando o `sku` da query.
 
-### `produto create` ✅
+## `produto create` ✅ { #produto-create }
 
 `POST /v1/produtos`
 
@@ -1175,9 +943,11 @@ gera um `codigo_sku` derivado do nome, atribui a categoria `Outras`,
 `status: ATIVO`, `formato: SIMPLES` e `versao: 0`. Retorna o produto
 completo, já com `id` e `id_legado`.
 
-### `produto get` ✅, `produto delete` ✅
+<a id="produto-delete"></a>
+## `produto get`, `produto delete` ✅ { #produto-get }
 
-`GET /v1/produtos/{id}` e `DELETE /v1/produtos/{id}`
+- `produto get` — `GET /v1/produtos/{id}`
+- `produto delete` — `DELETE /v1/produtos/{id}`
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
@@ -1190,7 +960,7 @@ completo, já com `id` e `id_legado`.
 `produto delete` responde **204 No Content** (renderizado como `[]`) e a
 exclusão é permanente: `produto get` passa a devolver 404.
 
-### `produto update` ✅
+## `produto update` ✅ { #produto-update }
 
 `PATCH /v1/produtos/{id}` — atualiza apenas os campos enviados.
 
@@ -1204,7 +974,24 @@ com `produto get`. Cada atualização bem-sucedida **incrementa `versao`**,
 mas, diferente de `baixa update`, a API não exige que você envie a versão
 atual: não há controle de concorrência otimista aqui.
 
-### Catálogos de produtos ✅
+<a id="produto-cest"></a>
+<a id="produto-ncm"></a>
+<a id="produto-unidades-medida"></a>
+<a id="produto-ecommerce-marcas"></a>
+## Catálogos de produtos ✅ { #produto-categorias }
+
+- `produto categorias` — `GET /v1/produtos/categorias`
+- `produto cest` — `GET /v1/produtos/cest`
+- `produto ncm` — `GET /v1/produtos/ncm`
+- `produto unidades-medida` — `GET /v1/produtos/unidades-medida`
+- `produto ecommerce-marcas` — `GET /v1/produtos/ecommerce-marcas`
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `50` | Itens por página |
+| `--busca` | não | — | Filtro busca |
+| `--codigo` | não | — | Filtro codigo |
 
 Os comandos `produto categorias`, `produto cest`, `produto ncm`,
 `produto unidades-medida` e `produto ecommerce-marcas` consultam,
@@ -1226,9 +1013,22 @@ convenção de nome.
 | `produto unidades-medida` | `{id, descricao, abreviacao, em_uso}` |
 | `produto ecommerce-marcas` | `{}` — a conta de teste não tem marcas cadastradas |
 
-### `produto ecommerce-categorias` ⚠️
+## `produto ecommerce-categorias` ⚠️ { #produto-ecommerce-categorias }
 
 `GET /v1/produtos/ecommerce-categorias`
+
+!!! warning "Não verificado"
+
+    Escrito a partir da documentação e **nunca exercitado** contra a
+    API. Path, nomes de filtro, campos do payload, tipo do id e formato
+    da resposta são todos não confiáveis. Veja
+    [Notas para quem for estender](../guia/estendendo.md).
+
+| Parâmetro | Obrig. | Padrão | Descrição |
+|---|---|---|---|
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `50` | Itens por página |
+| `--busca` | não | — | Filtro busca |
 
 Aceita `--pagina`, `--tamanho-pagina` e `--busca`.
 
@@ -1244,9 +1044,9 @@ Aceita `--pagina`, `--tamanho-pagina` e `--busca`.
 > A hipótese que sobra é uma pré-condição de conta (integração de
 > e-commerce não configurada) que a API reporta como erro de filtro.
 
----
+==============================================================================
 
-## Serviços
+# Serviços
 
 Os payloads seguem o schema da API e são enviados sem transformação.
 
@@ -1255,7 +1055,7 @@ Os payloads seguem o schema da API e são enviados sem transformação.
 > `id_servico` é o inteiro legado — é o que **`servico delete` exige**.
 > Trocar um pelo outro no delete devolve 400 reclamando de `int64`.
 
-### `servico list` ✅
+## `servico list` ✅ { #servico-list }
 
 `GET /v1/servicos`
 
@@ -1290,7 +1090,7 @@ Cada item traz `id`, `id_servico`, `codigo`, `descricao`, `preco`, `custo`,
 > coisa alguma. Ordenação (`campo_ordenado_ascendente`/`descendente`) também
 > não existe aqui, diferente de `contrato list`.
 
-### `servico create` ✅
+## `servico create` ✅ { #servico-create }
 
 `POST /v1/servicos` — resposta **201 Created** com o serviço completo.
 
@@ -1313,22 +1113,33 @@ Três campos são obrigatórios, cobrados um erro por vez:
 > Diferente de `produto create`, que se vira só com `nome`, aqui não há
 > default: sem `status` e `tipo_servico` a criação falha.
 
-### `servico get` ✅ e `servico update` ✅
+<a id="servico-update"></a>
+## `servico get`, `servico update` ✅ { #servico-get }
 
-`GET /v1/servicos/{id}` e `PATCH /v1/servicos/{id}` — ambos pelo **uuid**.
+- `servico get` — `GET /v1/servicos/{id}`
+- `servico update` — `PATCH /v1/servicos/{id}`
+
+Ambos pelo **uuid**.
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<id>` | **sim** | ID do serviço |
+| `--json` | não | Payload JSON do serviço |
 
 `servico get` recebe `<id>`. `servico update` recebe `<id>` e `--json` com
 os campos a atualizar; responde **204 No Content** (renderizado como `[]`),
 então confirme o resultado com `servico get`.
 
-### `servico delete` ✅
+## `servico delete` ✅ { #servico-delete }
 
-`DELETE /v1/servicos` — exclui serviços em lote. Resposta **204 No Content**
-(renderizada como `[]`).
+`DELETE /v1/servicos` — exclui serviços em lote. Resposta **204 No Content** (renderizada como `[]`).
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
 | `--json` | **sim** | `{"ids":[…]}` com os **`id_servico` inteiros**, não os uuids |
+
+(renderizada como `[]`).
+
 
 ```json
 {"ids":[495926356]}
@@ -1341,9 +1152,9 @@ então confirme o resultado com `servico get`.
 > `servico get` que um serviço foi excluído; use `servico list`. É o oposto
 > de `produto delete`, que passa a devolver 404.
 
----
+==============================================================================
 
-## Notas fiscais
+# Notas fiscais
 
 A API só suporta **consulta** (NFe de produto emitida e NFS-e de serviço) e vínculo a MDF-e — não há emissão pelo CLI.
 
@@ -1357,7 +1168,7 @@ sobre notas de 2024 marcadas com `identificador` `TESTE HEITOR`.
 > `{"error":"O período entre data_inicial e data_final não pode ser maior que
 > 15 dias"}`. Corrigido — o default agora são os últimos 15 dias, como na NFS-e.
 
-### `nota-fiscal list` ✅
+## `nota-fiscal list` ✅ { #nota-fiscal-list }
 
 `GET /v1/notas-fiscais`
 
@@ -1395,7 +1206,7 @@ silêncio** o que não reconhece (`zzz_bogus=abc` devolve a coleção inteira).
 > Sem nenhum resultado, a API devolve `tamanho_pagina: 9223372036854775807`
 > (o `PHP_INT_MAX`) em vez do tamanho pedido.
 
-### `nota-fiscal get` ✅
+## `nota-fiscal get` ✅ { #nota-fiscal-get }
 
 `GET /v1/notas-fiscais/{chave}`
 
@@ -1422,9 +1233,13 @@ de correção).
 > devolve o mesmo `404`, não um `400` de formato. Diferente de `contrato get`,
 > que responde `500` para id desconhecido.
 
-### `nota-fiscal vincular-mdfe` ✅
+## `nota-fiscal vincular-mdfe` ✅ { #nota-fiscal-vincular-mdfe }
 
 `POST /v1/notas-fiscais/vinculo-mdfe` — **escrita síncrona**, resposta `204 No Content` (renderizada como `[]`).
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--json` | **sim** | Payload JSON do vínculo |
 
 Registra na Conta Azul que um conjunto de notas fiscais pertence a um MDF-e
 (Manifesto Eletrônico de Documentos Fiscais, modelo 58) emitido em outro
@@ -1441,9 +1256,6 @@ veículo, motorista nem percurso, que a SEFAZ exigiria.
 > explica o formato do payload — chaves, um identificador opaco e o estado —
 > e explica por que não há `GET`: quem chama já é o dono do dado.
 
-| Parâmetro | Obrig. | Descrição |
-|---|---|---|
-| `--json` | **sim** | Payload JSON do vínculo |
 
 Campos do payload — **os três são obrigatórios**:
 
@@ -1514,7 +1326,7 @@ Ordem de validação observada, um campo por vez: `status` → campos obrigatór
 > foi gravado. A classificação é compartilhada por todos os grupos e por isso
 > não foi mexida aqui.
 
-### `nota-fiscal-servico list` ✅
+## `nota-fiscal-servico list` ✅ { #nota-fiscal-servico-list }
 
 `GET /v1/notas-fiscais-servico`
 
@@ -1528,7 +1340,9 @@ Ordem de validação observada, um campo por vez: `status` → campos obrigatór
 | `--id-cliente` | não | — | UUID de cliente; repetível |
 | `--numero-venda` | não | — | Número da venda |
 | `--numero-nfse-inicial` / `--numero-nfse-final` | não | — | Intervalo de número da NFS-e |
+| `--numero-nfse-final` | não | — | Número final da NFS-e |
 | `--numero-rps-inicial` / `--numero-rps-final` | não | — | Intervalo de número do RPS |
+| `--numero-rps-final` | não | — | Número final do RPS |
 | `--status` | não | — | `EMITIDA`, `CANCELADA`, `PENDENTE`, …; repetível |
 | `--tipo-negociacao` | não | — | `VENDA` ou `CONTRATO` |
 
@@ -1556,9 +1370,9 @@ Cada item traz `id`, `id_venda`, `numero_venda`, `numero_rps`, `numero_nfse`,
 > inteiro. E `tipo_negociacao`, que dá para filtrar, **não aparece** em nenhum
 > item da resposta.
 
----
+==============================================================================
 
-## Vendas
+# Vendas
 
 Os payloads de criação e atualização seguem o schema da API e são enviados sem transformação. Use `--json` com um objeto JSON.
 
@@ -1568,7 +1382,7 @@ ciclo completo de escrita (criar, atualizar e excluir três vendas de teste).
 existiam de verdade: os oito passaram na receita de baseline + `zzz_bogus` +
 valor discriminante. As armadilhas do grupo estão na escrita, não na leitura.
 
-### `venda list` ✅
+## `venda list` ✅ { #venda-list }
 
 `GET /v1/venda/busca`
 
@@ -1576,7 +1390,14 @@ valor discriminante. As armadilhas do grupo estão na escrita, não na leitura.
 |---|---|---|---|
 | `--pagina` | não | `1` | Número da página |
 | `--tamanho-pagina` | não | `50` | Itens por página |
-| filtros | não | — | `--termo-busca`, `--data-inicio`, `--data-fim`, `--data-criacao-de`, `--data-criacao-ate`, `--campo-ordenado-ascendente`, `--campo-ordenado-descendente` (`NUMERO`, `CLIENTE` ou `DATA`), `--totais` (`WAITING_APPROVED`, `APPROVED`, `CANCELED` ou `ALL`) |
+| `--campo-ordenado-ascendente` | não | — | Filtro campo_ordenado_ascendente |
+| `--campo-ordenado-descendente` | não | — | Filtro campo_ordenado_descendente |
+| `--data-criacao-ate` | não | — | Filtro data_criacao_ate |
+| `--data-criacao-de` | não | — | Filtro data_criacao_de |
+| `--data-fim` | não | — | Filtro data_fim |
+| `--data-inicio` | não | — | Filtro data_inicio |
+| `--termo-busca` | não | — | Filtro termo_busca |
+| `--totais` | não | — | Filtro totais |
 
 Diferente de `contrato list`, o intervalo de datas é opcional — a API não o exige. Retorna `{totais, quantidades, total_itens, itens[]}`.
 
@@ -1597,7 +1418,7 @@ Detalhes confirmados exercitando:
 - Aceita `--tamanho-pagina 1000`: **não** é afetado pelo limite de 100 que
   atinge `servico list` e as notas fiscais.
 
-### `venda create` ✅
+## `venda create` ✅ { #venda-create }
 
 `POST /v1/venda` — **escrita síncrona**, sem protocolo.
 
@@ -1648,7 +1469,7 @@ Retorna `{id, id_legado, numero, origem, data_venda, situacao, pendencia,
 valor_composicao, condicao_pagamento, …}` — o `id` é o uuid a usar nos
 demais comandos.
 
-### `venda get` ✅
+## `venda get` ✅ { #venda-get }
 
 `GET /v1/venda/{id}`
 
@@ -1665,7 +1486,7 @@ ficam sob a chave `venda`.
 (`{contagem_produtos, contagem_servicos, contagem_nao_conciliados}`), não uma
 lista nem um número. Para os itens, use `venda itens`.
 
-### `venda update` ✅
+## `venda update` ✅ { #venda-update }
 
 `PUT /v1/venda/{id}` — **escrita síncrona**; a API não expõe `PATCH` para vendas, então o payload precisa trazer o objeto completo, incluindo `versao`.
 
@@ -1689,7 +1510,7 @@ inútil — mande qualquer inteiro positivo.
 
 Retorna só `{id, id_legado}`.
 
-### `venda imprimir` ✅
+## `venda imprimir` ✅ { #venda-imprimir }
 
 `GET /v1/venda/{id}/imprimir`
 
@@ -1699,7 +1520,7 @@ Retorna só `{id, id_legado}`.
 
 A resposta da API é um PDF binário, não JSON. Para manter o contrato de stdout do CLI, o comando devolve `{"content_base64", "content_type"}` — decodifique `content_base64` para obter os bytes originais. Confirmado: `content_type` é `application/pdf` e os bytes decodificados começam com `%PDF-1.5`.
 
-### `venda itens` ✅
+## `venda itens` ✅ { #venda-itens }
 
 `GET /v1/venda/{id_venda}/itens`
 
@@ -1717,19 +1538,19 @@ reclamar. Cada item traz `{id, id_item, nome, descricao, tipo, quantidade,
 valor, custo, id_centro_custo}`, onde `id` é o id da linha da venda e
 `id_item` é o uuid do produto ou serviço. Aceita `--tamanho-pagina 1000`.
 
-### `venda vendedores` ✅
+## `venda vendedores` ✅ { #venda-vendedores }
 
 `GET /v1/venda/vendedores`
 
 Sem parâmetros e sem paginação: devolve o array completo de vendedores cadastrados. Cada item traz apenas `{id, nome}` — o `id_legado` que a documentação promete **não vem na resposta**.
 
-### `venda proximo-numero` ✅
+## `venda proximo-numero` ✅ { #venda-proximo-numero }
 
 `GET /v1/venda/proximo-numero`
 
 Sem parâmetros. Retorna o próximo número de venda disponível como um inteiro solto (ou `null`), não um objeto — mesmo formato de `contrato proximo-numero`. O contador **volta atrás** quando as vendas são excluídas: passou de 7297 para 7298 assim que a venda 7297 foi criada e voltou a 7297 depois que as três vendas de teste foram removidas.
 
-### `venda excluir-lote` ✅
+## `venda excluir-lote` ✅ { #venda-excluir-lote }
 
 `POST /v1/venda/exclusao-lote` — exclui vendas em lote.
 
@@ -1751,9 +1572,9 @@ respondendo `200` com o registro completo. O que muda é `venda.status`, que
 passa a `CANCELADO` — enquanto `venda.situacao` **continua** `EM_ANDAMENTO`,
 que é o par de campos que engana. A prova confiável é o sumiço da listagem.
 
----
+==============================================================================
 
-## Orçamentos
+# Orçamentos
 
 O payload de criação segue o schema da API e é enviado sem transformação. Use `--json` com um objeto JSON.
 
@@ -1779,7 +1600,7 @@ aqui há dois graves o suficiente para virem antes das tabelas:
 > lugar certo. O CLI **não corrige** a troca: `--json` é repassado sem
 > transformação, e compensar aqui quebraria no dia em que a API consertar.
 
-### `orcamento list` ✅
+## `orcamento list` ✅ { #orcamento-list }
 
 `GET /v1/orcamentos`
 
@@ -1787,7 +1608,15 @@ aqui há dois graves o suficiente para virem antes das tabelas:
 |---|---|---|---|
 | `--pagina` | não | `1` | Número da página |
 | `--tamanho-pagina` | não | `50` | Itens por página (aceita até `1000`) |
-| filtros | não | — | `--termo-busca`, `--data-inicio`, `--data-fim`, `--data-criacao-de`, `--data-criacao-ate`, `--data-alteracao-de`, `--data-alteracao-ate`, `--campo-ordenado-ascendente`, `--campo-ordenado-descendente` (`DATA`, `NUMERO` ou `CLIENTE`) |
+| `--campo-ordenado-ascendente` | não | — | Filtro campo_ordenado_ascendente |
+| `--campo-ordenado-descendente` | não | — | Filtro campo_ordenado_descendente |
+| `--data-alteracao-ate` | não | — | Filtro data_alteracao_ate |
+| `--data-alteracao-de` | não | — | Filtro data_alteracao_de |
+| `--data-criacao-ate` | não | — | Filtro data_criacao_ate |
+| `--data-criacao-de` | não | — | Filtro data_criacao_de |
+| `--data-fim` | não | — | Filtro data_fim |
+| `--data-inicio` | não | — | Filtro data_inicio |
+| `--termo-busca` | não | — | Filtro termo_busca |
 
 Retorna `{itens[], total_itens}` — com a ressalva sobre `total_itens` acima.
 
@@ -1823,7 +1652,7 @@ fora da CLI por decisão de escopo, não por impedimento técnico.
 O enum de `situacoes` é `ORCAMENTO`, `ORCAMENTO_ACEITO` ou
 `ORCAMENTO_RECUSADO`.
 
-### `orcamento create` ✅
+## `orcamento create` ✅ { #orcamento-create }
 
 `POST /v1/orcamentos` — **escrita síncrona**, sem protocolo.
 
@@ -1862,7 +1691,7 @@ Payload mínimo que passou:
 }
 ```
 
-### `orcamento get` ✅
+## `orcamento get` ✅ { #orcamento-get }
 
 `GET /v1/orcamentos/{id}`
 
@@ -1877,7 +1706,7 @@ devolve `404` com `"Orçamento não encontrado com o ID informado"`.
 Lembre da troca de `observacoes` ↔ `observacoes_pagamento` ao ler o que você
 mesmo escreveu.
 
-### `orcamento excluir-lote` ✅
+## `orcamento excluir-lote` ✅ { #orcamento-excluir-lote }
 
 `DELETE /v1/orcamentos` — exclui orçamentos em lote.
 
@@ -1900,9 +1729,9 @@ Não existe exclusão individual: `DELETE /v1/orcamentos/{id}` responde `405`.
 E o grupo **não tem update** — `PUT /v1/orcamentos/{id}` também responde
 `405`, então os quatro comandos são a superfície completa do recurso.
 
----
+==============================================================================
 
-## Captura
+# Captura
 
 Fluxo da IA Captura: `captura enviar` sobe um arquivo e devolve o `id` do
 documento; `captura status` consulta esse `id` e, quando o processamento
@@ -1937,15 +1766,17 @@ o único cujo `id` de recurso não é uuid v4 — veja as duas notas abaixo.
 > `404 page not found` em **texto puro** do gateway, enquanto as rotas reais
 > devolvem JSON.
 
-### `captura enviar` ✅
+## `captura enviar` ✅ { #captura-enviar }
 
-`POST /v1/captura/documentos` — multipart/form-data. Responde **`201`**, não
-`200`.
+`POST /v1/captura/documentos` — multipart/form-data. Responde **`201`**, não `200`.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
 | `<arquivo>` | **sim** | Argumento posicional. Caminho de um arquivo local (PDF, JPEG, PNG ou BMP; máximo de 10 MB) |
 | `--descricao` | não | Descrição do documento (máximo de 255 caracteres) |
+
+`200`.
+
 
 O CLI valida que o arquivo existe e é legível antes de enviar. Retorna
 `{id, nome}`, onde `id` identifica o documento para `captura status`.
@@ -1962,7 +1793,7 @@ clara o bastante para não valer duplicar a regra localmente.
 > **sem exercitar**: comprová-lo exigiria mais um upload, e documento
 > enviado não tem como ser apagado (veja `captura recusar`).
 
-### `captura status` ✅
+## `captura status` ✅ { #captura-status }
 
 `GET /v1/captura/documentos/status`
 
@@ -2013,7 +1844,7 @@ Estados possíveis, do OpenAPI e confirmados no fluxo real —
 `EXTRAINDO_DADOS` → `AGUARDANDO_VINCULO_LANCAMENTO` → `PRONTO` em poucos
 segundos, e foi para `RESOLVIDO` depois do aceite.
 
-### `captura get` ✅
+## `captura get` ✅ { #captura-get }
 
 `GET /v1/captura/{id}`
 
@@ -2037,7 +1868,7 @@ documento}`, `categoria{id, nome}` e `parcelas[]` com `data_vencimento`,
 `metodo_pagamento` e `composicao_valor`. Tanto o `fornecedor.id` quanto o
 `categoria.id` apontam para registros que existem de verdade no cadastro.
 
-### `captura aceitar` ✅
+## `captura aceitar` ✅ { #captura-aceitar }
 
 `POST /v1/captura/{id}` — sem corpo. Responde `200`.
 
@@ -2064,14 +1895,16 @@ O evento criado guarda o caminho de volta: em `parcela get`, o
 `evento.referencia` vem `{id: <id_captura>, origem: "LANCAMENTO_FINANCEIRO"}`.
 É o único vínculo legível entre o financeiro e a captura que o originou.
 
-### `captura recusar` ✅
+## `captura recusar` ✅ { #captura-recusar }
 
-`DELETE /v1/captura/{id}` — sem corpo. Resposta **`204 No Content`**,
-renderizada como `[]`.
+`DELETE /v1/captura/{id}` — sem corpo. Resposta **`204 No Content`**, renderizada como `[]`.
 
 | Parâmetro | Obrig. | Descrição |
 |---|---|---|
 | `<id>` | **sim** | Argumento posicional. `id_captura` a ser recusada |
+
+renderizada como `[]`.
+
 
 > **É o único caminho de volta do grupo, e funciona.** Recusar a captura tira
 > o documento da listagem de status — comprovado: consultar os dois ids
@@ -2090,209 +1923,4 @@ Uma captura **já aceita** não pode ser recusada: `409` ("A captura não pode
 ser recusada no status atual (já foi aceita ou está em processamento)"),
 que o CLI classifica corretamente como `client_error` e sai com `1`.
 
----
-
-## Fora do escopo do CLI
-
-Todos os 83 endpoints publicados no portal já têm comando — veja a
-referência rápida no topo deste arquivo e `API_COVERAGE.md` para a lista
-completa por área (Contratos, Notas Fiscais, Vendas, Orçamentos, Captura,
-Cobranças e Baixas foram implementados além do escopo original declarado
-em `ESPECIFICACAO.md`; as duas últimas descobertas só em 2026-08-19,
-porque vivem em specs OpenAPI próprios sem link na página inicial do
-portal).
-
-Recursos que **não existem** na API v1 — não procure o comando, não há endpoint:
-
-**lançamentos**, busca por id de conta a pagar/receber, update/delete desses eventos, e criação de transferência.
-
-> Comandos para esses recursos já existiram, apontando para paths inventados, e retornavam 404. Foram removidos em vez de continuarem anunciando o que não funciona. Um comando `cobrança` também já existiu nessa situação e foi removido — não confundir com os comandos reais de hoje, `cobranca create`/`get`/`delete`, que usam o path correto (`.../contas-a-receber/gerar-cobranca` e `.../contas-a-receber/cobranca/{id}`), descoberto na sessão de 2026-08-19.
-
----
-
-## Notas para quem for estender
-
-### A API falha em silêncio mais do que falha em voz alta
-
-**A armadilha mais cara deste projeto:** as listagens respondem `200` e
-**descartam sem avisar** qualquer parâmetro de query que não reconheçam. Um
-filtro com o nome errado não devolve `400` — devolve **a coleção inteira**,
-que parece um resultado legítimo. Foi assim que `produto list --codigo`
-(mandava `codigo`, a API quer `sku`) e três dos quatro filtros de
-`servico list` passaram despercebidos por várias versões.
-
-Comprovado com um parâmetro propositalmente inexistente (`zzz_bogus=abc`),
-que se comporta exatamente como os nomes errados que o CLI mandava.
-
-### Receita para verificar uma listagem
-
-Nunca conclua que um filtro funciona porque a chamada respondeu 200.
-
-1. **Baseline.** Pegue o total sem nenhum filtro — contando `len(itens)`,
-   não o campo de total. Em `orcamento list` os dois divergem.
-2. **Controle.** Mande `zzz_bogus=abc`. Se o total não mudar, o endpoint
-   descarta em silêncio e **todo** filtro precisa ser provado um a um.
-3. **Valor discriminante.** Teste cada filtro com um valor que case com
-   **um único registro** e confirme que o total cai. Um valor que casa com
-   tudo não distingue "funciona" de "ignorado" — `status=ATIVO` devolvendo
-   o catálogo inteiro é ambíguo quando todos os registros estão ativos;
-   `status=INATIVO` devolvendo `0` é prova.
-4. **Se falhar, varra nomes** antes de concluir que o filtro não existe:
-   singular/plural, prefixos (`id_`, `filtro_`), sufixos (`_textual`,
-   `_servico`), inglês, `[]`, repetido e separado por vírgula.
-5. **Se o filtro aceita vários valores, teste com dois.** Não é só o nome
-   que pode estar errado: a *codificação* também. `captura status` manda
-   `ids`, e a vírgula que o OpenAPI declara devolve `400` — a API quer o
-   parâmetro repetido. Com **um** valor as duas formas coincidem, então o
-   defeito sobrevive a todo teste de um valor só.
-6. **Rode o comando sem argumento nenhum.** Um default que o próprio
-   endpoint recusa é invisível para qualquer teste que passe valores
-   explícitos: `nota-fiscal list` falhava `400` em 100% das chamadas sem
-   datas, e ninguém tinha notado porque quem chamava sempre passava datas.
-
-O mesmo ceticismo vale para escrita: **a API valida um campo por vez**, então
-cada `400` revela só o *próximo* campo faltante. Descobrir o payload de um
-`PUT` é iterativo — veja a tabela de `pessoa update`, montada assim.
-
-### Ver o status HTTP real
-
-O stdout não expõe o código de status, e `204` vs `200` importa (um corpo
-vazio sai como `[]`, não `{}`). Use:
-
-```sh
-./bin/ca <comando> --debug …
-tail -5 ~/.cache/conta-azul-cli/log.jsonl
-```
-
-### Armadilhas já confirmadas
-
-Vinte e cinco divergências entre a documentação e a API real, todas
-medidas exercitando. Agrupadas pelo tipo de coisa em que você vai
-esbarrar, não pelo grupo de comandos onde apareceram — a armadilha de um
-grupo costuma reaparecer em outro.
-
-#### Onde o recurso mora e como ele se chama
-
-Nada aqui se deduz: nem o path, nem o nome, nem o tipo do id.
-
-1. **O segmento `/financeiro/` só existe em parte dos recursos.** Categorias, centros de custo e contas financeiras ficam na raiz da `v1`.
-2. **A nomenclatura alterna plural e singular:** `categorias`, mas `centro-de-custo` e `conta-financeira`.
-3. **Um comando pode apontar para o endpoint errado e nunca dar sinal disso.** `parcela baixar` era um `PATCH` na parcela porque alguém concluiu que "não existe subrecurso /baixar". Existe: `POST /parcelas/{id}/baixa`. O endpoint que ele chamava é real, responde `200` e serve para outra coisa — atualizar a parcela. Confira o *propósito* do endpoint na documentação, não só se ele responde.
-4. **O mesmo registro tem dois ids, e comandos do mesmo grupo usam ids diferentes.** `servico get`/`update` querem o uuid; `servico delete` quer o `id_servico` inteiro.
-5. **Nem todo id da API é uuid v4.** Os ids da Captura são uuid **v7** (`01a01a96-61f5-7007-…`). Uma validação local de formato que exigisse v4 recusaria id legítimo.
-6. **Leitura e escrita usam nomes diferentes para o mesmo dado.** `pessoa` lê `documento` e escreve `cpf`; o SKU de um produto é `codigo` na listagem, `codigo_sku` no detalhe e `sku` na query.
-
-#### O que a API engole sem reclamar
-
-A família do descarte silencioso — todo caso em que um `200` esconde que o que você mandou foi ignorado.
-
-7. **O descarte silencioso não é só da query: vale para o corpo da escrita.** `parcela baixar` mandava `{valor, data}` num `PATCH` que não tem nenhum dos dois campos. Resposta: `200`, `versao` incrementada e **nenhum pagamento registrado**. O mesmo vale para `centro-de-custo create`, onde um `zzz_bogus` no payload produz exatamente o mesmo erro que um campo real ausente — ou seja, **não dá para provar que um campo opcional existe mandando ele junto de um payload inválido**. Só a escrita bem-sucedida seguida de leitura prova.
-8. **A codificação de um parâmetro de lista também precisa ser exercitada.** `captura status` manda `ids`, e o OpenAPI publicado declara `explode: false` (vírgula). A API responde `400` a essa forma: ela quer `ids` **repetido**. Com um item só as duas formas são idênticas — então o defeito sobrevive a qualquer teste de um id só, que é exatamente o teste que se escreve primeiro. Ao integrar um parâmetro que aceita vários valores, **teste com dois**.
-9. **A regra de `tamanho_pagina` pode não ser uma lista de valores.** Todas as listagens medidas até então recusavam qualquer coisa fora de `10, 20, 50, …`; `captura status` aceita **qualquer inteiro de 1 a 20**. Validar contra os degraus discretos errava nos dois sentidos ao mesmo tempo — deixava passar `1000` (que a API recusa) e recusava `15` (que ela aceita). Meça a *forma* do limite, não só o teto: mande `15` e veja se passa.
-10. **O default de um intervalo de datas pode ser inválido para o próprio endpoint.** `nota-fiscal list` limita a janela a 15 dias, mas o CLI mandava o mês corrente — então o comando sem argumentos falhava com `400` em 100% das vezes, e ninguém notou porque quem chamava sempre passava datas. Ao adicionar um default, exercite-o **sem argumento nenhum**.
-
-#### O que ela exige na escrita
-
-Descobrir um payload é iterativo, pelo motivo explicado na receita acima. O que esta lista acrescenta é *onde* procurar quando o nome óbvio não resolve.
-
-11. **Enums vão acentuados e capitalizados como na interface** (`Física`, `Cliente`), não em `SCREAMING_SNAKE_CASE`.
-12. **Um campo obrigatório pode estar aninhado onde você não procuraria.** O número do contrato é `termos.numero`, e a mensagem de erro ("O número do contrato é obrigatório") não diz onde. Se um nome óbvio não resolve, tente dentro de cada sub-objeto do payload antes de concluir que o nome está errado.
-13. **Zero pode ser lido como ausente.** `venda update` exige `versao` e recusa `0` com "campo obrigatório" — justamente o valor que uma venda recém-criada tem.
-14. **Nem todo campo obrigatório vira `400`.** Falta de `versao` responde **`409`** em `baixa update` e `parcela update`. E em `cobranca create` um payload incompleto responde **`500`**, que o CLI classifica como `ambiguous` e manda reconciliar — reconcilie mesmo: na verificação, nada tinha sido criado.
-
-#### O que ela devolve
-
-Formato, contador e código de status divergiram da documentação em quase todo grupo.
-
-15. **A resposta da escrita não fala a mesma língua que a da leitura.** `venda create` devolve `situacao.nome` em inglês (`IN_PROCESS`) para a venda que `venda get` mostra como `EM_ANDAMENTO`.
-16. **Dois campos podem estar simplesmente trocados.** O que `orcamento create` recebe em `observacoes` volta em `observacoes_pagamento` no `orcamento get`, e vice-versa; em `contrato create` a `observacoes` da raiz reaparece em `condicao_pagamento.observacoes_pagamento`. Escreva um valor distinto em cada campo suspeito e leia de volta: é a única forma de enxergar isso.
-17. **O total de uma listagem pode não bater com o que ela devolve.** `orcamento list` responde `total_itens: 157` junto de 158 itens, porque o contador ignora `ORCAMENTO_RECUSADO`. Em `nota-fiscal list` a divergência chega a 100%: o contador soma todos os status, mas só `EMITIDA` e `CORRIGIDA_SUCESSO` vêm em `itens` — há janelas que devolvem `itens: []` com `total_itens: 3`.
-18. **Um id inexistente nem sempre é `404`.** Em `contrato get`, `delete` e `encerrar`, um uuid válido que não existe devolve `500` — e nas escritas o CLI traduz isso para `ambiguous`, sugerindo reconciliar algo que nunca aconteceu.
-19. **`200` com corpo vazio não é a mesma coisa que `204`.** `cobranca delete` e `baixa delete` respondem `200` sem corpo. Enquanto o CLI tratava o caso vazio só para `204`, o parser estourava, a exceção escapava do `CommandExecutor` (que só pega `CliException`) e **um delete bem-sucedido imprimia a linha de uso do Symfony e saía com código `1`**. Ao integrar um delete, confirme o status *e* o corpo.
-20. **Um endpoint pode ter data de corte que a documentação não menciona.** `financeiro saldo-inicial` e `financeiro alteracoes` recusam intervalo maior que **365 dias**. Como o default do CLI é o mês corrente, nenhum teste que passa datas explícitas curtas encontra isso.
-
-#### O que fica para trás
-
-Antes de escrever qualquer coisa num grupo novo, saiba se existe caminho de volta.
-
-21. **Exclusão não quer dizer a mesma coisa em todo grupo.** `produto delete` faz o `get` passar a 404; `servico delete` é lógico e o `get` continua respondendo 200 com `status` `ATIVO`; `venda excluir-lote` também é lógico e vira `status` `CANCELADO` — mas deixa `situacao` como estava.
-22. **Uma leitura pode escrever em outro cadastro.** `captura enviar` sobe um arquivo — e, ao terminar a extração, o fornecedor identificado **já existe** no cadastro de pessoas, com `criado_em` do dia. Nenhum aceite foi dado ainda. Ao mapear o efeito colateral de um comando, não pare no recurso que ele nomeia.
-23. **Uma escrita pode não ter leitura correspondente.** `nota-fiscal vincular-mdfe` grava um vínculo que nenhum `GET` devolve, que não altera a nota e que repetir nunca acusa duplicata. Sem `GET`, sem efeito colateral observável e sem erro de duplicata, não há como provar a limpeza — só dá para provar o que **não** mudou (o SHA-256 do XML da nota, idêntico antes e depois). Quando um grupo tiver escrita sem leitura, decida antes até onde vale exercitar.
-24. **Escrever é fácil; desfazer é que pode não existir.** A API não publica `DELETE` para evento financeiro (contas a receber/pagar) nem para centro de custo — `DELETE`, `PUT` e `PATCH` nesses paths devolvem o `404` genérico de rota inexistente. Antes de criar registro de teste num grupo, **verifique se existe caminho de volta**. Para distinguir "rota não existe" de "id não existe", compare a mensagem: rota inexistente devolve `"message":"Not Found"`; rota real com id desconhecido devolve `"message":"O recurso solicitado não foi encontrado"`. Em `captura` nem essa comparação serve: lá a rota inexistente devolve `404 page not found` em **texto puro**, e as reais devolvem `{"error": "…"}` — um terceiro envelope de erro.
-25. **Idempotência varia entre operações irmãs.** Em `captura`, aceitar duas vezes devolve `200` e não cria segundo lançamento; recusar duas vezes devolve `204` das duas; mas `get` numa captura recusada devolve `404`. Três respostas diferentes para "o recurso já saiu do estado que você esperava".
-
-### Onde travar o que você descobrir
-
-| O que | Onde |
-|---|---|
-| Path e método de um endpoint | `tests/Unit/Api/*ClientTest.php` |
-| Mapeamento opção da CLI → parâmetro de query | `tests/Integration/Command/Module/*CommandModuleTest.php` |
-| Filtro removido por não existir | idem, com asserção negativa (`assertFalse(hasOption(...))`) |
-
-O segundo caso é o que pegou os bugs de 2026-08-19 e **não existia antes
-deles** — o teste de cliente passava feliz, porque o cliente repassa
-qualquer filtro que recebe. Se você mexer em `$filters` num
-`*CommandModule`, escreva o teste de mapeamento junto.
-
-### Estado da verificação
-
-| Grupo | Situação |
-|---|---|
-| Leituras financeiras | ✅ verificadas em 2026-08-15 |
-| `pessoa` | ✅ 10/10 (2026-08-19) — nenhum bug de código |
-| `produto` | ✅ 10/11 (2026-08-19) — 1 filtro errado, 2 inexistentes; falta `ecommerce-categorias` |
-| `servico` | ✅ 5/5 (2026-08-19) — 1 filtro errado, 3 inexistentes |
-| `venda` | ✅ 9/9 (2026-08-19) — nenhum bug de filtro; as armadilhas estavam na escrita |
-| `orcamento` | ✅ 4/4 (2026-08-19) — nenhum bug de filtro; `total_itens` conta errado e dois campos trocam de nome entre escrita e leitura |
-| `contrato` | ✅ 6/6 (2026-08-19) — nenhum bug de filtro; payload de criação bem maior que o documentado e `delete` é lógico, não permanente |
-| `notas fiscais` | ✅ 4/4 (2026-08-19) — default de data que o próprio endpoint recusava |
-| `financeiro` | ✅ 16/16 (2026-08-19) — o grupo com mais defeitos de código da campanha: polling que nunca acontecia, delete que reportava falha ao dar certo, e um comando apontando para o endpoint errado |
-| `captura` | ✅ 5/5 (2026-08-19) — a codificação de `ids` que o OpenAPI declara é recusada pela API, e o único limite de página que não é lista de valores |
-
-Falta um comando: `produto ecommerce-categorias`, que responde `400` sob todo
-parâmetro tentado, inclusive sem nenhum. O path está confirmado, então a
-hipótese que sobra é pré-condição de conta — não erro do CLI.
-
-**O que a campanha ensinou, em uma frase: o risco muda de lugar, não some.**
-Os quatro primeiros grupos erraram em **nome de filtro**. Os quatro do meio
-(`venda`, `orcamento`, `contrato`, `notas fiscais`) não tinham um único
-filtro errado e erraram em **payload de escrita e formato de resposta** —
-campo obrigatório não documentado, campo aninhado em lugar inesperado,
-contador que não conta, dois pares de campos que trocam de lugar. `financeiro`
-mostrou que o defeito também mora no **código do CLI**, não só nos nomes que
-ele manda. E `captura` mostrou o pior tipo: um defeito que **passa em
-qualquer teste razoável**, porque a codificação errada de `ids` é
-indistinguível da certa quando há um id só.
-
-Por isso a receita acima não é opcional, e por isso nenhum grupo saiu da
-campanha ileso. Ao verificar o próximo endpoint que aparecer, não pergunte
-"onde é provável que esteja errado" — o histórico diz que é onde você não
-está olhando.
-
-### Onde achar a documentação da API
-
-Lista autoritativa de operações:
-https://developers.contaazul.com/docs/financial-apis-openapi/v1 — o portal
-bloqueia `curl` e fetch automatizado (403), então abra no navegador. Só três
-specs aparecem linkadas em `/aboutapis` (financial, sales, contracts);
-produtos, serviços e pessoas **não têm spec pública encontrável** e só se
-descobrem exercitando.
-
-Para uma página de operação, o caminho é
-`/docs/{slug}/v1` → link da operação → `…/v1/{operationId}`, que traz o
-schema completo e um `curl` de exemplo.
-
-O caminho `/_bundle/open-api-docs/{slug}.json` **voltou a funcionar** — pelo
-menos para `developer-platform-open-api-capture`, cuja spec inteira saiu por
-ele em 2026-08-19, com os schemas que a página renderizada só mostra clicando
-em "Show N properties". O truque é buscá-lo **de dentro da página**, com
-`fetch()` no console do navegador: como curl leva 403, a requisição precisa
-sair da origem já autenticada. A spec da Captura não é linkada em
-`/aboutapis`; a URL renderizada dela é
-`/open-api-docs/developer-platform-open-api-capture/v1`.
-
-E vale o aviso de sempre: **essa spec estava errada**. Ela declara `ids` com
-`explode: false`, forma que a própria API recusa com `400`. Ter a spec em
-JSON acelera a descoberta; não substitui exercitar.
-
-Ver também: [`README.md`](README.md) para instalação, configuração e OAuth; [`docs/financial-apis-openapi.yaml`](docs/financial-apis-openapi.yaml) para o inventário de endpoints usado na detecção de drift.
+==============================================================================

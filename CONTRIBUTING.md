@@ -40,12 +40,37 @@ Regra fixa (ver [README](README.md#idioma)):
 ## Mudando a integração com a API
 
 Se a mudança adiciona, remove ou altera um endpoint consumido pelo CLI,
-atualize [`API_COVERAGE.md`](API_COVERAGE.md) **no mesmo commit**. Esse
-arquivo é o livro-razão de cobertura da API — se ele divergir do código,
-deixa de servir ao propósito.
+atualize [`docs/desenvolvimento/cobertura-da-api.md`](docs/desenvolvimento/cobertura-da-api.md)
+**no mesmo commit**. Esse arquivo é o livro-razão de cobertura da API — se ele
+divergir do código, deixa de servir ao propósito.
 
-Da mesma forma, ao adicionar ou alterar um comando, atualize
-[`COMMANDS.md`](COMMANDS.md), a referência canônica de todos os comandos.
+### A referência de comandos é gerada
+
+`docs/referencia/` **não se edita à mão.** A metade mecânica da referência —
+nomes, argumentos, opções, defaults — é lida de volta do próprio CLI, e a
+metade que nenhuma introspecção conhece — o endpoint que cada comando chama, a
+marca de verificação e as armadilhas descobertas exercitando — mora em
+`docs/_data/commands/<grupo>.yaml`.
+
+Ao adicionar ou alterar um comando:
+
+```bash
+composer docs:generate    # regenera referência, commands.json e llms*.txt
+composer docs:check       # falha se o que está commitado está desatualizado
+```
+
+`docs:check` roda no CI e falha quando uma nota cita um comando ou parâmetro
+que o CLI não tem mais, quando um comando existente não está documentado em
+fragmento nenhum, ou quando um grupo novo não aparece no `nav` do
+`mkdocs.yml`. Ou seja: a referência não pode divergir do código sem quebrar o
+build.
+
+Para ver o site localmente:
+
+```bash
+pip install -r docs/requirements.txt
+mkdocs serve
+```
 
 ### Nunca confie na documentação da API sem exercitar
 
@@ -55,9 +80,9 @@ falha: devolve a coleção inteira, que parece resultado legítimo. Foi assim
 que `produto list --codigo` e três dos quatro filtros de `servico list`
 ficaram quebrados sem ninguém notar.
 
-Antes de marcar um endpoint como verificado em `COMMANDS.md`, siga a receita
-em [Notas para quem for
-estender](COMMANDS.md#notas-para-quem-for-estender): baseline, parâmetro de
+Antes de marcar um endpoint como verificado (`status: verified` no fragmento
+do grupo), siga a receita em [Notas para quem for
+estender](docs/guia/estendendo.md): baseline, parâmetro de
 controle inexistente, um valor discriminante por filtro, varredura de nomes
 alternativos, **dois valores** em todo filtro que aceita vários (a
 codificação erra tanto quanto o nome) e uma execução **sem argumento nenhum**

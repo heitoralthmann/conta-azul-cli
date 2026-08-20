@@ -1,0 +1,162 @@
+title: Produtos
+intro: |
+  Os payloads de criação e atualização seguem o schema da API e são enviados sem transformação. Use `--json` com um objeto JSON.
+
+  > **`GET /v1/produtos` ignora em silêncio todo parâmetro que não reconhece.**
+  > Um filtro com o nome errado não vira 400: vira `200` com o catálogo
+  > inteiro, como se tudo casasse. Por isso os filtros abaixo são só os que
+  > foram confirmados contra a produção — `--ids` e `--categoria-id`
+  > existiram até 2026-08-19 e foram removidos por não filtrarem nada.
+sections:
+  -
+    commands:
+      - 'produto list'
+    status: verified
+    endpoints:
+      'produto list': 'GET /v1/produtos'
+    params:
+      pagina:
+        label: '`--pagina`'
+        required: não
+        default: '`1`'
+        description: 'Número da página'
+      tamanho-pagina:
+        label: '`--tamanho-pagina`'
+        required: não
+        default: '`50`'
+        description: 'Itens por página'
+      busca:
+        label: '`--busca`'
+        required: não
+        default: —
+        description: 'Busca textual por nome'
+      codigo:
+        label: '`--codigo`'
+        required: não
+        default: —
+        description: 'Filtra pelo SKU; vai para a API como `sku`'
+      status:
+        label: '`--status`'
+        required: não
+        default: —
+        description: '`ATIVO` ou `INATIVO`'
+    body: |
+      Retorna `{totalItems, items[]}` — camelCase, como `pessoa list`. Cada item
+      traz `id`, `id_legado`, `nome`, `codigo`, `tipo`, `status`, `saldo`,
+      `valor_venda`, `custo_medio`, `estoque_minimo`/`maximo`,
+      `integracao_ecommerce_ativada`, `ean` e `produtos_variacao[]`.
+
+      > O SKU aparece como `codigo` em `produto list` e como `codigo_sku` em
+      > `produto get` — três nomes para o mesmo dado, contando o `sku` da query.
+  -
+    commands:
+      - 'produto create'
+    status: verified
+    endpoints:
+      'produto create': 'POST /v1/produtos'
+    params:
+      json:
+        label: '`--json`'
+        required: '**sim**'
+        description: 'Objeto JSON do produto'
+    body: |
+      **Só `nome` é obrigatório** — `{"nome":"…"}` basta. A API preenche o resto:
+      gera um `codigo_sku` derivado do nome, atribui a categoria `Outras`,
+      `status: ATIVO`, `formato: SIMPLES` e `versao: 0`. Retorna o produto
+      completo, já com `id` e `id_legado`.
+  -
+    commands:
+      - 'produto get'
+      - 'produto delete'
+    status: verified
+    endpoints:
+      'produto get': 'GET /v1/produtos/{id}'
+      'produto delete': 'DELETE /v1/produtos/{id}'
+    params:
+      id:
+        label: '`<id>`'
+        required: '**sim**'
+        description: 'ID do produto'
+    body: |
+      `produto get` devolve o cadastro completo, com os blocos aninhados
+      `categoria`, `estoque`, `fiscal` (`ncm`, `cest`, `unidade_medida`),
+      `ecommerce`, `variacao[]` e `detalhe_kit[]`.
+
+      `produto delete` responde **204 No Content** (renderizado como `[]`) e a
+      exclusão é permanente: `produto get` passa a devolver 404.
+  -
+    commands:
+      - 'produto update'
+    status: verified
+    endpoints:
+      'produto update': 'PATCH /v1/produtos/{id}'
+    endpoint_note: 'atualiza apenas os campos enviados.'
+    params:
+      id:
+        label: '`<id>`'
+        required: '**sim**'
+        description: 'ID do produto'
+      json:
+        label: '`--json`'
+        required: '**sim**'
+        description: 'Objeto JSON da atualização'
+    body: |
+      Responde **204 No Content** (renderizado como `[]`) — confirme o resultado
+      com `produto get`. Cada atualização bem-sucedida **incrementa `versao`**,
+      mas, diferente de `baixa update`, a API não exige que você envie a versão
+      atual: não há controle de concorrência otimista aqui.
+  -
+    title: 'Catálogos de produtos'
+    commands:
+      - 'produto categorias'
+      - 'produto cest'
+      - 'produto ncm'
+      - 'produto unidades-medida'
+      - 'produto ecommerce-marcas'
+    status: verified
+    endpoints:
+      'produto categorias': 'GET /v1/produtos/categorias'
+      'produto cest': 'GET /v1/produtos/cest'
+      'produto ncm': 'GET /v1/produtos/ncm'
+      'produto unidades-medida': 'GET /v1/produtos/unidades-medida'
+      'produto ecommerce-marcas': 'GET /v1/produtos/ecommerce-marcas'
+    body: |
+      Os comandos `produto categorias`, `produto cest`, `produto ncm`,
+      `produto unidades-medida` e `produto ecommerce-marcas` consultam,
+      respectivamente, `GET /v1/produtos/categorias`, `/cest`, `/ncm`,
+      `/unidades-medida` e `/ecommerce-marcas`.
+
+      Todos aceitam `--pagina`, `--tamanho-pagina` e `--busca`; CEST, NCM e
+      unidades de medida também aceitam `--codigo`.
+
+      Diferente de `produto list`, os catálogos respondem `{total_items, items[]}`
+      — **snake_case**. As duas listagens do mesmo recurso não usam a mesma
+      convenção de nome.
+
+      | Comando | Formato de item |
+      |---|---|
+      | `produto categorias` | `{id, uuid, descricao}` |
+      | `produto cest` | `{id, codigo, descricao}` |
+      | `produto ncm` | `{id, codigo, descricao}` |
+      | `produto unidades-medida` | `{id, descricao, abreviacao, em_uso}` |
+      | `produto ecommerce-marcas` | `{}` — a conta de teste não tem marcas cadastradas |
+  -
+    commands:
+      - 'produto ecommerce-categorias'
+    status: unverified
+    endpoints:
+      'produto ecommerce-categorias': 'GET /v1/produtos/ecommerce-categorias'
+    body: |
+      Aceita `--pagina`, `--tamanho-pagina` e `--busca`.
+
+      > **Único comando do grupo que não foi possível verificar.** Em 2026-08-19
+      > ele respondeu `400` com
+      > `{"error":"Os filtros informados para busca de categoria de e-commerce são inválidos"}`
+      > em **todas** as tentativas — inclusive sem nenhum parâmetro, o que
+      > descarta a hipótese de filtro malformado. O path está certo: caminhos
+      > vizinhos inventados (`/ecommerce-categoria`, `/categorias-ecommerce`)
+      > caem na rota `/v1/produtos/{id}` e falham reclamando de uuid, enquanto
+      > este cai num handler de e-commerce de verdade. O irmão
+      > `produto ecommerce-marcas` responde `200` com lista vazia na mesma conta.
+      > A hipótese que sobra é uma pré-condição de conta (integração de
+      > e-commerce não configurada) que a API reporta como erro de filtro.

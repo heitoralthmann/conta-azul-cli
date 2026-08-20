@@ -1,0 +1,42 @@
+title: 'Centros de custo'
+sections:
+  -
+    commands:
+      - 'centro-de-custo list'
+    status: verified
+    endpoints:
+      'centro-de-custo list': 'GET /v1/centro-de-custo'
+    endpoint_note: 'note o **singular** no path.'
+    params:
+      pagina:
+        label: '`--pagina`'
+        required: não
+        default: '`1`'
+        description: 'Número da página'
+      tamanho-pagina:
+        label: '`--tamanho-pagina`'
+        required: não
+        default: '`50`'
+        description: 'Itens por página'
+    body: |
+      Cada item traz `id`, `codigo`, `nome`, `ativo`.
+  -
+    commands:
+      - 'centro-de-custo create'
+    status: verified
+    endpoints:
+      'centro-de-custo create': 'POST /v1/centro-de-custo'
+    endpoint_note: '**escrita síncrona** (`200`), sem protocolo.'
+    params:
+      json:
+        label: '`--json`'
+        required: '**sim**'
+        description: 'Payload JSON do centro de custo (`nome` obrigatório; `codigo` opcional)'
+    body: |
+      Retorna `{id, codigo, nome, ativo}`. `codigo` omitido volta `null` — os
+      registros criados pela interface trazem `""`, não `null`.
+
+      > **Não existe como desfazer.** A API publica só `GET` e `POST` para este
+      > recurso: `DELETE`, `PUT` e `PATCH` em `/v1/centro-de-custo/{id}` respondem
+      > o `404` genérico de rota inexistente. Centro de custo criado por engano só
+      > sai pela interface web.

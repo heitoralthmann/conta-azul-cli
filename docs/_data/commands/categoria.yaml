@@ -1,0 +1,43 @@
+title: Categorias
+sections:
+  -
+    commands:
+      - 'categoria list'
+    status: verified
+    endpoints:
+      'categoria list': 'GET /v1/categorias'
+    params:
+      pagina:
+        label: '`--pagina`'
+        required: não
+        default: '`1`'
+        description: 'Número da página'
+      tamanho-pagina:
+        label: '`--tamanho-pagina`'
+        required: não
+        default: '`50`'
+        description: 'Itens por página'
+    body: |
+      Retorna `{itens_totais, itens[]}`. Cada item traz `id`, `nome`, `tipo` (`RECEITA`/`DESPESA`), `categoria_pai` e `entrada_dre`.
+  -
+    commands:
+      - 'categoria configuracao-padrao'
+    status: verified
+    endpoints:
+      'categoria configuracao-padrao': 'GET /v1/categorias/configuracao-padrao'
+    params:
+      sugestao-padrao:
+        label: '`--sugestao-padrao` / `--no-sugestao-padrao`'
+        required: não
+        default: '`--sugestao-padrao`'
+        description: 'Inclui (ou omite) a sugestão padrão de categoria em cada item'
+    body: |
+      Retorna uma lista de de-para entre operação financeira (`tipo_operacao`, ex: `FRETES_RECEBIDOS`, `JUROS_PAGOS`) e a categoria configurada para ela (`id_categoria`, `nome_categoria`). Com `--no-sugestao-padrao`, o campo `sugestao_padrao` de cada item vem `null`.
+  -
+    commands:
+      - 'categoria dre'
+    status: verified
+    endpoints:
+      'categoria dre': 'GET /v1/financeiro/categorias-dre'
+    body: |
+      Sem parâmetros. Retorna `{itens[]}` com a estrutura hierárquica da DRE (Demonstração do Resultado do Exercício): cada item traz `descricao`, `codigo`, `subitens[]` e `categorias_financeiras[]` associadas.

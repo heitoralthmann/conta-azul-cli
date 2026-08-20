@@ -1,0 +1,2206 @@
+{
+    "cli": "ca",
+    "commands": [
+        {
+            "arguments": [],
+            "description": "Autentica com a Conta Azul via OAuth2 (abre navegador)",
+            "endpoint": null,
+            "group": "auth",
+            "name": "auth login",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Remove as credenciais salvas localmente",
+            "endpoint": null,
+            "group": "auth",
+            "name": "auth logout",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid da parcela",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Registra uma baixa (quitação) para uma parcela",
+            "endpoint": "POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa",
+            "group": "baixa",
+            "name": "baixa create",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON da baixa (data_pagamento, conta_financeira e composicao_valor obrigatórios)",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid da baixa",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Exclui uma baixa, impactando o saldo e o histórico financeiro da parcela",
+            "endpoint": "DELETE /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}",
+            "group": "baixa",
+            "name": "baixa delete",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid da baixa",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Busca uma baixa por ID",
+            "endpoint": "GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}",
+            "group": "baixa",
+            "name": "baixa get",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid da parcela",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Lista as baixas de uma parcela",
+            "endpoint": "GET /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa",
+            "group": "baixa",
+            "name": "baixa list",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid da baixa",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Atualiza parcialmente uma baixa",
+            "endpoint": "PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}",
+            "group": "baixa",
+            "name": "baixa update",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON da baixa (campo \"versao\" com a versão atual é obrigatório)",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Id da captura a ser aceita",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Aceita a prévia do evento financeiro sugerida pela captura",
+            "endpoint": "POST /v1/captura/{id}",
+            "group": "captura",
+            "name": "captura aceitar",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Caminho do arquivo local (PDF, JPEG, PNG ou BMP; máximo de 10 MB)",
+                    "name": "arquivo",
+                    "required": true
+                }
+            ],
+            "description": "Envia um documento para a captura e extração de dados",
+            "endpoint": "POST /v1/captura/documentos",
+            "group": "captura",
+            "name": "captura enviar",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Descrição opcional do documento (máximo de 255 caracteres)",
+                    "multiple": false,
+                    "name": "--descricao",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Id da captura (id_captura, obtido em \"captura status\")",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Consulta os dados extraídos da captura de um documento enviado",
+            "endpoint": "GET /v1/captura/{id}",
+            "group": "captura",
+            "name": "captura get",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Id da captura a ser recusada",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Recusa a prévia do evento financeiro sugerida pela captura",
+            "endpoint": "DELETE /v1/captura/{id}",
+            "group": "captura",
+            "name": "captura recusar",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Consulta o status de documentos e das extrações (Captura)",
+            "endpoint": "GET /v1/captura/documentos/status",
+            "group": "captura",
+            "name": "captura status",
+            "options": [
+                {
+                    "default": null,
+                    "description": "IDs dos documentos a consultar, separados por vírgula (máximo 20)",
+                    "multiple": false,
+                    "name": "--ids",
+                    "takes_value": true
+                },
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 10,
+                    "description": "Itens por página (1 a 20)",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Obtém o de-para padrão de categorias por operação financeira",
+            "endpoint": "GET /v1/categorias/configuracao-padrao",
+            "group": "categoria",
+            "name": "categoria configuracao-padrao",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Inclui a sugestão padrão de categoria em cada item",
+                    "multiple": false,
+                    "name": "--sugestao-padrao",
+                    "takes_value": false
+                },
+                {
+                    "default": null,
+                    "description": "Negate the \"--sugestao-padrao\" option",
+                    "multiple": false,
+                    "name": "--no-sugestao-padrao",
+                    "takes_value": false
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista categorias DRE",
+            "endpoint": "GET /v1/financeiro/categorias-dre",
+            "group": "categoria",
+            "name": "categoria dre",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista categorias financeiras",
+            "endpoint": "GET /v1/categorias",
+            "group": "categoria",
+            "name": "categoria list",
+            "options": [
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 50,
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Cria um centro de custo",
+            "endpoint": "POST /v1/centro-de-custo",
+            "group": "centro-de-custo",
+            "name": "centro-de-custo create",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON do centro de custo (nome obrigatório; codigo opcional)",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista centros de custo",
+            "endpoint": "GET /v1/centro-de-custo",
+            "group": "centro-de-custo",
+            "name": "centro-de-custo list",
+            "options": [
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 50,
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Gera uma cobrança (boleto, PIX ou link de pagamento) para uma parcela",
+            "endpoint": "POST /v1/financeiro/eventos-financeiros/contas-a-receber/gerar-cobranca",
+            "group": "cobranca",
+            "name": "cobranca create",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON da cobrança (conta_bancaria, descricao_fatura, id_parcela, data_vencimento e tipo obrigatórios)",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid da cobrança",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Cancela uma cobrança gerada incorretamente ou a invalidar antes do pagamento",
+            "endpoint": "DELETE /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}",
+            "group": "cobranca",
+            "name": "cobranca delete",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid da cobrança",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Busca uma cobrança por ID",
+            "endpoint": "GET /v1/financeiro/eventos-financeiros/contas-a-receber/cobranca/{id}",
+            "group": "cobranca",
+            "name": "cobranca get",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Cria uma conta a pagar",
+            "endpoint": "POST /v1/financeiro/eventos-financeiros/contas-a-pagar",
+            "group": "conta-a-pagar",
+            "name": "conta-a-pagar create",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON da conta a pagar",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                },
+                {
+                    "default": 60,
+                    "description": "Timeout de polling em segundos",
+                    "multiple": false,
+                    "name": "--poll-timeout",
+                    "takes_value": true
+                },
+                {
+                    "default": false,
+                    "description": "Retorna imediatamente sem aguardar confirmação assíncrona",
+                    "multiple": false,
+                    "name": "--no-wait",
+                    "takes_value": false
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista contas a pagar por intervalo de vencimento",
+            "endpoint": "GET /v1/financeiro/eventos-financeiros/contas-a-pagar/buscar",
+            "group": "conta-a-pagar",
+            "name": "conta-a-pagar list",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Vencimento inicial (YYYY-MM-DD). Padrão: primeiro dia do mês corrente",
+                    "multiple": false,
+                    "name": "--data-vencimento-de",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Vencimento final (YYYY-MM-DD). Padrão: último dia do mês corrente",
+                    "multiple": false,
+                    "name": "--data-vencimento-ate",
+                    "takes_value": true
+                },
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 50,
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Cria uma conta a receber",
+            "endpoint": "POST /v1/financeiro/eventos-financeiros/contas-a-receber",
+            "group": "conta-a-receber",
+            "name": "conta-a-receber create",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON da conta a receber",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                },
+                {
+                    "default": 60,
+                    "description": "Timeout de polling em segundos",
+                    "multiple": false,
+                    "name": "--poll-timeout",
+                    "takes_value": true
+                },
+                {
+                    "default": false,
+                    "description": "Retorna imediatamente sem aguardar confirmação assíncrona",
+                    "multiple": false,
+                    "name": "--no-wait",
+                    "takes_value": false
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista contas a receber por intervalo de vencimento",
+            "endpoint": "GET /v1/financeiro/eventos-financeiros/contas-a-receber/buscar",
+            "group": "conta-a-receber",
+            "name": "conta-a-receber list",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Vencimento inicial (YYYY-MM-DD). Padrão: primeiro dia do mês corrente",
+                    "multiple": false,
+                    "name": "--data-vencimento-de",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Vencimento final (YYYY-MM-DD). Padrão: último dia do mês corrente",
+                    "multiple": false,
+                    "name": "--data-vencimento-ate",
+                    "takes_value": true
+                },
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 50,
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista contas financeiras (bancos, caixas)",
+            "endpoint": "GET /v1/conta-financeira",
+            "group": "conta-financeira",
+            "name": "conta-financeira list",
+            "options": [
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 50,
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Obtém o saldo de uma conta financeira",
+            "endpoint": "GET /v1/conta-financeira/{id}/saldo-atual",
+            "group": "conta-financeira",
+            "name": "conta-financeira saldo",
+            "options": [
+                {
+                    "default": null,
+                    "description": "ID da conta financeira",
+                    "multiple": false,
+                    "name": "--id",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Cria um contrato",
+            "endpoint": "POST /v1/contratos",
+            "group": "contrato",
+            "name": "contrato create",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON do contrato",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid do contrato",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Remove um contrato permanentemente, cancelando as vendas associadas",
+            "endpoint": "DELETE /v1/contratos/{id}",
+            "group": "contrato",
+            "name": "contrato delete",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid do contrato",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Encerra um contrato ativo; ele deixa de gerar novas cobranças",
+            "endpoint": "POST /v1/contratos/{id}/encerrar",
+            "group": "contrato",
+            "name": "contrato encerrar",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid do contrato",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Busca um contrato por ID",
+            "endpoint": "GET /v1/contratos/{id}",
+            "group": "contrato",
+            "name": "contrato get",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista contratos por filtros e intervalo de datas",
+            "endpoint": "GET /v1/contratos",
+            "group": "contrato",
+            "name": "contrato list",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Início do intervalo (YYYY-MM-DD). Padrão: primeiro dia do mês corrente",
+                    "multiple": false,
+                    "name": "--data-inicio",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Fim do intervalo (YYYY-MM-DD). Padrão: último dia do mês corrente",
+                    "multiple": false,
+                    "name": "--data-fim",
+                    "takes_value": true
+                },
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 10,
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Busca textual pelo nome do contrato",
+                    "multiple": false,
+                    "name": "--busca-textual",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtra pelo ID do cliente",
+                    "multiple": false,
+                    "name": "--cliente-id",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Campo para ordenação ascendente (DATA_INICIO, DATA_FIM)",
+                    "multiple": false,
+                    "name": "--campo-ordenado-ascendente",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Campo para ordenação descendente (DATA_INICIO, DATA_FIM); ignorado se a ascendente vier junto",
+                    "multiple": false,
+                    "name": "--campo-ordenado-descendente",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Consulta o próximo número de contrato disponível",
+            "endpoint": "GET /v1/contratos/proximo-numero",
+            "group": "contrato",
+            "name": "contrato proximo-numero",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista alterações de eventos financeiros num intervalo (útil para reconciliação)",
+            "endpoint": "ISO 8601 **sem timezone**",
+            "group": "financeiro",
+            "name": "financeiro alteracoes",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Início em ISO 8601 sem timezone (ex: 2026-08-01T00:00:00). Padrão: início do mês corrente",
+                    "multiple": false,
+                    "name": "--data-inicio",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Fim em ISO 8601 sem timezone (ex: 2026-08-31T23:59:59). Padrão: fim do mês corrente",
+                    "multiple": false,
+                    "name": "--data-fim",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista os saldos iniciais das contas financeiras num intervalo",
+            "endpoint": "GET /v1/financeiro/eventos-financeiros/saldo-inicial",
+            "group": "financeiro",
+            "name": "financeiro saldo-inicial",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Início em ISO 8601 sem timezone (ex: 2026-08-01T00:00:00). Padrão: início do mês corrente",
+                    "multiple": false,
+                    "name": "--data-inicio",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Fim em ISO 8601 sem timezone (ex: 2026-08-31T23:59:59). Padrão: fim do mês corrente",
+                    "multiple": false,
+                    "name": "--data-fim",
+                    "takes_value": true
+                },
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 50,
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Chave de acesso da nota fiscal",
+                    "name": "chave",
+                    "required": true
+                }
+            ],
+            "description": "Busca uma nota fiscal de produto (NFe) pela chave de acesso",
+            "endpoint": "GET /v1/notas-fiscais/{chave}",
+            "group": "nota-fiscal",
+            "name": "nota-fiscal get",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista notas fiscais de produto (NFe) por filtros",
+            "endpoint": "GET /v1/notas-fiscais",
+            "group": "nota-fiscal",
+            "name": "nota-fiscal list",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Início do intervalo (YYYY-MM-DD). Padrão: 15 dias atrás. Intervalo máximo aceito pela API: 15 dias",
+                    "multiple": false,
+                    "name": "--data-inicial",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Fim do intervalo (YYYY-MM-DD). Padrão: hoje",
+                    "multiple": false,
+                    "name": "--data-final",
+                    "takes_value": true
+                },
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 10,
+                    "description": "Itens por página (10, 20, 50 ou 100)",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtra pelo documento (CPF/CNPJ) do tomador",
+                    "multiple": false,
+                    "name": "--documento-tomador",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtra pelo número da nota fiscal",
+                    "multiple": false,
+                    "name": "--numero-nota",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtra pelo ID da venda",
+                    "multiple": false,
+                    "name": "--id-venda",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Vincula uma ou mais notas fiscais a um MDF-e",
+            "endpoint": "POST /v1/notas-fiscais/vinculo-mdfe",
+            "group": "nota-fiscal",
+            "name": "nota-fiscal vincular-mdfe",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON do vínculo (chaves_acesso, identificador, status)",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista notas fiscais de serviço (NFS-e) por filtros",
+            "endpoint": "GET /v1/notas-fiscais-servico",
+            "group": "nota-fiscal",
+            "name": "nota-fiscal-servico list",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Emissão inicial (YYYY-MM-DD). Padrão: 15 dias atrás. Intervalo máximo aceito pela API: 15 dias",
+                    "multiple": false,
+                    "name": "--data-competencia-de",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Emissão final (YYYY-MM-DD). Padrão: hoje",
+                    "multiple": false,
+                    "name": "--data-competencia-ate",
+                    "takes_value": true
+                },
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 10,
+                    "description": "Itens por página (10, 20, 50 ou 100)",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": [],
+                    "description": "Filtra por UUID(s) da nota fiscal de serviço (repetível)",
+                    "multiple": true,
+                    "name": "--ids",
+                    "takes_value": true
+                },
+                {
+                    "default": [],
+                    "description": "Filtra por UUID(s) de cliente (repetível)",
+                    "multiple": true,
+                    "name": "--id-cliente",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtra pelo número da venda",
+                    "multiple": false,
+                    "name": "--numero-venda",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Número inicial da NFS-e",
+                    "multiple": false,
+                    "name": "--numero-nfse-inicial",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Número final da NFS-e",
+                    "multiple": false,
+                    "name": "--numero-nfse-final",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Número inicial do RPS",
+                    "multiple": false,
+                    "name": "--numero-rps-inicial",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Número final do RPS",
+                    "multiple": false,
+                    "name": "--numero-rps-final",
+                    "takes_value": true
+                },
+                {
+                    "default": [],
+                    "description": "Filtra por status (repetível): PENDENTE, EMITIDA, CANCELADA, etc.",
+                    "multiple": true,
+                    "name": "--status",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtra por tipo de negociação: VENDA ou CONTRATO",
+                    "multiple": false,
+                    "name": "--tipo-negociacao",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Cria um orçamento",
+            "endpoint": "POST /v1/orcamentos",
+            "group": "orcamento",
+            "name": "orcamento create",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON do orçamento",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Exclui orçamentos em lote (até 10 uuids por chamada)",
+            "endpoint": "DELETE /v1/orcamentos",
+            "group": "orcamento",
+            "name": "orcamento excluir-lote",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON com os IDs dos orçamentos (campo \"ids\")",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid do orçamento",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Busca um orçamento por ID",
+            "endpoint": "GET /v1/orcamentos/{id}",
+            "group": "orcamento",
+            "name": "orcamento get",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista orçamentos por filtros",
+            "endpoint": "GET /v1/orcamentos",
+            "group": "orcamento",
+            "name": "orcamento list",
+            "options": [
+                {
+                    "default": "1",
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": "50",
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro campo_ordenado_ascendente",
+                    "multiple": false,
+                    "name": "--campo-ordenado-ascendente",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro campo_ordenado_descendente",
+                    "multiple": false,
+                    "name": "--campo-ordenado-descendente",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro data_alteracao_ate",
+                    "multiple": false,
+                    "name": "--data-alteracao-ate",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro data_alteracao_de",
+                    "multiple": false,
+                    "name": "--data-alteracao-de",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro data_criacao_ate",
+                    "multiple": false,
+                    "name": "--data-criacao-ate",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro data_criacao_de",
+                    "multiple": false,
+                    "name": "--data-criacao-de",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro data_fim",
+                    "multiple": false,
+                    "name": "--data-fim",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro data_inicio",
+                    "multiple": false,
+                    "name": "--data-inicio",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro termo_busca",
+                    "multiple": false,
+                    "name": "--termo-busca",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "ID da parcela",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Registra a baixa (pagamento) de uma parcela",
+            "endpoint": "POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa",
+            "group": "parcela",
+            "name": "parcela baixar",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Valor da baixa (ex: 100.50)",
+                    "multiple": false,
+                    "name": "--valor",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Data da baixa no formato YYYY-MM-DD",
+                    "multiple": false,
+                    "name": "--data",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Uuid da conta financeira que recebe a baixa",
+                    "multiple": false,
+                    "name": "--conta-financeira",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "ID da parcela",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Obtém uma parcela pelo ID",
+            "endpoint": "GET /v1/financeiro/eventos-financeiros/parcelas/{id}",
+            "group": "parcela",
+            "name": "parcela get",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "ID do evento financeiro",
+                    "name": "id-evento",
+                    "required": true
+                }
+            ],
+            "description": "Lista as parcelas de um evento financeiro",
+            "endpoint": "GET /v1/financeiro/eventos-financeiros/{id_evento}/parcelas",
+            "group": "parcela",
+            "name": "parcela list",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid da parcela",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Atualiza parcialmente uma parcela (não dá baixa; para quitar use \"parcela baixar\")",
+            "endpoint": "PATCH /v1/financeiro/eventos-financeiros/parcelas/{id}",
+            "group": "parcela",
+            "name": "parcela update",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON da parcela (campo \"versao\" com a versão atual é obrigatório)",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Ativa pessoas em lote",
+            "endpoint": "POST /v1/pessoas/ativar",
+            "group": "pessoa",
+            "name": "pessoa ativar",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON com a lista de uuids",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Busca a empresa da conta conectada",
+            "endpoint": "GET /v1/pessoas/conta-conectada",
+            "group": "pessoa",
+            "name": "pessoa conta-conectada",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Cria uma pessoa",
+            "endpoint": "POST /v1/pessoas",
+            "group": "pessoa",
+            "name": "pessoa create",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON da pessoa",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Exclui pessoas em lote",
+            "endpoint": "POST /v1/pessoas/excluir",
+            "group": "pessoa",
+            "name": "pessoa excluir",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON com a lista de uuids",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "ID da pessoa",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Busca uma pessoa por ID",
+            "endpoint": "GET /v1/pessoas/{id}",
+            "group": "pessoa",
+            "name": "pessoa get",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Inativa pessoas em lote",
+            "endpoint": "POST /v1/pessoas/inativar",
+            "group": "pessoa",
+            "name": "pessoa inativar",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON com a lista de uuids",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "ID legado da pessoa",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Busca uma pessoa por ID legado",
+            "endpoint": "GET /v1/pessoas/legado/{id}",
+            "group": "pessoa",
+            "name": "pessoa legado",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista pessoas por filtros",
+            "endpoint": "GET /v1/pessoas",
+            "group": "pessoa",
+            "name": "pessoa list",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Campo de ordenação",
+                    "multiple": false,
+                    "name": "--tipo-ordenacao",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Direção da ordenação",
+                    "multiple": false,
+                    "name": "--ordem-ordenacao",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Busca por nome ou documento",
+                    "multiple": false,
+                    "name": "--busca",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "IDs das pessoas",
+                    "multiple": false,
+                    "name": "--ids",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Documentos das pessoas",
+                    "multiple": false,
+                    "name": "--documentos",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Países das pessoas",
+                    "multiple": false,
+                    "name": "--paises",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Cidades das pessoas",
+                    "multiple": false,
+                    "name": "--cidades",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "UFs das pessoas",
+                    "multiple": false,
+                    "name": "--ufs",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Códigos das pessoas",
+                    "multiple": false,
+                    "name": "--codigos-pessoa",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Emails das pessoas",
+                    "multiple": false,
+                    "name": "--emails",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Tipos de pessoa",
+                    "multiple": false,
+                    "name": "--tipos-pessoa",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Nomes das pessoas",
+                    "multiple": false,
+                    "name": "--nomes",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Telefones das pessoas",
+                    "multiple": false,
+                    "name": "--telefones",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Data inicial de criação",
+                    "multiple": false,
+                    "name": "--data-criacao-inicio",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Data final de criação",
+                    "multiple": false,
+                    "name": "--data-criacao-fim",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Data inicial de alteração",
+                    "multiple": false,
+                    "name": "--data-alteracao-de",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Data final de alteração",
+                    "multiple": false,
+                    "name": "--data-alteracao-ate",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Perfil da pessoa",
+                    "multiple": false,
+                    "name": "--tipo-perfil",
+                    "takes_value": true
+                },
+                {
+                    "default": false,
+                    "description": "Retorna apenas pessoas com endereço",
+                    "multiple": false,
+                    "name": "--com-endereco",
+                    "takes_value": false
+                },
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 50,
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "ID da pessoa",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Atualiza parcialmente uma pessoa",
+            "endpoint": "PATCH /v1/pessoas/{id}",
+            "group": "pessoa",
+            "name": "pessoa patch",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON da pessoa",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "ID da pessoa",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Atualiza integralmente uma pessoa",
+            "endpoint": "PUT /v1/pessoas/{id}",
+            "group": "pessoa",
+            "name": "pessoa update",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON da pessoa",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista categorias de produtos",
+            "endpoint": "GET /v1/produtos/categorias",
+            "group": "produto",
+            "name": "produto categorias",
+            "options": [
+                {
+                    "default": "1",
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": "50",
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro busca",
+                    "multiple": false,
+                    "name": "--busca",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista códigos CEST",
+            "endpoint": "GET /v1/produtos/cest",
+            "group": "produto",
+            "name": "produto cest",
+            "options": [
+                {
+                    "default": "1",
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": "50",
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro busca",
+                    "multiple": false,
+                    "name": "--busca",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro codigo",
+                    "multiple": false,
+                    "name": "--codigo",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Cria um produto",
+            "endpoint": "POST /v1/produtos",
+            "group": "produto",
+            "name": "produto create",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON do produto",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "ID do produto",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Exclui um produto",
+            "endpoint": "DELETE /v1/produtos/{id}",
+            "group": "produto",
+            "name": "produto delete",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista categorias de ecommerce",
+            "endpoint": "GET /v1/produtos/ecommerce-categorias",
+            "group": "produto",
+            "name": "produto ecommerce-categorias",
+            "options": [
+                {
+                    "default": "1",
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": "50",
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro busca",
+                    "multiple": false,
+                    "name": "--busca",
+                    "takes_value": true
+                }
+            ],
+            "verified": false
+        },
+        {
+            "arguments": [],
+            "description": "Lista marcas de ecommerce",
+            "endpoint": "GET /v1/produtos/ecommerce-marcas",
+            "group": "produto",
+            "name": "produto ecommerce-marcas",
+            "options": [
+                {
+                    "default": "1",
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": "50",
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro busca",
+                    "multiple": false,
+                    "name": "--busca",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "ID do produto",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Busca um produto por ID",
+            "endpoint": "GET /v1/produtos/{id}",
+            "group": "produto",
+            "name": "produto get",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista produtos por filtros",
+            "endpoint": "GET /v1/produtos",
+            "group": "produto",
+            "name": "produto list",
+            "options": [
+                {
+                    "default": "1",
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": "50",
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro busca",
+                    "multiple": false,
+                    "name": "--busca",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro sku",
+                    "multiple": false,
+                    "name": "--codigo",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro status",
+                    "multiple": false,
+                    "name": "--status",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista códigos NCM",
+            "endpoint": "GET /v1/produtos/ncm",
+            "group": "produto",
+            "name": "produto ncm",
+            "options": [
+                {
+                    "default": "1",
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": "50",
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro busca",
+                    "multiple": false,
+                    "name": "--busca",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro codigo",
+                    "multiple": false,
+                    "name": "--codigo",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista unidades de medida",
+            "endpoint": "GET /v1/produtos/unidades-medida",
+            "group": "produto",
+            "name": "produto unidades-medida",
+            "options": [
+                {
+                    "default": "1",
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": "50",
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro busca",
+                    "multiple": false,
+                    "name": "--busca",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro codigo",
+                    "multiple": false,
+                    "name": "--codigo",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "ID do produto",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Atualiza parcialmente um produto",
+            "endpoint": "PATCH /v1/produtos/{id}",
+            "group": "produto",
+            "name": "produto update",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON do produto",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Protocol ID retornado pela operação assíncrona",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Consulta o status de uma escrita assíncrona pelo protocol ID",
+            "endpoint": "GET /v1/protocolo/{id}",
+            "group": "protocolo",
+            "name": "protocolo get",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Cria um serviço",
+            "endpoint": "POST /v1/servicos",
+            "group": "servico",
+            "name": "servico create",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON do serviço",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Exclui serviços em lote",
+            "endpoint": "DELETE /v1/servicos",
+            "group": "servico",
+            "name": "servico delete",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON com os IDs dos serviços",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "ID do serviço",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Busca um serviço por ID",
+            "endpoint": "GET /v1/servicos/{id}",
+            "group": "servico",
+            "name": "servico get",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista serviços por filtros",
+            "endpoint": "GET /v1/servicos",
+            "group": "servico",
+            "name": "servico list",
+            "options": [
+                {
+                    "default": "1",
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": "50",
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro busca_textual",
+                    "multiple": false,
+                    "name": "--busca",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "ID do serviço",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Atualiza parcialmente um serviço",
+            "endpoint": "PATCH /v1/servicos/{id}",
+            "group": "servico",
+            "name": "servico update",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON do serviço",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista transferências entre contas financeiras por intervalo de datas",
+            "endpoint": "GET /v1/financeiro/transferencias",
+            "group": "transferencia",
+            "name": "transferencia list",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Início do intervalo (YYYY-MM-DD). Padrão: primeiro dia do mês corrente",
+                    "multiple": false,
+                    "name": "--data-inicio",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Fim do intervalo (YYYY-MM-DD). Padrão: último dia do mês corrente",
+                    "multiple": false,
+                    "name": "--data-fim",
+                    "takes_value": true
+                },
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 50,
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Cria uma venda",
+            "endpoint": "POST /v1/venda",
+            "group": "venda",
+            "name": "venda create",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON da venda",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Exclui vendas em lote (até 10 uuids por chamada)",
+            "endpoint": "POST /v1/venda/exclusao-lote",
+            "group": "venda",
+            "name": "venda excluir-lote",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON com os IDs das vendas (campo \"ids\")",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid ou id legado da venda",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Busca uma venda por ID",
+            "endpoint": "GET /v1/venda/{id}",
+            "group": "venda",
+            "name": "venda get",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid ou id legado da venda",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Gera o PDF de uma venda",
+            "endpoint": "GET /v1/venda/{id}/imprimir",
+            "group": "venda",
+            "name": "venda imprimir",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid da venda",
+                    "name": "id-venda",
+                    "required": true
+                }
+            ],
+            "description": "Lista os itens de uma venda",
+            "endpoint": "GET /v1/venda/{id_venda}/itens",
+            "group": "venda",
+            "name": "venda itens",
+            "options": [
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 10,
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista vendas por filtros",
+            "endpoint": "GET /v1/venda/busca",
+            "group": "venda",
+            "name": "venda list",
+            "options": [
+                {
+                    "default": "1",
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": "50",
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro campo_ordenado_ascendente",
+                    "multiple": false,
+                    "name": "--campo-ordenado-ascendente",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro campo_ordenado_descendente",
+                    "multiple": false,
+                    "name": "--campo-ordenado-descendente",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro data_criacao_ate",
+                    "multiple": false,
+                    "name": "--data-criacao-ate",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro data_criacao_de",
+                    "multiple": false,
+                    "name": "--data-criacao-de",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro data_fim",
+                    "multiple": false,
+                    "name": "--data-fim",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro data_inicio",
+                    "multiple": false,
+                    "name": "--data-inicio",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro termo_busca",
+                    "multiple": false,
+                    "name": "--termo-busca",
+                    "takes_value": true
+                },
+                {
+                    "default": null,
+                    "description": "Filtro totais",
+                    "multiple": false,
+                    "name": "--totais",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Consulta o próximo número de venda disponível",
+            "endpoint": "GET /v1/venda/proximo-numero",
+            "group": "venda",
+            "name": "venda proximo-numero",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Uuid da venda",
+                    "name": "id",
+                    "required": true
+                }
+            ],
+            "description": "Atualiza uma venda",
+            "endpoint": "PUT /v1/venda/{id}",
+            "group": "venda",
+            "name": "venda update",
+            "options": [
+                {
+                    "default": null,
+                    "description": "Payload JSON da venda",
+                    "multiple": false,
+                    "name": "--json",
+                    "takes_value": true
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Lista os vendedores cadastrados",
+            "endpoint": "GET /v1/venda/vendedores",
+            "group": "venda",
+            "name": "venda vendedores",
+            "options": [],
+            "verified": true
+        }
+    ],
+    "generated_by": "tools/generate-docs.php",
+    "global_options": [
+        "ansi",
+        "debug",
+        "format",
+        "help",
+        "no-ansi",
+        "no-interaction",
+        "quiet",
+        "silent",
+        "verbose",
+        "version"
+    ],
+    "output_default": "toon",
+    "version": "0.16.0"
+}

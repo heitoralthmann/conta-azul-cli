@@ -1,0 +1,239 @@
+title: Contratos
+intro: |
+  **Verificado contra produção em 2026-08-19** — os seis comandos, com dois
+  contratos de teste criados, um encerrado e ambos excluídos. Os seis
+  parâmetros de `contrato list` passaram na receita completa (baseline,
+  `zzz_bogus=abc`, valor discriminante). Três avisos antes das tabelas:
+
+  > **1. Criar um contrato cria vendas na hora.** Um contrato mensal com
+  > `tipo_expiracao: NUNCA` e `data_fim` a um ano gerou **25 vendas agendadas**
+  > de uma vez, com `data_ultima_emissao` em 2028 — o `NUNCA` ignora o
+  > `data_fim` e agenda dois anos à frente. O mesmo contrato com
+  > `tipo_expiracao: DATA` e janela de um mês gerou 2. Escolha a janela antes
+  > de testar em produção.
+  >
+  > **2. `contrato delete` não é exclusão permanente**, ao contrário do que
+  > este documento afirmava. O `GET` continua respondendo `200`, com
+  > `status: DELETADO`; o que some é a listagem. As vendas associadas **são**
+  > canceladas de verdade (a contagem de vendas voltou ao valor de antes).
+  >
+  > **3. Um uuid válido mas inexistente devolve `500`, não `404`** — em
+  > `contrato get`, `contrato delete` e `contrato encerrar`. Nas duas escritas
+  > o CLI classifica isso como `ambiguous` e sugere reconciliar, quando na
+  > prática não havia nada para aplicar. Um id malformado, esse sim, devolve
+  > `400`.
+sections:
+  -
+    commands:
+      - 'contrato list'
+    status: verified
+    endpoints:
+      'contrato list': 'GET /v1/contratos'
+    params:
+      data-inicio:
+        label: '`--data-inicio`'
+        required: não¹
+        default: '1º dia do mês corrente'
+        description: 'Início do intervalo (`YYYY-MM-DD`)'
+      data-fim:
+        label: '`--data-fim`'
+        required: não¹
+        default: 'último dia do mês corrente'
+        description: 'Fim do intervalo (`YYYY-MM-DD`)'
+      pagina:
+        label: '`--pagina`'
+        required: não
+        default: '`1`'
+        description: 'Número da página'
+      tamanho-pagina:
+        label: '`--tamanho-pagina`'
+        required: não
+        default: '`10`'
+        description: 'Itens por página (aceita até `1000`)'
+      busca-textual:
+        label: '`--busca-textual`'
+        required: não
+        default: —
+        description: 'Busca textual: casa **nome do cliente e número do contrato**'
+      cliente-id:
+        label: '`--cliente-id`'
+        required: não
+        default: —
+        description: 'Filtra pelo ID do cliente'
+      campo-ordenado-ascendente:
+        label: '`--campo-ordenado-ascendente`'
+        required: não
+        default: —
+        description: '`DATA_INICIO` ou `DATA_FIM`; se informado, ignora `--campo-ordenado-descendente`'
+      campo-ordenado-descendente:
+        label: '`--campo-ordenado-descendente`'
+        required: não
+        default: —
+        description: '`DATA_INICIO` ou `DATA_FIM`'
+    body: |
+      ¹ A API exige o intervalo — **os dois lados**. Sem nenhum, responde `400`
+      ("Data de início da recorrência não pode ser nula"); só com um lado, cobra o
+      outro. O CLI supre com o mês corrente e avisa em stderr, comportamento
+      confirmado exercitando.
+
+      Retorna **`{itens_totais, itens[]}`** — a chave é `itens`, não `items` como
+      este documento dizia. Cada item traz `{id, cliente, status,
+      proximo_vencimento, total_proximo_vencimento, data_inicio, numero,
+      conta_financeira, termos, tipo_pagamento, total}`; é um recorte diferente do
+      que `contrato get` devolve.
+
+      `--busca-textual` não busca um "nome do contrato" — esse campo não existe no
+      recurso. Casa o nome do cliente e o número: `busca_textual=2` devolveu só o
+      contrato de número 2. Ordenação inválida devolve `400` listando
+      `[DATA_INICIO, DATA_FIM]`, que é como se prova que o parâmetro é lido e não
+      descartado; mandando as duas ordenações juntas, a ascendente vence.
+  -
+    commands:
+      - 'contrato create'
+    status: verified
+    endpoints:
+      'contrato create': 'POST /v1/contratos'
+    endpoint_note: '**escrita síncrona**, diferente das escritas financeiras: não devolve protocolo, o `id` do contrato já vem na resposta.'
+    params:
+      json:
+        label: '`--json`'
+        required: '**sim**'
+        description: 'Payload JSON do contrato, repassado à API **verbatim**'
+    body: |
+      O CLI não valida o conteúdo de `--json`. A lista de obrigatórios que este
+      documento trazia (`id_cliente`, `termos`, `condicao_pagamento`, `itens`) é
+      verdadeira mas inútil: a API cobra **onze campos**, descobertos um `400` de
+      cada vez.
+
+      | Campo | Onde | Formato |
+      |---|---|---|
+      | `id_cliente` | raiz | uuid da pessoa |
+      | `tipo_frequencia` | `termos` | `MENSAL` ou `ANUAL` |
+      | `tipo_expiracao` | `termos` | `DATA` ou `NUNCA` |
+      | `data_inicio` | `termos` | `YYYY-MM-DD` |
+      | `data_fim` | `termos` | `YYYY-MM-DD` — **exigido mesmo com `tipo_expiracao: NUNCA`** |
+      | `intervalo_frequencia` | `termos` | inteiro |
+      | `dia_emissao_venda` | `termos` | inteiro (dia do mês) |
+      | `numero` | **`termos`** | inteiro — veja abaixo |
+      | `tipo_pagamento` | `condicao_pagamento` | enum longo (`BOLETO_BANCARIO`, `PIX_PAGAMENTO_INSTANTANEO`, `DINHEIRO`, …) |
+      | `dia_vencimento` | `condicao_pagamento` | inteiro |
+      | `primeira_data_vencimento` | `condicao_pagamento` | `YYYY-MM-DD` |
+      | `itens` | **raiz** | array de `{id, quantidade, valor}` |
+
+      Dois desses lugares custam tempo se você supuser errado:
+
+      - **`numero` fica dentro de `termos`.** Na raiz — e como `numero_contrato`,
+        `num_contrato`, `numero_do_contrato`, `contrato_numero` ou `number` — a API
+        repete "O número do contrato é obrigatório" sem dizer onde ela quer.
+      - **`itens` fica na raiz**, não em `termos`. Dentro de `termos` a resposta é
+        "Lista de itens da recorrência não pode ser vazia".
+
+      Retorna **`{id, id_legado}`** — não há `id_venda`, ao contrário do que este
+      documento afirmava.
+
+      **`observacoes` volta em outro lugar.** O que você manda na raiz como
+      `observacoes` aparece no `GET` em `condicao_pagamento.observacoes_pagamento`;
+      a `observacoes` da raiz fica sempre vazia na leitura, e uma
+      `observacoes_pagamento` mandada dentro de `condicao_pagamento` é descartada.
+      Mesma classe de troca de `orcamento create`.
+
+      Payload mínimo que passou:
+
+      ```json
+      {
+        "id_cliente": "a1523431-f1be-44c4-8413-fdb5e50643e3",
+        "termos": {
+          "tipo_frequencia": "MENSAL",
+          "tipo_expiracao": "DATA",
+          "data_inicio": "2026-09-01",
+          "data_fim": "2026-10-01",
+          "intervalo_frequencia": 1,
+          "dia_emissao_venda": 1,
+          "numero": 1
+        },
+        "condicao_pagamento": {
+          "tipo_pagamento": "BOLETO_BANCARIO",
+          "dia_vencimento": 10,
+          "primeira_data_vencimento": "2026-09-10"
+        },
+        "itens": [{ "id": "1a1b7957-12c7-4064-9809-5af7bbb40f57", "quantidade": 1, "valor": 10 }]
+      }
+      ```
+
+      A `descricao` de um item **propaga para as vendas geradas**, o que a torna o
+      lugar prático para marcar um contrato de teste.
+  -
+    commands:
+      - 'contrato proximo-numero'
+    status: verified
+    endpoints:
+      'contrato proximo-numero': 'GET /v1/contratos/proximo-numero'
+    body: |
+      Sem parâmetros. Retorna o próximo número de contrato disponível como um inteiro solto, não um objeto — diferente de todos os outros comandos de leitura.
+
+      O contador acompanha as exclusões: numa conta sem contratos devolveu `1`,
+      subiu para `2` depois do contrato de número 1 e voltou a `1` quando os
+      contratos de teste foram excluídos. Ao contrário de `venda`, esse número
+      **não** é atribuído sozinho — é você quem manda `termos.numero` no `create`.
+  -
+    commands:
+      - 'contrato get'
+    status: verified
+    endpoints:
+      'contrato get': 'GET /v1/contratos/{id}'
+    params:
+      id:
+        label: '`<id>`'
+        required: '**sim**'
+        description: 'Argumento posicional. Uuid do contrato'
+    body: |
+      Devolve bem mais do que a listagem: `{id, id_ultima_venda_confirmada,
+      id_proxima_venda_agendada, cliente, vendedor, termos, data_proximo_vencimento,
+      data_proxima_emissao, data_ultima_emissao, status, configuracao_recorrencia,
+      condicao_pagamento, local_prestacao_servico, composicao_valor, observacoes}`.
+
+      `status` é `ATIVO`, `INATIVO` (depois de `encerrar`) ou `DELETADO` (depois de
+      `delete`). Uuid inexistente devolve `500`; id malformado, `400`.
+  -
+    commands:
+      - 'contrato delete'
+    status: verified
+    endpoints:
+      'contrato delete': 'DELETE /v1/contratos/{id}'
+    endpoint_note: 'exclusão **lógica**, apesar do nome.'
+    params:
+      id:
+        label: '`<id>`'
+        required: '**sim**'
+        description: 'Argumento posicional. Uuid do contrato'
+    body: |
+      Resposta `204 No Content` — sem corpo, que o CLI imprime como `[]`.
+
+      O contrato sai da listagem mas continua legível por `contrato get`, com
+      `status: DELETADO` e `id_proxima_venda_agendada` zerado. **As vendas
+      associadas são canceladas de verdade**: um contrato que havia gerado 25
+      vendas agendadas devolveu a contagem global de vendas ao valor anterior
+      depois do `delete`. Funciona também em contrato já encerrado.
+
+      Contratos em reajuste de valor não podem ser removidos.
+  -
+    commands:
+      - 'contrato encerrar'
+    status: verified
+    endpoints:
+      'contrato encerrar': 'POST /v1/contratos/{id}/encerrar'
+    endpoint_note: 'sem corpo.'
+    params:
+      id:
+        label: '`<id>`'
+        required: '**sim**'
+        description: 'Argumento posicional. Uuid do contrato'
+    body: |
+      Resposta `204 No Content` — sem corpo, que o CLI imprime como `[]`.
+
+      Desativa o contrato: `status` passa de `ATIVO` para `INATIVO` e
+      `id_proxima_venda_agendada` é zerado, mas o contrato **permanece na
+      listagem** — é o que separa `encerrar` de `delete`. A chamada é idempotente:
+      repetida num contrato já `INATIVO`, responde `204` de novo.
+
+      Contratos em reajuste de valor não podem ser encerrados.
