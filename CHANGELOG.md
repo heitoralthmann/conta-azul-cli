@@ -42,6 +42,15 @@ do CLI é idêntico ao da `0.15.2`.
   trabalho que ele não deveria ter.
 - **Workflow `docs.yml`**: verifica a referência, constrói o site e publica
   no GitHub Pages a cada push na `main`.
+- **Geração hermética.** O gerador invoca `bin/ca` com credenciais de
+  fachada, então a referência não depende de haver um `.env` na máquina. Sem
+  isso o CLI registra só os quatro built-ins do Symfony — `ContaAzulApplication`
+  mantém `list` e `help` vivos de propósito quando o bootstrap falha, para
+  renderizar um erro acionável —, e `list --format=json` responde JSON válido
+  com exit code 0, indistinguível de um CLI que legitimamente tem quatro
+  comandos. O `DefinitionLoader` agora também recusa uma lista sem nenhum
+  comando de negócio, apontando a causa real em vez de acusar a referência
+  inteira de estar errada.
 - `symfony/yaml` como dependência de desenvolvimento, usada pelo gerador.
 
 ### Changed
