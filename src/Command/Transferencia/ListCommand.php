@@ -10,7 +10,7 @@ use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Command\Support\PaginationOptions;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Output\WarningEnvelope;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
@@ -29,7 +29,7 @@ final class ListCommand extends Command
   public function __construct(
       private readonly FinanceiroClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
       private readonly WarningEnvelope $warningEnvelope,
       private readonly PeriodoPadrao $periodoPadrao,
@@ -73,7 +73,7 @@ final class ListCommand extends Command
 
           $pagination = PaginationOptions::fromValues($pagina, $tamanhoPagina, $this->paginationValidator);
 
-          $this->jsonRenderer->render(
+          $this->responseRenderer->render(
               $this->client->listTransferencias($inicio, $fim, $pagination->page(), $pagination->pageSize()),
           );
         },

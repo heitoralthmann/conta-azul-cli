@@ -9,7 +9,7 @@ use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\ErrorKind;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
@@ -36,7 +36,7 @@ final class BaixarCommand extends Command
   public function __construct(
       private readonly FinanceiroClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       CommandExecutor|null $commandExecutor = null,
   ) {
     $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
@@ -69,7 +69,7 @@ final class BaixarCommand extends Command
             'data_pagamento'   => $data,
           ];
 
-          $this->jsonRenderer->render($this->client->createBaixa($id, $payload));
+          $this->responseRenderer->render($this->client->createBaixa($id, $payload));
         },
     );
   }

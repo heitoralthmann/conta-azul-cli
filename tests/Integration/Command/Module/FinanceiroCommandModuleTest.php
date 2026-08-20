@@ -28,7 +28,7 @@ use ContaAzulCli\Command\Support\ResourceIdJsonCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Command\Transferencia\ListCommand as TransferenciaListCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Output\WarningEnvelope;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 
@@ -45,7 +45,7 @@ final class FinanceiroCommandModuleTest extends CommandTestCase
     $module = new FinanceiroCommandModule(
         $this->financeiroClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
         new WarningEnvelope($output),
         new PeriodoPadrao(),

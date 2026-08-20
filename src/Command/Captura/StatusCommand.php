@@ -12,7 +12,7 @@ use ContaAzulCli\Command\Support\PaginationOptions;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\ErrorKind;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
@@ -42,7 +42,7 @@ final class StatusCommand extends Command
   public function __construct(
       private readonly CapturaClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
       CommandExecutor|null $commandExecutor = null,
   ) {
@@ -83,7 +83,7 @@ final class StatusCommand extends Command
               PageSizeRule::AnySizeUpToMax,
           );
 
-          $this->jsonRenderer->render(
+          $this->responseRenderer->render(
               $this->client->statusDocumentos($idList, $pagination->page(), $pagination->pageSize()),
           );
         },

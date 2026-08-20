@@ -9,6 +9,8 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-08-20
+
 Concentra a **campanha de verificação de endpoints** (2026-08-15 a
 2026-08-19): os nove grupos de comandos do CLI foram exercitados contra a API
 de produção, um a um, e **todos tinham pelo menos um defeito**. As entradas
@@ -18,6 +20,10 @@ grupo, com as armadilhas de cada um, mora em
 
 ### Added
 
+- **Formatadores de resposta, por composição.** `ResponseFormatterInterface`
+  + `FormatterRegistry`: um formato novo é uma classe e um registro em
+  `FormatterRegistry::withDefaults()`. `--format=toon|json` escolhe o
+  encoder. Comandos continuam só chamando `ResponseRenderer::render()`.
 - **`PageSizeRule`.** Descreve a *forma* do limite de página de um endpoint —
   degraus discretos ou qualquer inteiro até o teto —, porque medir só o teto
   não descrevia `captura status`. Os demais endpoints seguem no padrão
@@ -32,6 +38,16 @@ grupo, com as armadilhas de cada um, mora em
 
 ### Changed
 
+- **Saída padrão passou de JSON compacto para TOON.** Sucesso (stdout),
+  erros e avisos (stderr) usam o mesmo formatter. JSON compacto — o
+  contrato anterior — só sai com `--format=json`. `--json`
+  continua sendo o payload de entrada das escritas. **Mudança
+  incompatível** para quem parseava stdout/stderr com `jq` sem a flag.
+- **Formato de saída passou a ser opção dos comandos da Conta Azul.** O
+  atalho JSON `--raw` foi removido sem período de depreciação; use
+  `--format=json`. A separação elimina a colisão que impedia os comandos
+  Symfony `list` e `help` de executar. Eles voltaram ao comportamento nativo:
+  texto por padrão, formatos de descriptor próprios e `--raw` textual.
 - **`parcela baixar` agora quita de verdade, por outro endpoint.** Passou a
   chamar `POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa`, e
   ganhou a opção obrigatória `--conta-financeira` (a API exige a conta que
@@ -676,7 +692,8 @@ Primeira versão tagueada.
 - `release.yml` corrigido: faltava `permissions: contents: write`, o que
   impedia a publicação do PHAR na release do GitHub.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.11.0...v0.12.0

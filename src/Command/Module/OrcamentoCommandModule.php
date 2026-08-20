@@ -11,7 +11,7 @@ use ContaAzulCli\Command\Support\ResourceIdCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Command\Support\ResourceListCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Command\Command;
 
 /** Registers budget commands, including their declarative resource operations. */
@@ -21,7 +21,7 @@ final class OrcamentoCommandModule implements CommandModuleInterface
   public function __construct(
       private readonly OrcamentosClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
   ) {
   }
@@ -46,7 +46,7 @@ final class OrcamentoCommandModule implements CommandModuleInterface
           'Lista orçamentos por filtros',
           $this->client->listOrcamentos(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           $filters,
       ),
@@ -55,7 +55,7 @@ final class OrcamentoCommandModule implements CommandModuleInterface
           'Cria um orçamento',
           $this->client->createOrcamento(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Payload JSON do orçamento',
       ),
       new ResourceIdCommand(
@@ -63,7 +63,7 @@ final class OrcamentoCommandModule implements CommandModuleInterface
           'Busca um orçamento por ID',
           $this->client->getOrcamento(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Uuid do orçamento',
       ),
       new ResourceJsonCommand(
@@ -71,7 +71,7 @@ final class OrcamentoCommandModule implements CommandModuleInterface
           'Exclui orçamentos em lote (até 10 uuids por chamada)',
           $this->client->excluirOrcamentosEmLote(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Payload JSON com os IDs dos orçamentos (campo "ids")',
       ),
     ];

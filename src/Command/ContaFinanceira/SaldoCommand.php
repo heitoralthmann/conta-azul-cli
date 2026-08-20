@@ -9,7 +9,7 @@ use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\ErrorKind;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
@@ -24,7 +24,7 @@ final class SaldoCommand extends Command
   public function __construct(
       private readonly FinanceiroClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       CommandExecutor|null $commandExecutor = null,
   ) {
     $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
@@ -43,7 +43,7 @@ final class SaldoCommand extends Command
               throw new CliException(ErrorKind::ClientError, false, 'A opção --id é obrigatória.');
           }
 
-          $this->jsonRenderer->render($this->client->getSaldoContaFinanceira($id));
+          $this->responseRenderer->render($this->client->getSaldoContaFinanceira($id));
         },
     );
   }

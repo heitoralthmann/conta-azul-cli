@@ -7,7 +7,7 @@ namespace ContaAzulCli\Command\Pessoa;
 use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -22,7 +22,7 @@ final class GetCommand extends Command
   public function __construct(
       private readonly PessoasClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       CommandExecutor|null $commandExecutor = null,
   ) {
     $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
@@ -37,7 +37,7 @@ final class GetCommand extends Command
   ): int {
     return $this->commandExecutor->execute(
         function () use ($id): void {
-          $this->jsonRenderer->render($this->client->getPessoa($id));
+          $this->responseRenderer->render($this->client->getPessoa($id));
         },
     );
   }

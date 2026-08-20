@@ -9,7 +9,7 @@ use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Command\Support\PaginationOptions;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
@@ -24,7 +24,7 @@ final class ListCommand extends Command
   public function __construct(
       private readonly PessoasClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
       CommandExecutor|null $commandExecutor = null,
   ) {
@@ -137,7 +137,7 @@ final class ListCommand extends Command
               $filters['com_endereco'] = true;
           }
 
-          $this->jsonRenderer->render(
+          $this->responseRenderer->render(
               $this->client->listPessoas($pagination->page(), $pagination->pageSize(), $filters),
           );
         },

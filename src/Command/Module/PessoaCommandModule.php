@@ -17,7 +17,7 @@ use ContaAzulCli\Command\Pessoa\ListCommand as PessoaListCommand;
 use ContaAzulCli\Command\Pessoa\PatchCommand as PessoaPatchCommand;
 use ContaAzulCli\Command\Pessoa\UpdateCommand as PessoaUpdateCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Command\Command;
 
 /** Registers commands backed by the people API client. */
@@ -27,7 +27,7 @@ final class PessoaCommandModule implements CommandModuleInterface
   public function __construct(
       private readonly PessoasClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
   ) {
   }
@@ -35,34 +35,34 @@ final class PessoaCommandModule implements CommandModuleInterface
   /** @return list<Command> */
   public function commands(): array {
     return [
-      new PessoaListCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
-      new PessoaCreateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-      new PessoaGetCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-      new PessoaUpdateCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-      new PessoaPatchCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-      new PessoaLegadoCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new PessoaListCommand($this->client, $this->errorEnvelope, $this->responseRenderer, $this->paginationValidator),
+      new PessoaCreateCommand($this->client, $this->errorEnvelope, $this->responseRenderer),
+      new PessoaGetCommand($this->client, $this->errorEnvelope, $this->responseRenderer),
+      new PessoaUpdateCommand($this->client, $this->errorEnvelope, $this->responseRenderer),
+      new PessoaPatchCommand($this->client, $this->errorEnvelope, $this->responseRenderer),
+      new PessoaLegadoCommand($this->client, $this->errorEnvelope, $this->responseRenderer),
       new PessoaBatchCommand(
           $this->client,
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'pessoa ativar',
           BatchOperation::Activate,
       ),
       new PessoaBatchCommand(
           $this->client,
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'pessoa inativar',
           BatchOperation::Deactivate,
       ),
       new PessoaBatchCommand(
           $this->client,
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'pessoa excluir',
           BatchOperation::Delete,
       ),
-      new PessoaContaConectadaCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new PessoaContaConectadaCommand($this->client, $this->errorEnvelope, $this->responseRenderer),
     ];
   }
 }

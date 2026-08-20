@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ContaAzulCli\Command\Support;
 
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -26,7 +26,7 @@ final class ResourceJsonCommand extends Command
       string $description,
       private readonly mixed $operation,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private string $jsonDescription,
       CommandExecutor|null $commandExecutor = null,
   ) {
@@ -46,7 +46,7 @@ final class ResourceJsonCommand extends Command
   protected function execute(InputInterface $input, OutputInterface $output): int {
     return $this->commandExecutor->execute(
         function () use ($input): void {
-          $this->jsonRenderer->render(($this->operation)(JsonPayload::object($input->getOption('json'))));
+          $this->responseRenderer->render(($this->operation)(JsonPayload::object($input->getOption('json'))));
         },
     );
   }

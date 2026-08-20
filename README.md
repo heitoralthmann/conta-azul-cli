@@ -8,9 +8,9 @@
 
 CLI em PHP/Symfony que expõe as famílias **Financeiro** (Finanças, Baixas, Cobranças), **Pessoas**, **Produtos**, **Serviços**, **Contratos**, **Notas Fiscais** e **Vendas** da API Conta Azul para consumo por agentes de IA.
 
-Cada invocação é de curta duração: faz uma chamada, escreve JSON compacto em `stdout` e sai. Toda a complexidade de OAuth2 — fluxo inicial, persistência, refresh, rotação de token — fica encapsulada dentro do CLI.
+Cada invocação é de curta duração: faz uma chamada, escreve **TOON** em `stdout` e sai. Toda a complexidade de OAuth2 — fluxo inicial, persistência, refresh, rotação de token — fica encapsulada dentro do CLI.
 
-O consumidor primário é um **agente**, não um humano. Por isso a saída é JSON compacto, o exit code é binário e os erros vêm em envelope estruturado com um campo `kind` estável.
+O consumidor primário é um **agente**, não um humano. Por isso a saída padrão é [TOON](https://github.com/toon-format/toon) (mais compacto em tokens que JSON), o exit code é binário e os erros vêm em envelope estruturado com um campo `kind` estável. JSON compacto continua disponível com `--format=json`; `--format=toon` seleciona explicitamente o padrão.
 
 > **Projeto não oficial.** Este CLI não é mantido, endossado ou afiliado à Conta Azul. É um cliente de terceiros para a API pública da Conta Azul.
 
@@ -183,11 +183,12 @@ ca parcela baixar <id> --valor=100.50 --data=2026-05-27 [--poll-timeout=60] [--n
 
 As buscas de contas e o feed de alterações **exigem** intervalo de datas — sem ele a API responde 400. Quando as opções não são informadas, o CLI assume o **mês corrente** e avisa em stderr qual recorte aplicou:
 
-```json
-{"kind":"warning","message":"Intervalo de vencimento não informado por completo; usando 2026-08-01 a 2026-08-31. …"}
+```
+kind: warning
+message: Intervalo de vencimento não informado por completo; usando 2026-08-01 a 2026-08-31. …
 ```
 
-O stdout continua contendo só o payload, então o aviso não atrapalha `| jq`. Informar as duas opções silencia o aviso.
+O stdout continua contendo só o payload, então o aviso não se mistura com o resultado. Com `--format=json`, o mesmo aviso sai em JSON compacto e o pipeline `| jq` volta a funcionar. Informar as duas opções silencia o aviso.
 
 Em `financeiro alteracoes` as datas vão em ISO 8601 **sem timezone** (`2026-08-01T00:00:00`); com sufixo `Z` ou offset a API responde 400.
 
@@ -205,13 +206,29 @@ Não há auto-paginação nem flag `--all` — o agente pagina explicitamente, e
 
 ## Contrato de saída
 
-**Sucesso:** JSON compacto em `stdout`, `stderr` vazio, exit code `0`.
+**Sucesso:** um documento TOON em `stdout`, `stderr` vazio, exit code `0`.
 
-**Erro:** um único objeto JSON compacto em `stderr`, `stdout` vazio, exit code `1`.
+**Erro:** um único envelope estruturado em `stderr`, `stdout` vazio, exit code `1`.
 
-```json
-{"kind":"client_error","retryable":false,"http_status":403,"protocol_id":null,"correlation_id":"...","message":"..."}
 ```
+correlation_id: ...
+http_status: 403
+kind: client_error
+message: ...
+protocol_id: null
+retryable: false
+```
+
+JSON compacto (stdout e stderr) só sai com `--format=json`. `--json` continua sendo o payload de **entrada** das escritas, não o seletor de formato.
+
+```bash
+ca pessoa list --format=json | jq '.itens'
+```
+
+Os comandos de descoberta `list` e `help` são os comandos nativos do Symfony:
+usam texto por padrão, têm formatos próprios (`txt`, `xml`, `json`, `md` e
+`rst`) e preservam o `--raw` nativo de texto sem decoração. TOON não se aplica
+a esses dois comandos.
 
 O exit code é **binário** por design: o agente despacha sobre `kind`, não sobre o número.
 
@@ -305,7 +322,7 @@ src/
   Command/   comandos Symfony Console
   Api/       cliente HTTP da Conta Azul (retry, polling, paginação)
   Auth/      fluxo OAuth, token store, lock de refresh
-  Output/    renderer JSON, envelope de erro, redactor, logger
+  Output/    formatters (TOON/JSON), renderer, envelope de erro, redactor, logger
   Config/    resolução de env vars
   Error/     mapeamento de HTTP para o enum kind
 ```

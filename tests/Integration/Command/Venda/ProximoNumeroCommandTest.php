@@ -6,11 +6,9 @@ namespace ContaAzulCli\Tests\Integration\Command\Venda;
 
 use ContaAzulCli\Command\Venda\ProximoNumeroCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\Console\Command\Command;
-
-use function json_decode;
 
 final class ProximoNumeroCommandTest extends CommandTestCase
 {
@@ -23,13 +21,13 @@ final class ProximoNumeroCommandTest extends CommandTestCase
     $command = new ProximoNumeroCommand(
         $this->vendasClient([$this->jsonResponse(4512645)]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
     );
 
     $tester = $this->runCommand($command);
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-    self::assertSame(4512645, json_decode($output->stdout(), true));
+    self::assertSame(4512645, self::decodePayload($output->stdout()));
     self::assertSame('', $output->stderr());
   }
 
@@ -38,7 +36,7 @@ final class ProximoNumeroCommandTest extends CommandTestCase
     $command = new ProximoNumeroCommand(
         $this->vendasClient([$this->errorResponse(401), $this->errorResponse(401)]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
     );
 
     $tester = $this->runCommand($command);
@@ -46,7 +44,7 @@ final class ProximoNumeroCommandTest extends CommandTestCase
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
     self::assertSame('', $output->stdout());
 
-    $envelope = json_decode($output->stderr(), true);
+    $envelope = self::decodeEnvelope($output->stderr());
     self::assertSame('auth_failed', $envelope['kind']);
   }
 }

@@ -7,11 +7,9 @@ namespace ContaAzulCli\Tests\Integration\Command\CentroDeCusto;
 use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Command\CentroDeCusto\ListCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\Console\Command\Command;
-
-use function json_decode;
 
 final class ListCommandTest extends CommandTestCase
 {
@@ -20,14 +18,14 @@ final class ListCommandTest extends CommandTestCase
     $command = new ListCommand(
         $this->financeiroClient([$this->jsonResponse(['itens' => [['id' => 'cc-1']]])]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
     $tester = $this->runCommand($command);
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-    self::assertSame(['itens' => [['id' => 'cc-1']]], json_decode($output->stdout(), true));
+    self::assertSame(['itens' => [['id' => 'cc-1']]], self::decodePayload($output->stdout()));
     self::assertSame('', $output->stderr());
   }
 }

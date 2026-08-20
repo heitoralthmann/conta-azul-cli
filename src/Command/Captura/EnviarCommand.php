@@ -9,7 +9,7 @@ use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\ErrorKind;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
@@ -27,7 +27,7 @@ final class EnviarCommand extends Command
   public function __construct(
       private readonly CapturaClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       CommandExecutor|null $commandExecutor = null,
   ) {
     $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
@@ -52,7 +52,7 @@ final class EnviarCommand extends Command
             );
           }
 
-          $this->jsonRenderer->render($this->client->enviarDocumento($arquivo, $descricao));
+          $this->responseRenderer->render($this->client->enviarDocumento($arquivo, $descricao));
         },
     );
   }

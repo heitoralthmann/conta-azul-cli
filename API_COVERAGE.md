@@ -152,7 +152,7 @@ já que o portal bloqueia `WebFetch`/`curl`. **Verificados contra a produção e
 vínculo a MDF-e; não há emissão.
 
 - [x] `GET /v1/notas-fiscais` — `nota-fiscal list`; exige `data_inicial`/`data_final`; retorna só NFe EMITIDA e CORRIGIDA_SUCESSO
-- [x] `GET /v1/notas-fiscais/{chave}` — `nota-fiscal get`; resposta binária (XML ou ZIP), devolvida em base64 para preservar o contrato de stdout em JSON
+- [x] `GET /v1/notas-fiscais/{chave}` — `nota-fiscal get`; resposta binária (XML ou ZIP), devolvida em base64 para preservar o contrato de stdout estruturado
 - [x] `GET /v1/notas-fiscais-servico` — `nota-fiscal-servico list`; exige `data_competencia_de`/`data_competencia_ate`, com **máximo de 15 dias** de intervalo
 - [x] `POST /v1/notas-fiscais/vinculo-mdfe` — `nota-fiscal vincular-mdfe`; escrita síncrona, resposta `204 No Content`
 
@@ -168,7 +168,7 @@ já que o portal bloqueia `WebFetch`/`curl`. **Verificados contra a produção e
 - [x] `POST /v1/venda` — `venda create`
 - [x] `GET /v1/venda/{id}` — `venda get`; aceita uuid ou id legado
 - [x] `PUT /v1/venda/{id}` — `venda update`; a API não expõe PATCH para vendas
-- [x] `GET /v1/venda/{id}/imprimir` — `venda imprimir`; resposta binária (PDF), devolvida em base64 para preservar o contrato de stdout em JSON
+- [x] `GET /v1/venda/{id}/imprimir` — `venda imprimir`; resposta binária (PDF), devolvida em base64 para preservar o contrato de stdout estruturado
 - [x] `GET /v1/venda/{id_venda}/itens` — `venda itens`
 - [x] `GET /v1/venda/vendedores` — `venda vendedores`; não pagina
 - [x] `GET /v1/venda/proximo-numero` — `venda proximo-numero`; corpo da resposta é um inteiro solto (ou `null`), não um objeto

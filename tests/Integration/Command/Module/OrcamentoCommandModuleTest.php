@@ -10,7 +10,7 @@ use ContaAzulCli\Command\Support\ResourceIdCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Command\Support\ResourceListCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
@@ -32,7 +32,7 @@ final class OrcamentoCommandModuleTest extends CommandTestCase
     $module = new OrcamentoCommandModule(
         $this->orcamentosClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -66,7 +66,7 @@ final class OrcamentoCommandModuleTest extends CommandTestCase
     $module   = new OrcamentoCommandModule(
         $this->orcamentosClient([$response]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
