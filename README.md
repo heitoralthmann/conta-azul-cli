@@ -25,22 +25,11 @@ O consumidor primário é um **agente**, não um humano. Por isso a saída padr�
 
 ## Instalação
 
-### A partir do repositório
-
 ```bash
 git clone git@github.com:heitoralthmann/conta-azul-cli.git
 cd conta-azul-cli
 composer install
 ./bin/ca list
-```
-
-### PHAR
-
-Baixe o `conta-azul-cli.phar` da página de releases do GitHub:
-
-```bash
-chmod +x conta-azul-cli.phar
-mv conta-azul-cli.phar /usr/local/bin/ca
 ```
 
 > Distribuição via `composer global require` está prevista, mas o pacote ainda não foi publicado no Packagist.

@@ -381,13 +381,13 @@ src/
 
 **Decisão.**
 
-- **Primário:** PHAR único construído com Box, publicado em GitHub Releases.
-- **Secundário:** `composer global require heitoralthmann/conta-azul-cli` (essencialmente gratuito ao publicar no Packagist).
+- **Primário:** `git clone` + `composer install`.
+- **Planejado:** `composer global require heitoralthmann/conta-azul-cli`, assim que o pacote for publicado no Packagist.
 - **Adiado:** imagem Docker — adicionar quando houver caso de uso CI explicitamente solicitado.
 
-**Justificativa.** PHAR roda em qualquer máquina com PHP na versão mínima; Composer global é canal alternativo natural para devs PHP que já têm o ambiente.
+**Justificativa.** O público desta biblioteca é necessariamente técnico — quem a usa precisa registrar o próprio app na Conta Azul e gerenciar as próprias credenciais —, então clonar o repositório e rodar Composer não é uma barreira adicional para esse público.
 
-**Trade-off aceito.** PHAR exige PHP instalado na máquina alvo. Para ambientes sem PHP, Docker resolverá no futuro.
+**Trade-off aceito.** Exige PHP e Composer instalados na máquina alvo. Para ambientes sem PHP, Docker resolverá no futuro.
 
 **Em aberto.** Versão mínima exata de PHP — alvo é a última estável; bumpar conforme as versões maiores forem saindo.
 
@@ -400,7 +400,7 @@ src/
 - **GitHub Actions.**
 - **Matriz de PHP:** apenas a última versão estável (sem matriz multi-versão).
 - **Análise estática:** PHPStan no nível máximo. Pint ou PHP-CS-Fixer para estilo. **Sem Psalm** (redundante com PHPStan no max).
-- **Release:** tag SemVer → CI builda PHAR → publica em GitHub Releases → atualiza Packagist via webhook.
+- **Release:** tag SemVer → atualiza Packagist via webhook.
 
 **Versionamento.** SemVer estrito. Para um consumidor agente, quebra contratual e portanto bump **major** inclui:
 
