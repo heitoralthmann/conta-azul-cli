@@ -175,6 +175,12 @@ final class ContaAzulApplication extends Application
 
   /** Adds the shared response-format option to one project command. */
   private function configureOutputFormat(Command $command): void {
+    // Forces invokable commands to register their #[Option]/#[Argument]
+    // attributes first; Command::getNativeDefinition() only does so while
+    // its definition is still empty, and addOption() below would otherwise
+    // permanently block that from ever happening.
+    $command->getDefinition();
+
     $command->addOption(
         'format',
         null,

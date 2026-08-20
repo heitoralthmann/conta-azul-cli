@@ -9,6 +9,25 @@ no [README](README.md#contrato-de-saída).
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-08-20
+
+### Fixed
+
+- **Toda a família de comandos com opções próprias parou de responder no
+  lançamento do `0.15.0`.** `ContaAzulApplication` passou a registrar a
+  opção `--format` em cada comando dentro do construtor, antes de qualquer
+  chamada a `getDefinition()` — e `Command::getNativeDefinition()` do
+  Symfony só promove as próprias `#[Option]`/`#[Argument]` de um comando
+  invocável para a `InputDefinition` da primeira vez que é chamado, e só
+  enquanto essa definição ainda está vazia. Com `--format` já presente, essa
+  promoção nunca mais acontecia: `categoria list`, por exemplo, perdia
+  silenciosamente `--pagina` e `--tamanho-pagina`. Em tempo de execução isso
+  virava uma `InvalidArgumentException` que o Symfony renderiza só como o
+  sinopse do comando (sem texto de erro), e o `catch` genérico do
+  `ContaAzulApplication::run()` convertia em saída 1 — o comando parecia não
+  fazer nada. Afetava 30 dos 59 comandos que declaram parâmetros próprios
+  por atributo, não só `categoria list`.
+
 ## [0.15.0] - 2026-08-20
 
 Concentra a **campanha de verificação de endpoints** (2026-08-15 a

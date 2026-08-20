@@ -111,13 +111,23 @@ final class ContaAzulApplicationTest extends TestCase
     self::assertFalse($application->getDefinition()->hasOption('raw'));
   }
 
+  /** Registering the shared --format option must not crowd out an invokable command's own #[Option] attributes. */
+  public function testInvokableOptionsSurviveFormatRegistration(): void {
+    $application = new ContaAzulApplication();
+    $definition  = $application->get('categoria list')->getDefinition();
+
+    self::assertTrue($definition->hasOption('pagina'));
+    self::assertTrue($definition->hasOption('tamanho-pagina'));
+  }
+
   /** The removed JSON alias is rejected on project commands before any API request. */
   public function testApplicationCommandRejectsRaw(): void {
     [$status, $output] = $this->runCli('pessoa list', '--raw');
 
     self::assertSame(1, $status);
     self::assertSame('', $output->stdout());
-    self::assertStringContainsString('pessoa list [--format FORMAT]', $output->stderr());
+    self::assertStringContainsString('pessoa list', $output->stderr());
+    self::assertStringContainsString('[--format FORMAT]', $output->stderr());
   }
 
   /** Built-in failures use Symfony diagnostics instead of structured project envelopes. */
