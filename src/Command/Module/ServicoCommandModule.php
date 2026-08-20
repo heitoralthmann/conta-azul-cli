@@ -12,7 +12,7 @@ use ContaAzulCli\Command\Support\ResourceIdJsonCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Command\Support\ResourceListCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Command\Command;
 
 /** Registers service commands, including their declarative resource operations. */
@@ -22,7 +22,7 @@ final class ServicoCommandModule implements CommandModuleInterface
   public function __construct(
       private readonly ServicosClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
   ) {
   }
@@ -43,7 +43,7 @@ final class ServicoCommandModule implements CommandModuleInterface
           'Lista serviços por filtros',
           $this->client->listServicos(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           $filters,
           null,
@@ -55,7 +55,7 @@ final class ServicoCommandModule implements CommandModuleInterface
           'Cria um serviço',
           $this->client->createServico(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Payload JSON do serviço',
       ),
       new ResourceIdCommand(
@@ -63,7 +63,7 @@ final class ServicoCommandModule implements CommandModuleInterface
           'Busca um serviço por ID',
           $this->client->getServico(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'ID do serviço',
       ),
       new ResourceIdJsonCommand(
@@ -71,7 +71,7 @@ final class ServicoCommandModule implements CommandModuleInterface
           'Atualiza parcialmente um serviço',
           $this->client->updateServico(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'ID do serviço',
           'Payload JSON do serviço',
       ),
@@ -80,7 +80,7 @@ final class ServicoCommandModule implements CommandModuleInterface
           'Exclui serviços em lote',
           $this->client->deleteServicos(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Payload JSON com os IDs dos serviços',
       ),
     ];

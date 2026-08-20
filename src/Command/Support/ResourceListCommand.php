@@ -6,7 +6,7 @@ namespace ContaAzulCli\Command\Support;
 
 use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -29,7 +29,7 @@ final class ResourceListCommand extends Command
       string $description,
       private readonly mixed $list,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
       private readonly array $filterOptions = [],
       CommandExecutor|null $commandExecutor = null,
@@ -67,7 +67,7 @@ final class ResourceListCommand extends Command
             $filters[$queryName] = $value;
           }
 
-          $this->jsonRenderer->render(($this->list)($pagination->page(), $pagination->pageSize(), $filters));
+          $this->responseRenderer->render(($this->list)($pagination->page(), $pagination->pageSize(), $filters));
         },
     );
   }

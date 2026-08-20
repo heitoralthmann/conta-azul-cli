@@ -12,7 +12,7 @@ use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Command\Support\ResourceIdCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Output\WarningEnvelope;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -35,7 +35,7 @@ final class ContratoCommandModuleTest extends CommandTestCase
     $module = new ContratoCommandModule(
         $this->contratosClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
         new WarningEnvelope($output),
         new PeriodoPadrao(),
@@ -74,7 +74,7 @@ final class ContratoCommandModuleTest extends CommandTestCase
     $module   = new ContratoCommandModule(
         $this->contratosClient([$response]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
         new WarningEnvelope($output),
         new PeriodoPadrao(),

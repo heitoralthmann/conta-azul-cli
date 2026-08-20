@@ -7,12 +7,10 @@ namespace ContaAzulCli\Tests\Integration\Command\Pessoa;
 use ContaAzulCli\Command\Pessoa\BatchCommand;
 use ContaAzulCli\Command\Pessoa\BatchOperation;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Console\Command\Command;
-
-use function json_decode;
 
 /** Covers the three bulk operations PessoaCommandModule wires this class to. */
 final class BatchCommandTest extends CommandTestCase
@@ -32,7 +30,7 @@ final class BatchCommandTest extends CommandTestCase
     $command = new BatchCommand(
         $this->pessoasClient([$this->jsonResponse(['sucesso' => ['p-1', 'p-2']])]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         $name,
         $operation,
     );
@@ -40,7 +38,7 @@ final class BatchCommandTest extends CommandTestCase
     $tester = $this->runCommand($command, ['--json' => '{"uuids":["p-1","p-2"]}']);
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-    self::assertSame(['sucesso' => ['p-1', 'p-2']], json_decode($output->stdout(), true));
+    self::assertSame(['sucesso' => ['p-1', 'p-2']], self::decodePayload($output->stdout()));
     self::assertSame('', $output->stderr());
   }
 
@@ -49,7 +47,7 @@ final class BatchCommandTest extends CommandTestCase
     $command = new BatchCommand(
         $this->pessoasClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         'pessoa ativar',
         BatchOperation::Activate,
     );
@@ -57,6 +55,6 @@ final class BatchCommandTest extends CommandTestCase
     $tester = $this->runCommand($command);
 
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
-    self::assertSame('client_error', json_decode($output->stderr(), true)['kind']);
+    self::assertSame('client_error', self::decodeEnvelope($output->stderr())['kind']);
   }
 }

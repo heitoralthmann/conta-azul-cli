@@ -7,7 +7,7 @@ namespace ContaAzulCli\Command\Venda;
 use ContaAzulCli\Api\VendasClient;
 use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 
@@ -21,7 +21,7 @@ final class VendedoresCommand extends Command
   public function __construct(
       private readonly VendasClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       CommandExecutor|null $commandExecutor = null,
   ) {
     $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
@@ -33,7 +33,7 @@ final class VendedoresCommand extends Command
   public function __invoke(): int {
     return $this->commandExecutor->execute(
         function (): void {
-          $this->jsonRenderer->render($this->client->listVendedores());
+          $this->responseRenderer->render($this->client->listVendedores());
         },
     );
   }

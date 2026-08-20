@@ -8,7 +8,13 @@ use ContaAzulCli\Bootstrap\ApplicationFactory;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\ErrorKind;
 use ContaAzulCli\Output\ErrorEnvelope;
+use ContaAzulCli\Output\FormatterRegistry;
+use ContaAzulCli\Output\FormatterSelectorInterface;
+use ContaAzulCli\Output\JsonFormatter;
 use ContaAzulCli\Output\Logger;
+use ContaAzulCli\Output\MutableFormatterSelector;
+use ContaAzulCli\Output\OutputFormatResolver;
+use ContaAzulCli\Output\ToonFormatter;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
@@ -33,6 +39,9 @@ final class ContaAzulApplication extends Application
 {
   private Logger|null $logger            = null;
   private Throwable|null $bootstrapError = null;
+  private FormatterRegistry $formatterRegistry;
+  private FormatterSelectorInterface $formatterSelector;
+  private OutputFormatResolver $outputFormatResolver;
 
   /** Builds the application and registers feature modules from the factory. */
   public function __construct() {
@@ -40,15 +49,21 @@ final class ContaAzulApplication extends Application
 
     $factory = new ApplicationFactory();
     try {
-      $components   = $factory->build();
-      $this->logger = $components->logger();
+      $components              = $factory->build();
+      $this->logger            = $components->logger();
+      $this->formatterRegistry = $components->formatterRegistry();
+      $this->formatterSelector = $components->formatterSelector();
       $this->addCommands($components->commands());
     } catch (Throwable $e) {
       // Keep discovery/help available when configuration or an adapter
       // fails during bootstrap; run() renders the actionable error.
-      $this->logger         = $factory->logger();
-      $this->bootstrapError = $e;
+      $this->logger            = $factory->logger();
+      $this->bootstrapError    = $e;
+      $this->formatterRegistry = FormatterRegistry::withDefaults();
+      $this->formatterSelector = new MutableFormatterSelector($this->formatterRegistry->default());
     }
+
+    $this->outputFormatResolver = new OutputFormatResolver($this->formatterRegistry);
   }
 
   /** Suppresses Symfony's default text exception rendering. */
@@ -69,8 +84,20 @@ final class ContaAzulApplication extends Application
       $this->logger?->enable();
     }
 
+    try {
+      $this->applyOutputFormat($input);
+    } catch (CliException $e) {
+      if ($input->hasParameterOption(['--raw'], true)) {
+        $this->formatterSelector->select($this->formatterRegistry->get(JsonFormatter::NAME));
+      }
+
+      $this->errorEnvelope()->renderToStderr($e);
+
+      return 1;
+    }
+
     if ($this->bootstrapError !== null && ! $this->isAlwaysAvailableCommand($input)) {
-      (new ErrorEnvelope())->renderToStderr(
+      $this->errorEnvelope()->renderToStderr(
           new CliException(
               ErrorKind::ClientError,
               false,
@@ -103,7 +130,18 @@ final class ContaAzulApplication extends Application
     || $input->hasParameterOption(['--help', '-h', '--version', '-V'], true);
   }
 
-  /** Adds the CLI-only debug option to Symfony's global definition. */
+  /** Selects the response formatter from `--raw` / `--format` for this invocation. */
+  private function applyOutputFormat(InputInterface $input): void {
+    $name = $this->outputFormatResolver->resolve($input);
+    $this->formatterSelector->select($this->formatterRegistry->get($name));
+  }
+
+  /** Builds an error renderer that follows the currently selected format. */
+  private function errorEnvelope(): ErrorEnvelope {
+    return new ErrorEnvelope(null, $this->formatterSelector);
+  }
+
+  /** Adds the CLI-only debug and output-format options to Symfony's global definition. */
   protected function getDefaultInputDefinition(): InputDefinition {
     $definition = parent::getDefaultInputDefinition();
     $definition->addOption(
@@ -112,6 +150,23 @@ final class ContaAzulApplication extends Application
             null,
             InputOption::VALUE_NONE,
             'Grava log estruturado em ~/.cache/conta-azul-cli/log.jsonl',
+        ),
+    );
+    $definition->addOption(
+        new InputOption(
+            'format',
+            null,
+            InputOption::VALUE_REQUIRED,
+            'Formato da resposta: toon (padrão) ou json',
+            ToonFormatter::NAME,
+        ),
+    );
+    $definition->addOption(
+        new InputOption(
+            'raw',
+            null,
+            InputOption::VALUE_NONE,
+            'Atalho para --format=json',
         ),
     );
 

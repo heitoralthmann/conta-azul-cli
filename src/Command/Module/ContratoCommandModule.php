@@ -13,7 +13,7 @@ use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Command\Support\ResourceIdCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Output\WarningEnvelope;
 use Symfony\Component\Console\Command\Command;
 
@@ -24,7 +24,7 @@ final class ContratoCommandModule implements CommandModuleInterface
   public function __construct(
       private readonly ContratosClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
       private readonly WarningEnvelope $warningEnvelope,
       private readonly PeriodoPadrao $periodoPadrao,
@@ -37,7 +37,7 @@ final class ContratoCommandModule implements CommandModuleInterface
       new ListCommand(
           $this->client,
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           $this->warningEnvelope,
           $this->periodoPadrao,
@@ -47,16 +47,16 @@ final class ContratoCommandModule implements CommandModuleInterface
           'Cria um contrato',
           $this->client->createContrato(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Payload JSON do contrato',
       ),
-      new ProximoNumeroCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new ProximoNumeroCommand($this->client, $this->errorEnvelope, $this->responseRenderer),
       new ResourceIdCommand(
           'contrato get',
           'Busca um contrato por ID',
           $this->client->getContrato(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Uuid do contrato',
       ),
       new ResourceIdCommand(
@@ -64,7 +64,7 @@ final class ContratoCommandModule implements CommandModuleInterface
           'Remove um contrato permanentemente, cancelando as vendas associadas',
           $this->client->deleteContrato(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Uuid do contrato',
       ),
       new ResourceIdCommand(
@@ -72,7 +72,7 @@ final class ContratoCommandModule implements CommandModuleInterface
           'Encerra um contrato ativo; ele deixa de gerar novas cobranças',
           $this->client->encerrarContrato(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Uuid do contrato',
       ),
     ];

@@ -18,6 +18,11 @@ grupo, com as armadilhas de cada um, mora em
 
 ### Added
 
+- **Formatadores de resposta, por composição.** `ResponseFormatterInterface`
+  + `FormatterRegistry`: um formato novo é uma classe e um registro em
+  `FormatterRegistry::withDefaults()`. `--format=toon|json` escolhe o
+  encoder; `--raw` é atalho para JSON. Comandos continuam só chamando
+  `ResponseRenderer::render()`.
 - **`PageSizeRule`.** Descreve a *forma* do limite de página de um endpoint —
   degraus discretos ou qualquer inteiro até o teto —, porque medir só o teto
   não descrevia `captura status`. Os demais endpoints seguem no padrão
@@ -32,6 +37,11 @@ grupo, com as armadilhas de cada um, mora em
 
 ### Changed
 
+- **Saída padrão passou de JSON compacto para TOON.** Sucesso (stdout),
+  erros e avisos (stderr) usam o mesmo formatter. JSON compacto — o
+  contrato anterior — só sai com `--raw` ou `--format=json`. `--json`
+  continua sendo o payload de entrada das escritas. **Mudança
+  incompatível** para quem parseava stdout/stderr com `jq` sem a flag.
 - **`parcela baixar` agora quita de verdade, por outro endpoint.** Passou a
   chamar `POST /v1/financeiro/eventos-financeiros/parcelas/{id}/baixa`, e
   ganhou a opção obrigatória `--conta-financeira` (a API exige a conta que

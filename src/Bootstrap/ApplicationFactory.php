@@ -32,9 +32,11 @@ use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Config\Configuration;
 use ContaAzulCli\Config\EnvironmentConfigurationLoader;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\FormatterRegistry;
 use ContaAzulCli\Output\Logger;
+use ContaAzulCli\Output\MutableFormatterSelector;
 use ContaAzulCli\Output\Redactor;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Output\WarningEnvelope;
 use Symfony\Component\HttpClient\HttpClient;
 
@@ -55,10 +57,12 @@ final class ApplicationFactory
     $this->logger = new Logger($redactor);
     $httpClient   = HttpClient::create();
 
-    $errorEnvelope       = new ErrorEnvelope();
-    $jsonRenderer        = new JsonRenderer();
+    $formatterRegistry   = FormatterRegistry::withDefaults();
+    $formatterSelector   = new MutableFormatterSelector($formatterRegistry->default());
+    $errorEnvelope       = new ErrorEnvelope(null, $formatterSelector);
+    $responseRenderer    = new ResponseRenderer(null, $formatterSelector);
     $paginationValidator = new PaginationValidator();
-    $warningEnvelope     = new WarningEnvelope();
+    $warningEnvelope     = new WarningEnvelope(null, $formatterSelector);
     $periodoPadrao       = new PeriodoPadrao();
 
     $tokenStore     = new TokenStore($config);
@@ -87,18 +91,18 @@ final class ApplicationFactory
           new FinanceiroCommandModule(
               $financeiroClient,
               $errorEnvelope,
-              $jsonRenderer,
+              $responseRenderer,
               $paginationValidator,
               $warningEnvelope,
               $periodoPadrao,
           ),
-          new PessoaCommandModule($pessoasClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
-          new ProdutoCommandModule($produtosClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
-          new ServicoCommandModule($servicosClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
+          new PessoaCommandModule($pessoasClient, $errorEnvelope, $responseRenderer, $paginationValidator),
+          new ProdutoCommandModule($produtosClient, $errorEnvelope, $responseRenderer, $paginationValidator),
+          new ServicoCommandModule($servicosClient, $errorEnvelope, $responseRenderer, $paginationValidator),
           new ContratoCommandModule(
               $contratosClient,
               $errorEnvelope,
-              $jsonRenderer,
+              $responseRenderer,
               $paginationValidator,
               $warningEnvelope,
               $periodoPadrao,
@@ -106,15 +110,17 @@ final class ApplicationFactory
           new NotaFiscalCommandModule(
               $notasFiscaisClient,
               $errorEnvelope,
-              $jsonRenderer,
+              $responseRenderer,
               $paginationValidator,
               $warningEnvelope,
               $periodoPadrao,
           ),
-          new VendaCommandModule($vendasClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
-          new OrcamentoCommandModule($orcamentosClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
-          new CapturaCommandModule($capturaClient, $errorEnvelope, $jsonRenderer, $paginationValidator),
+          new VendaCommandModule($vendasClient, $errorEnvelope, $responseRenderer, $paginationValidator),
+          new OrcamentoCommandModule($orcamentosClient, $errorEnvelope, $responseRenderer, $paginationValidator),
+          new CapturaCommandModule($capturaClient, $errorEnvelope, $responseRenderer, $paginationValidator),
         ],
+        $formatterRegistry,
+        $formatterSelector,
     );
   }
 

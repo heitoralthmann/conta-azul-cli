@@ -8,7 +8,7 @@ use ContaAzulCli\Api\PessoasClient;
 use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Command\Support\JsonPayload;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -23,7 +23,7 @@ final class BatchCommand extends Command
   public function __construct(
       private readonly PessoasClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       string $name,
       private readonly BatchOperation $operation,
       CommandExecutor|null $commandExecutor = null,
@@ -56,7 +56,7 @@ final class BatchCommand extends Command
               BatchOperation::Deactivate => $this->client->deactivatePessoas($payload),
               BatchOperation::Delete => $this->client->deletePessoas($payload),
           };
-            $this->jsonRenderer->render($result);
+            $this->responseRenderer->render($result);
         },
     );
   }

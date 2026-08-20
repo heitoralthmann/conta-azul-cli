@@ -91,8 +91,25 @@ lugar do transporte HTTP real — veja os helpers em
 `tests/Integration/Support/`. Cada teste de comando deve cobrir, no mínimo:
 
 - Exit code (`Command::SUCCESS` ou `Command::FAILURE`).
-- Que stdout contém **só** o payload JSON de sucesso.
-- Que stderr contém **só** o envelope de erro, com o `kind` esperado.
+- Que stdout contém **só** o payload de sucesso (TOON por padrão; use
+  `CommandTestCase::decodePayload()`).
+- Que stderr contém **só** o envelope de erro, com o `kind` esperado
+  (`CommandTestCase::decodeEnvelope()`).
+
+Os testes de comando **não** passam por `ContaAzulApplication`, então `--raw`
+e `--format` não mudam o formatter aí — o mesmo vale para `--debug`. Cubra
+essas flags em `tests/Unit/Output/OutputFormatResolverTest.php`.
+
+### Adicionando um formato de resposta
+
+A saída do CLI é composta, não herdada. Para um formato novo:
+
+1. Implemente `ContaAzulCli\Output\ResponseFormatterInterface` (`name()` +
+   `format()`).
+2. Registre a classe em `FormatterRegistry::withDefaults()`.
+3. `--format=<name>` passa a funcionar sem mudar comandos. Atualize a
+   descrição de `--format` em `ContaAzulApplication` e este contrato nos
+   docs.
 
 ### Filtros de listagem exigem um teste a mais
 

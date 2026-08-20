@@ -7,7 +7,7 @@ namespace ContaAzulCli\Command\Venda;
 use ContaAzulCli\Api\VendasClient;
 use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -24,7 +24,7 @@ final class ImprimirCommand extends Command
   public function __construct(
       private readonly VendasClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       CommandExecutor|null $commandExecutor = null,
   ) {
     $this->commandExecutor = $commandExecutor ?? new CommandExecutor($errorEnvelope);
@@ -46,7 +46,7 @@ final class ImprimirCommand extends Command
         function () use ($id): void {
           $resposta = $this->client->imprimirVenda($id);
 
-          $this->jsonRenderer->render(
+          $this->responseRenderer->render(
               [
                 'content_base64' => base64_encode($resposta['content']),
                 'content_type'   => $resposta['contentType'],

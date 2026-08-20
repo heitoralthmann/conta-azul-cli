@@ -15,7 +15,7 @@ use ContaAzulCli\Command\Venda\ItensCommand;
 use ContaAzulCli\Command\Venda\ProximoNumeroCommand;
 use ContaAzulCli\Command\Venda\VendedoresCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -39,7 +39,7 @@ final class VendaCommandModuleTest extends CommandTestCase
     $module = new VendaCommandModule(
         $this->vendasClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -75,7 +75,7 @@ final class VendaCommandModuleTest extends CommandTestCase
     $module   = new VendaCommandModule(
         $this->vendasClient([$response]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -119,7 +119,7 @@ final class VendaCommandModuleTest extends CommandTestCase
     $module   = new VendaCommandModule(
         $this->vendasClient([$response]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 

@@ -11,7 +11,7 @@ use ContaAzulCli\Command\Captura\StatusCommand;
 use ContaAzulCli\Command\CommandModuleInterface;
 use ContaAzulCli\Command\Support\ResourceIdCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Command\Command;
 
 /** Registers document capture (Captura) commands, including their declarative resource operations. */
@@ -21,7 +21,7 @@ final class CapturaCommandModule implements CommandModuleInterface
   public function __construct(
       private readonly CapturaClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
   ) {
   }
@@ -29,14 +29,14 @@ final class CapturaCommandModule implements CommandModuleInterface
   /** @return list<Command> */
   public function commands(): array {
     return [
-      new EnviarCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-      new StatusCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
+      new EnviarCommand($this->client, $this->errorEnvelope, $this->responseRenderer),
+      new StatusCommand($this->client, $this->errorEnvelope, $this->responseRenderer, $this->paginationValidator),
       new ResourceIdCommand(
           'captura get',
           'Consulta os dados extraídos da captura de um documento enviado',
           $this->client->getCaptura(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Id da captura (id_captura, obtido em "captura status")',
       ),
       new ResourceIdCommand(
@@ -44,7 +44,7 @@ final class CapturaCommandModule implements CommandModuleInterface
           'Aceita a prévia do evento financeiro sugerida pela captura',
           $this->client->aceitarCaptura(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Id da captura a ser aceita',
       ),
       new ResourceIdCommand(
@@ -52,7 +52,7 @@ final class CapturaCommandModule implements CommandModuleInterface
           'Recusa a prévia do evento financeiro sugerida pela captura',
           $this->client->recusarCaptura(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Id da captura a ser recusada',
       ),
     ];

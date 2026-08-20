@@ -6,12 +6,11 @@ namespace ContaAzulCli\Tests\Integration\Command\Captura;
 
 use ContaAzulCli\Command\Captura\EnviarCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\Console\Command\Command;
 
 use function file_put_contents;
-use function json_decode;
 use function sys_get_temp_dir;
 use function uniqid;
 use function unlink;
@@ -36,13 +35,13 @@ final class EnviarCommandTest extends CommandTestCase
     $command = new EnviarCommand(
         $this->capturaClient([$this->jsonResponse(['id' => 'doc-1', 'nome' => 'recibo.pdf'], 201)]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
     );
 
     $tester = $this->runCommand($command, ['arquivo' => $this->arquivo, '--descricao' => 'Recibo de teste']);
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-    self::assertSame(['id' => 'doc-1', 'nome' => 'recibo.pdf'], json_decode($output->stdout(), true));
+    self::assertSame(['id' => 'doc-1', 'nome' => 'recibo.pdf'], self::decodePayload($output->stdout()));
     self::assertSame('', $output->stderr());
   }
 
@@ -51,13 +50,13 @@ final class EnviarCommandTest extends CommandTestCase
     $command = new EnviarCommand(
         $this->capturaClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
     );
 
     $tester = $this->runCommand($command, ['arquivo' => $this->arquivo . '-nao-existe']);
 
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
     self::assertSame('', $output->stdout());
-    self::assertSame('client_error', json_decode($output->stderr(), true)['kind']);
+    self::assertSame('client_error', self::decodeEnvelope($output->stderr())['kind']);
   }
 }

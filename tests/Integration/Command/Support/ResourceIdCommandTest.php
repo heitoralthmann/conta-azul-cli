@@ -8,11 +8,9 @@ use ContaAzulCli\Command\Support\ResourceIdCommand;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\ErrorKind;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\Console\Command\Command;
-
-use function json_decode;
 
 /**
  * Covers the mechanism ResourceIdCommand gives to every generic get/delete
@@ -32,7 +30,7 @@ final class ResourceIdCommandTest extends CommandTestCase
           return ['id' => $id, 'nome' => 'Cadeira'];
         },
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         'ID do produto',
     );
 
@@ -40,7 +38,7 @@ final class ResourceIdCommandTest extends CommandTestCase
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
     self::assertSame('prod-1', $received);
-    self::assertSame(['id' => 'prod-1', 'nome' => 'Cadeira'], json_decode($output->stdout(), true));
+    self::assertSame(['id' => 'prod-1', 'nome' => 'Cadeira'], self::decodePayload($output->stdout()));
     self::assertSame('', $output->stderr());
   }
 
@@ -53,7 +51,7 @@ final class ResourceIdCommandTest extends CommandTestCase
             throw new CliException(ErrorKind::ClientError, false, 'Não encontrado.', 404);
         },
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         'ID do produto',
     );
 
@@ -62,7 +60,7 @@ final class ResourceIdCommandTest extends CommandTestCase
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
     self::assertSame('', $output->stdout());
 
-    $envelope = json_decode($output->stderr(), true);
+    $envelope = self::decodeEnvelope($output->stderr());
     self::assertSame('client_error', $envelope['kind']);
     self::assertSame(404, $envelope['http_status']);
   }

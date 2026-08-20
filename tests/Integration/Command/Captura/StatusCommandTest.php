@@ -7,14 +7,13 @@ namespace ContaAzulCli\Tests\Integration\Command\Captura;
 use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Command\Captura\StatusCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Console\Command\Command;
 
 use function array_map;
 use function implode;
-use function json_decode;
 use function range;
 
 final class StatusCommandTest extends CommandTestCase
@@ -24,14 +23,14 @@ final class StatusCommandTest extends CommandTestCase
     $command = new StatusCommand(
         $this->capturaClient([$this->jsonResponse(['itens' => []])]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
     $tester = $this->runCommand($command, ['--ids' => 'doc-1, doc-2']);
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-    self::assertSame(['itens' => []], json_decode($output->stdout(), true));
+    self::assertSame(['itens' => []], self::decodePayload($output->stdout()));
     self::assertSame('', $output->stderr());
   }
 
@@ -40,7 +39,7 @@ final class StatusCommandTest extends CommandTestCase
     $command = new StatusCommand(
         $this->capturaClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -48,7 +47,7 @@ final class StatusCommandTest extends CommandTestCase
 
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
     self::assertSame('', $output->stdout());
-    self::assertSame('client_error', json_decode($output->stderr(), true)['kind']);
+    self::assertSame('client_error', self::decodeEnvelope($output->stderr())['kind']);
   }
 
   /**
@@ -62,14 +61,14 @@ final class StatusCommandTest extends CommandTestCase
     $command = new StatusCommand(
         $this->capturaClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
     $tester = $this->runCommand($command, ['--ids' => 'doc-1', '--tamanho-pagina' => $size]);
 
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
-    self::assertSame('client_error', json_decode($output->stderr(), true)['kind']);
+    self::assertSame('client_error', self::decodeEnvelope($output->stderr())['kind']);
   }
 
   /** @return list<array{string}> */
@@ -88,7 +87,7 @@ final class StatusCommandTest extends CommandTestCase
     $command = new StatusCommand(
         $this->capturaClient([$this->jsonResponse(['itens' => []])]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -112,7 +111,7 @@ final class StatusCommandTest extends CommandTestCase
     $command = new StatusCommand(
         $this->capturaClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -122,7 +121,7 @@ final class StatusCommandTest extends CommandTestCase
 
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
     self::assertSame('', $output->stdout());
-    self::assertSame('client_error', json_decode($output->stderr(), true)['kind']);
+    self::assertSame('client_error', self::decodeEnvelope($output->stderr())['kind']);
   }
 
   public function testExactlyTwentyIdsIsAccepted(): void {
@@ -130,7 +129,7 @@ final class StatusCommandTest extends CommandTestCase
     $command = new StatusCommand(
         $this->capturaClient([$this->jsonResponse(['itens' => []])]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 

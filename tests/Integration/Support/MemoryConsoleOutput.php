@@ -17,7 +17,7 @@ use function stream_get_contents;
 /**
  * Splits stdout and stderr into two in-memory streams.
  *
- * Commands build their ErrorEnvelope/JsonRenderer with their own
+ * Commands build their ErrorEnvelope/ResponseRenderer with their own
  * OutputInterface at construction time, independent of the one Symfony
  * passes to Command::execute(). Mirroring ConsoleOutput's stream-splitting
  * behavior here — instead of a plain BufferedOutput — is what lets tests

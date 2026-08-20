@@ -9,7 +9,7 @@ use ContaAzulCli\Api\VendasClient;
 use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Command\Support\PaginationOptions;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
@@ -25,7 +25,7 @@ final class ItensCommand extends Command
   public function __construct(
       private readonly VendasClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
       CommandExecutor|null $commandExecutor = null,
   ) {
@@ -47,7 +47,7 @@ final class ItensCommand extends Command
         function () use ($idVenda, $pagina, $tamanhoPagina): void {
           $pagination = PaginationOptions::fromValues($pagina, $tamanhoPagina, $this->paginationValidator);
 
-          $this->jsonRenderer->render(
+          $this->responseRenderer->render(
               $this->client->listItensVenda($idVenda, $pagination->page(), $pagination->pageSize()),
           );
         },

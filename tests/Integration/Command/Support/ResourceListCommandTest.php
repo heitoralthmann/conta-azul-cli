@@ -9,11 +9,9 @@ use ContaAzulCli\Command\Support\ResourceListCommand;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\ErrorKind;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\Console\Command\Command;
-
-use function json_decode;
 
 /**
  * Covers the mechanism ResourceListCommand gives to every generic list
@@ -35,7 +33,7 @@ final class ResourceListCommandTest extends CommandTestCase
           return ['items' => [], 'page' => $page];
         },
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
         ['busca' => 'busca'],
     );
@@ -44,7 +42,7 @@ final class ResourceListCommandTest extends CommandTestCase
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
     self::assertSame([2, 10, ['busca' => 'cadeira']], $received);
-    self::assertSame(['items' => [], 'page' => 2], json_decode($output->stdout(), true));
+    self::assertSame(['items' => [], 'page' => 2], self::decodePayload($output->stdout()));
     self::assertSame('', $output->stderr());
   }
 
@@ -57,7 +55,7 @@ final class ResourceListCommandTest extends CommandTestCase
           throw new CliException(ErrorKind::RateLimited, true, 'Limite atingido.', 429);
         },
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -66,7 +64,7 @@ final class ResourceListCommandTest extends CommandTestCase
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
     self::assertSame('', $output->stdout());
 
-    $envelope = json_decode($output->stderr(), true);
+    $envelope = self::decodeEnvelope($output->stderr());
     self::assertSame('rate_limited', $envelope['kind']);
     self::assertTrue($envelope['retryable']);
   }
@@ -83,7 +81,7 @@ final class ResourceListCommandTest extends CommandTestCase
           return [];
         },
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -92,7 +90,7 @@ final class ResourceListCommandTest extends CommandTestCase
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
     self::assertFalse($called);
 
-    $envelope = json_decode($output->stderr(), true);
+    $envelope = self::decodeEnvelope($output->stderr());
     self::assertSame('client_error', $envelope['kind']);
   }
 }

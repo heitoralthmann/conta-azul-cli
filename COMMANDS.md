@@ -122,31 +122,41 @@ Cada endpoint traz uma marca de confiança:
 
 ## Contrato de saída
 
-Vale para **todos** os comandos:
+Vale para **todos** os comandos estruturados (`auth login` / `auth logout`
+escrevem texto para o operador, não este envelope):
 
 | Canal | Conteúdo |
 |---|---|
-| `stdout` | Só o payload JSON compacto. Nada mais — seguro para `\| jq`. |
-| `stderr` | Envelopes JSON de erro e de aviso. |
+| `stdout` | Só o payload. Padrão: **TOON**. JSON compacto com `--raw` ou `--format=json`. |
+| `stderr` | Envelopes de erro e de aviso, no **mesmo** formato do stdout. |
 | exit code | `0` sucesso, `1` falha. Binário. |
 
-> **Resposta sem corpo sai como `[]`, não `{}`.** Um `204 No Content` — e
-> também um `{}` vindo da API — é decodificado para um array PHP vazio, que
-> volta a ser serializado como `[]`. Quem consome com `jq` deve tratar
-> `[]` como "nenhum conteúdo" nos comandos marcados `204` (`pessoa patch`,
-> `pessoa excluir`, `contrato delete`, `orcamento excluir-lote`,
-> `captura recusar`, `nota-fiscal vincular-mdfe`).
+`--json` nas escritas é payload de **entrada**. Não escolhe o formato de saída.
 
-**Envelope de erro** (stderr, exit 1):
+> **Resposta sem corpo sai como lista vazia, não objeto vazio.** Um `204 No
+> Content` — e também um `{}` vindo da API — é decodificado para um array PHP
+> vazio, serializado como `[]` em JSON e como lista vazia em TOON. Quem
+> consome com `jq` (logo `--raw`) deve tratar `[]` como "nenhum conteúdo"
+> nos comandos marcados `204` (`pessoa patch`, `pessoa excluir`,
+> `contrato delete`, `orcamento excluir-lote`, `captura recusar`,
+> `nota-fiscal vincular-mdfe`).
 
-```json
-{"kind":"client_error","retryable":false,"http_status":404,"protocol_id":null,"correlation_id":"a1b2…","message":"…"}
+**Envelope de erro** (stderr, exit 1), padrão TOON:
+
+```
+correlation_id: a1b2…
+http_status: 404
+kind: client_error
+message: …
+protocol_id: null
+retryable: false
 ```
 
 **Envelope de aviso** (stderr, exit 0 — a operação teve sucesso):
 
-```json
-{"kind":"warning","message":"Intervalo de vencimento não informado por completo; usando 2026-08-01 a 2026-08-31. …"}
+```
+kind: warning
+message: Intervalo de vencimento não informado por completo; usando 2026-08-01 a 2026-08-31. …
 ```
 
 ### Valores de `kind`
@@ -170,6 +180,8 @@ Aceitas por qualquer comando:
 
 | Opção | Efeito |
 |---|---|
+| `--format` | Formato da resposta: `toon` (padrão) ou `json`. |
+| `--raw` | Atalho para `--format=json`. |
 | `--debug` | Grava log estruturado em `~/.cache/conta-azul-cli/log.jsonl`. Credenciais são redigidas. |
 | `-q, --quiet` | Suprime tudo exceto erros. |
 | `-h, --help` | Ajuda do comando. |

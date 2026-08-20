@@ -6,11 +6,9 @@ namespace ContaAzulCli\Tests\Integration\Command\Support;
 
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\Console\Command\Command;
-
-use function json_decode;
 
 /**
  * Covers the mechanism ResourceJsonCommand gives to every generic create
@@ -30,7 +28,7 @@ final class ResourceJsonCommandTest extends CommandTestCase
           return ['id' => 'prod-novo'] + $payload;
         },
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         'Payload JSON do produto',
     );
 
@@ -38,7 +36,7 @@ final class ResourceJsonCommandTest extends CommandTestCase
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
     self::assertSame(['nome' => 'Cadeira'], $received);
-    self::assertSame(['id' => 'prod-novo', 'nome' => 'Cadeira'], json_decode($output->stdout(), true));
+    self::assertSame(['id' => 'prod-novo', 'nome' => 'Cadeira'], self::decodePayload($output->stdout()));
   }
 
   public function testMissingJsonOptionFailsBeforeInvokingTheOperation(): void {
@@ -53,7 +51,7 @@ final class ResourceJsonCommandTest extends CommandTestCase
           return [];
         },
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         'Payload JSON do produto',
     );
 
@@ -63,7 +61,7 @@ final class ResourceJsonCommandTest extends CommandTestCase
     self::assertFalse($called);
     self::assertSame('', $output->stdout());
 
-    $envelope = json_decode($output->stderr(), true);
+    $envelope = self::decodeEnvelope($output->stderr());
     self::assertSame('client_error', $envelope['kind']);
   }
 }

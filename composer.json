@@ -20,6 +20,7 @@
         "ext-ctype": "*",
         "ext-mbstring": "*",
         "ext-openssl": "*",
+        "helgesverre/toon": "^3.2",
         "ramsey/uuid": "^4.0",
         "symfony/console": "^8.0",
         "symfony/dotenv": "^8.0",

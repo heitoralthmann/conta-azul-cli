@@ -16,7 +16,7 @@ use ContaAzulCli\Command\Venda\ItensCommand;
 use ContaAzulCli\Command\Venda\ProximoNumeroCommand;
 use ContaAzulCli\Command\Venda\VendedoresCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Command\Command;
 
 /** Registers sale commands, including their declarative resource operations. */
@@ -26,7 +26,7 @@ final class VendaCommandModule implements CommandModuleInterface
   public function __construct(
       private readonly VendasClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
   ) {
   }
@@ -50,7 +50,7 @@ final class VendaCommandModule implements CommandModuleInterface
           'Lista vendas por filtros',
           $this->client->listVendas(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           $filters,
       ),
@@ -59,7 +59,7 @@ final class VendaCommandModule implements CommandModuleInterface
           'Cria uma venda',
           $this->client->createVenda(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Payload JSON da venda',
       ),
       new ResourceIdCommand(
@@ -67,7 +67,7 @@ final class VendaCommandModule implements CommandModuleInterface
           'Busca uma venda por ID',
           $this->client->getVenda(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Uuid ou id legado da venda',
       ),
       new ResourceIdJsonCommand(
@@ -75,20 +75,20 @@ final class VendaCommandModule implements CommandModuleInterface
           'Atualiza uma venda',
           $this->client->updateVenda(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Uuid da venda',
           'Payload JSON da venda',
       ),
-      new ImprimirCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-      new ItensCommand($this->client, $this->errorEnvelope, $this->jsonRenderer, $this->paginationValidator),
-      new VendedoresCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
-      new ProximoNumeroCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new ImprimirCommand($this->client, $this->errorEnvelope, $this->responseRenderer),
+      new ItensCommand($this->client, $this->errorEnvelope, $this->responseRenderer, $this->paginationValidator),
+      new VendedoresCommand($this->client, $this->errorEnvelope, $this->responseRenderer),
+      new ProximoNumeroCommand($this->client, $this->errorEnvelope, $this->responseRenderer),
       new ResourceJsonCommand(
           'venda excluir-lote',
           'Exclui vendas em lote (até 10 uuids por chamada)',
           $this->client->excluirVendasEmLote(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Payload JSON com os IDs das vendas (campo "ids")',
       ),
     ];

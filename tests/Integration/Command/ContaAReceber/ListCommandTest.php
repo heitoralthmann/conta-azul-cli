@@ -8,13 +8,11 @@ use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Command\ContaAReceber\ListCommand;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Output\WarningEnvelope;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use DateTimeImmutable;
 use Symfony\Component\Console\Command\Command;
-
-use function json_decode;
 
 final class ListCommandTest extends CommandTestCase
 {
@@ -23,7 +21,7 @@ final class ListCommandTest extends CommandTestCase
     $command = new ListCommand(
         $this->financeiroClient([$this->jsonResponse(['itens' => []])]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
         new WarningEnvelope($output),
         new PeriodoPadrao(),
@@ -35,7 +33,7 @@ final class ListCommandTest extends CommandTestCase
     );
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-    self::assertSame(['itens' => []], json_decode($output->stdout(), true));
+    self::assertSame(['itens' => []], self::decodePayload($output->stdout()));
     self::assertSame('', $output->stderr());
   }
 
@@ -44,7 +42,7 @@ final class ListCommandTest extends CommandTestCase
     $command = new ListCommand(
         $this->financeiroClient([$this->jsonResponse(['itens' => []])]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
         new WarningEnvelope($output),
         new PeriodoPadrao(new DateTimeImmutable('2026-08-16')),
@@ -53,9 +51,9 @@ final class ListCommandTest extends CommandTestCase
     $tester = $this->runCommand($command);
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-    self::assertSame(['itens' => []], json_decode($output->stdout(), true));
+    self::assertSame(['itens' => []], self::decodePayload($output->stdout()));
 
-    $warning = json_decode($output->stderr(), true);
+    $warning = self::decodeEnvelope($output->stderr());
     self::assertSame('warning', $warning['kind']);
     self::assertStringContainsString('2026-08-01', $warning['message']);
     self::assertStringContainsString('2026-08-31', $warning['message']);

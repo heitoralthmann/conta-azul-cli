@@ -10,7 +10,7 @@ use ContaAzulCli\Command\Captura\StatusCommand;
 use ContaAzulCli\Command\Module\CapturaCommandModule;
 use ContaAzulCli\Command\Support\ResourceIdCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\Console\Command\Command;
 
@@ -32,7 +32,7 @@ final class CapturaCommandModuleTest extends CommandTestCase
     $module = new CapturaCommandModule(
         $this->capturaClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -65,7 +65,7 @@ final class CapturaCommandModuleTest extends CommandTestCase
     $command  = new StatusCommand(
         $this->capturaClientRecording($captured),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -85,7 +85,7 @@ final class CapturaCommandModuleTest extends CommandTestCase
     $command  = new StatusCommand(
         $this->capturaClientRecording($captured),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -105,7 +105,7 @@ final class CapturaCommandModuleTest extends CommandTestCase
     $command  = new StatusCommand(
         $this->capturaClientRecording($captured),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 

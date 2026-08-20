@@ -6,11 +6,9 @@ namespace ContaAzulCli\Tests\Integration\Command\Pessoa;
 
 use ContaAzulCli\Command\Pessoa\CreateCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\Console\Command\Command;
-
-use function json_decode;
 
 final class CreateCommandTest extends CommandTestCase
 {
@@ -19,13 +17,13 @@ final class CreateCommandTest extends CommandTestCase
     $command = new CreateCommand(
         $this->pessoasClient([$this->jsonResponse(['id' => 'p-1', 'nome' => 'Maria'])]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
     );
 
     $tester = $this->runCommand($command, ['--json' => '{"nome":"Maria"}']);
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-    self::assertSame(['id' => 'p-1', 'nome' => 'Maria'], json_decode($output->stdout(), true));
+    self::assertSame(['id' => 'p-1', 'nome' => 'Maria'], self::decodePayload($output->stdout()));
     self::assertSame('', $output->stderr());
   }
 
@@ -34,12 +32,12 @@ final class CreateCommandTest extends CommandTestCase
     $command = new CreateCommand(
         $this->pessoasClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
     );
 
     $tester = $this->runCommand($command);
 
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
-    self::assertSame('client_error', json_decode($output->stderr(), true)['kind']);
+    self::assertSame('client_error', self::decodeEnvelope($output->stderr())['kind']);
   }
 }

@@ -6,7 +6,7 @@ namespace ContaAzulCli\Tests\Integration\Command\Parcela;
 
 use ContaAzulCli\Command\Parcela\BaixarCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Console\Command\Command;
@@ -29,13 +29,13 @@ final class BaixarCommandTest extends CommandTestCase
     $command = new BaixarCommand(
         $this->financeiroClient([$this->jsonResponse(['id' => 'baixa-1', 'versao' => 0])]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
     );
 
     $tester = $this->runCommand($command, self::VALID_INPUT);
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-    self::assertSame(['id' => 'baixa-1', 'versao' => 0], json_decode($output->stdout(), true));
+    self::assertSame(['id' => 'baixa-1', 'versao' => 0], self::decodePayload($output->stdout()));
     self::assertSame('', $output->stderr());
   }
 
@@ -53,7 +53,7 @@ final class BaixarCommandTest extends CommandTestCase
     $command  = new BaixarCommand(
         $this->financeiroClientRecording($captured),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
     );
 
     $this->runCommand($command, self::VALID_INPUT);
@@ -94,13 +94,13 @@ final class BaixarCommandTest extends CommandTestCase
     $command = new BaixarCommand(
         $this->financeiroClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
     );
 
     $tester = $this->runCommand($command, $input);
 
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
-    $envelope = json_decode($output->stderr(), true);
+    $envelope = self::decodeEnvelope($output->stderr());
     self::assertSame('client_error', $envelope['kind']);
   }
 
@@ -109,13 +109,13 @@ final class BaixarCommandTest extends CommandTestCase
     $command = new BaixarCommand(
         $this->financeiroClient([$this->errorResponse(500)]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
     );
 
     $tester = $this->runCommand($command, self::VALID_INPUT);
 
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
-    $envelope = json_decode($output->stderr(), true);
+    $envelope = self::decodeEnvelope($output->stderr());
     self::assertSame('ambiguous', $envelope['kind']);
     self::assertFalse($envelope['retryable']);
   }

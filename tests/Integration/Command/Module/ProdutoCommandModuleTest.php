@@ -11,7 +11,7 @@ use ContaAzulCli\Command\Support\ResourceIdJsonCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Command\Support\ResourceListCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
@@ -33,7 +33,7 @@ final class ProdutoCommandModuleTest extends CommandTestCase
     $module = new ProdutoCommandModule(
         $this->produtosClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -71,7 +71,7 @@ final class ProdutoCommandModuleTest extends CommandTestCase
     $module   = new ProdutoCommandModule(
         $this->produtosClient([$response]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -97,7 +97,7 @@ final class ProdutoCommandModuleTest extends CommandTestCase
     $module = new ProdutoCommandModule(
         $this->produtosClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 

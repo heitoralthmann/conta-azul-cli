@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ContaAzulCli\Command\Support;
 
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,7 +28,7 @@ final class ResourceIdCommand extends Command
       string $description,
       private readonly mixed $operation,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private string $argumentDescription,
       CommandExecutor|null $commandExecutor = null,
   ) {
@@ -49,7 +49,7 @@ final class ResourceIdCommand extends Command
     return $this->commandExecutor->execute(
         function () use ($input): void {
           $id = $input->getArgument('id');
-          $this->jsonRenderer->render(($this->operation)(is_string($id) ? $id : ''));
+          $this->responseRenderer->render(($this->operation)(is_string($id) ? $id : ''));
         },
     );
   }

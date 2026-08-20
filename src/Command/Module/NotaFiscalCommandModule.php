@@ -13,7 +13,7 @@ use ContaAzulCli\Command\NotaFiscalServico\ListCommand as NotaFiscalServicoListC
 use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Output\WarningEnvelope;
 use Symfony\Component\Console\Command\Command;
 
@@ -24,7 +24,7 @@ final class NotaFiscalCommandModule implements CommandModuleInterface
   public function __construct(
       private readonly NotasFiscaisClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
       private readonly WarningEnvelope $warningEnvelope,
       private readonly PeriodoPadrao $periodoPadrao,
@@ -37,24 +37,24 @@ final class NotaFiscalCommandModule implements CommandModuleInterface
       new NotaFiscalListCommand(
           $this->client,
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           $this->warningEnvelope,
           $this->periodoPadrao,
       ),
-      new NotaFiscalGetCommand($this->client, $this->errorEnvelope, $this->jsonRenderer),
+      new NotaFiscalGetCommand($this->client, $this->errorEnvelope, $this->responseRenderer),
       new ResourceJsonCommand(
           'nota-fiscal vincular-mdfe',
           'Vincula uma ou mais notas fiscais a um MDF-e',
           $this->client->vincularMdfe(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Payload JSON do vínculo (chaves_acesso, identificador, status)',
       ),
       new NotaFiscalServicoListCommand(
           $this->client,
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           $this->warningEnvelope,
           $this->periodoPadrao,

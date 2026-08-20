@@ -8,7 +8,7 @@ use ContaAzulCli\Api\FinanceiroClient;
 use ContaAzulCli\Command\Support\CommandExecutor;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Output\WarningEnvelope;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
@@ -27,7 +27,7 @@ final class AlteracoesCommand extends Command
   public function __construct(
       private readonly FinanceiroClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly WarningEnvelope $warningEnvelope,
       private readonly PeriodoPadrao $periodoPadrao,
       CommandExecutor|null $commandExecutor = null,
@@ -62,7 +62,7 @@ final class AlteracoesCommand extends Command
               );
           }
 
-          $this->jsonRenderer->render($this->client->getAlteracoes($inicio, $fim));
+          $this->responseRenderer->render($this->client->getAlteracoes($inicio, $fim));
         },
     );
   }

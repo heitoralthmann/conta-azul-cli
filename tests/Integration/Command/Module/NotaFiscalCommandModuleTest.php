@@ -12,7 +12,7 @@ use ContaAzulCli\Command\NotaFiscalServico\ListCommand as NotaFiscalServicoListC
 use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Output\WarningEnvelope;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use DateTimeImmutable;
@@ -153,7 +153,7 @@ final class NotaFiscalCommandModuleTest extends CommandTestCase
     $module = new NotaFiscalCommandModule(
         $this->notasFiscaisClient($responses),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
         new WarningEnvelope($output),
         $periodoPadrao ?? new PeriodoPadrao(),

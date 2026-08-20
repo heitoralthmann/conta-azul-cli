@@ -11,12 +11,11 @@ use ContaAzulCli\Command\Support\ResourceIdJsonCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Command\Support\ResourceListCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
-use function json_decode;
 use function parse_str;
 use function parse_url;
 
@@ -35,7 +34,7 @@ final class ServicoCommandModuleTest extends CommandTestCase
     $module = new ServicoCommandModule(
         $this->servicosClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -67,7 +66,7 @@ final class ServicoCommandModuleTest extends CommandTestCase
     $module   = new ServicoCommandModule(
         $this->servicosClient([$response]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -94,7 +93,7 @@ final class ServicoCommandModuleTest extends CommandTestCase
     $module = new ServicoCommandModule(
         $this->servicosClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -127,7 +126,7 @@ final class ServicoCommandModuleTest extends CommandTestCase
     $module = new ServicoCommandModule(
         $this->servicosClient([]),
         new ErrorEnvelope($output),
-        new JsonRenderer($output),
+        new ResponseRenderer($output),
         new PaginationValidator(),
     );
 
@@ -141,7 +140,7 @@ final class ServicoCommandModuleTest extends CommandTestCase
     self::assertSame(Command::FAILURE, $tester->getStatusCode());
     self::assertSame('', $output->stdout());
 
-    $error = json_decode($output->stderr(), true);
+    $error = self::decodeEnvelope($output->stderr());
     self::assertSame('client_error', $error['kind']);
     self::assertSame(
         'Tamanho de página inválido: 200. Valores aceitos: 10, 20, 50, 100',

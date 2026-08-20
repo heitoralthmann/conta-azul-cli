@@ -12,7 +12,7 @@ use ContaAzulCli\Command\Support\ResourceIdJsonCommand;
 use ContaAzulCli\Command\Support\ResourceJsonCommand;
 use ContaAzulCli\Command\Support\ResourceListCommand;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\JsonRenderer;
+use ContaAzulCli\Output\ResponseRenderer;
 use Symfony\Component\Console\Command\Command;
 
 /** Registers product commands, including their declarative resource operations. */
@@ -22,7 +22,7 @@ final class ProdutoCommandModule implements CommandModuleInterface
   public function __construct(
       private readonly ProdutosClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
-      private readonly JsonRenderer $jsonRenderer,
+      private readonly ResponseRenderer $responseRenderer,
       private readonly PaginationValidator $paginationValidator,
   ) {
   }
@@ -45,7 +45,7 @@ final class ProdutoCommandModule implements CommandModuleInterface
           'Lista produtos por filtros',
           $this->client->listProdutos(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           $filters,
       ),
@@ -54,7 +54,7 @@ final class ProdutoCommandModule implements CommandModuleInterface
           'Cria um produto',
           $this->client->createProduto(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'Payload JSON do produto',
       ),
       new ResourceIdCommand(
@@ -62,7 +62,7 @@ final class ProdutoCommandModule implements CommandModuleInterface
           'Busca um produto por ID',
           $this->client->getProduto(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'ID do produto',
       ),
       new ResourceIdJsonCommand(
@@ -70,7 +70,7 @@ final class ProdutoCommandModule implements CommandModuleInterface
           'Atualiza parcialmente um produto',
           $this->client->updateProduto(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'ID do produto',
           'Payload JSON do produto',
       ),
@@ -79,7 +79,7 @@ final class ProdutoCommandModule implements CommandModuleInterface
           'Exclui um produto',
           $this->client->deleteProduto(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           'ID do produto',
       ),
       new ResourceListCommand(
@@ -87,7 +87,7 @@ final class ProdutoCommandModule implements CommandModuleInterface
           'Lista categorias de produtos',
           $this->client->listCategoriasProduto(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           ['busca' => 'busca'],
       ),
@@ -96,7 +96,7 @@ final class ProdutoCommandModule implements CommandModuleInterface
           'Lista códigos CEST',
           $this->client->listCest(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           ['busca' => 'busca', 'codigo' => 'codigo'],
       ),
@@ -105,7 +105,7 @@ final class ProdutoCommandModule implements CommandModuleInterface
           'Lista códigos NCM',
           $this->client->listNcm(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           ['busca' => 'busca', 'codigo' => 'codigo'],
       ),
@@ -114,7 +114,7 @@ final class ProdutoCommandModule implements CommandModuleInterface
           'Lista unidades de medida',
           $this->client->listUnidadesMedida(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           ['busca' => 'busca', 'codigo' => 'codigo'],
       ),
@@ -123,7 +123,7 @@ final class ProdutoCommandModule implements CommandModuleInterface
           'Lista categorias de ecommerce',
           $this->client->listCategoriasEcommerce(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           ['busca' => 'busca'],
       ),
@@ -132,7 +132,7 @@ final class ProdutoCommandModule implements CommandModuleInterface
           'Lista marcas de ecommerce',
           $this->client->listMarcasEcommerce(...),
           $this->errorEnvelope,
-          $this->jsonRenderer,
+          $this->responseRenderer,
           $this->paginationValidator,
           ['busca' => 'busca'],
       ),
