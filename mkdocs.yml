@@ -119,7 +119,6 @@ nav:
       - Notas para quem for estender: guia/estendendo.md
       - Cobertura da API: desenvolvimento/cobertura-da-api.md
       - Especificação: desenvolvimento/especificacao.md
-      - Notas de go-live: desenvolvimento/going-live.md
 
 # Fontes do gerador e dependências de build vivem sob docs/ por conveniência,
 # mas não fazem parte do site publicado.

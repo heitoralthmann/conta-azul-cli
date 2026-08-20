@@ -31,11 +31,14 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
   para teste leva `TESTE CLI CONTA AZUL` no campo de texto livre que o recurso
   oferecer, marcar não substitui limpar, e o caminho de volta se confere antes
   da primeira escrita — a API não publica `DELETE` para todo recurso.
-- `docs/desenvolvimento/going-live.md` reescrito: deixou de se declarar
-  privado, ganhou o passo de habilitar o GitHub Pages, a ordem forçada entre
-  os passos (proteção de branch e Private Vulnerability Reporting são
-  indisponíveis enquanto o repo é privado) e o aviso de que proteger a `main`
-  encerra o push direto.
+
+
+### Removed
+
+- `docs/desenvolvimento/going-live.md`. Era um checklist operacional de
+  publicação — passos na UI do GitHub e do Packagist —, útil enquanto o
+  repositório era privado e sem sentido para quem chega ao projeto depois.
+  O conteúdo segue no histórico do Git para quem precisar.
 
 ### Fixed
 
