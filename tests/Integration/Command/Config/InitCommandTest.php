@@ -11,9 +11,7 @@ use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Tests\Integration\Support\MemoryConsoleOutput;
 use Symfony\Component\Console\Command\Command;
 
-use function decoct;
 use function file_get_contents;
-use function fileperms;
 
 final class InitCommandTest extends ConfigCommandTestCase
 {
@@ -27,8 +25,8 @@ final class InitCommandTest extends ConfigCommandTestCase
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
     self::assertSame('', $output->stderr());
     self::assertFileExists($path);
-    self::assertSame('600', $this->permissions($path));
-    self::assertSame('700', $this->permissions($this->userDirectory()));
+    self::assertPermissions('600', $path);
+    self::assertPermissions('700', $this->userDirectory());
 
     $contents = (string) file_get_contents($path);
     self::assertStringContainsString('CA_CLIENT_ID=', $contents);
@@ -75,10 +73,6 @@ final class InitCommandTest extends ConfigCommandTestCase
 
     self::assertSame(Command::SUCCESS, $tester->getStatusCode());
     self::assertStringNotContainsString('nao-perder', (string) file_get_contents($path));
-  }
-
-  private function permissions(string $path): string {
-    return decoct((int) fileperms($path) & 0777);
   }
 
   private function command(MemoryConsoleOutput $output): InitCommand {

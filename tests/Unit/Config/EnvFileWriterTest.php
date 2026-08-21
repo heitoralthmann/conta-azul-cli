@@ -6,14 +6,13 @@ namespace ContaAzulCli\Tests\Unit\Config;
 
 use ContaAzulCli\Config\ConfigException;
 use ContaAzulCli\Config\EnvFileWriter;
+use ContaAzulCli\Tests\Support\PosixPermissions;
 use PHPUnit\Framework\TestCase;
 
 use function array_reverse;
 use function chmod;
-use function decoct;
 use function file_get_contents;
 use function file_put_contents;
-use function fileperms;
 use function is_dir;
 use function mkdir;
 use function rmdir;
@@ -23,6 +22,8 @@ use function unlink;
 
 final class EnvFileWriterTest extends TestCase
 {
+  use PosixPermissions;
+
   private EnvFileWriter $writer;
   private string $directory = '';
 
@@ -58,9 +59,12 @@ final class EnvFileWriterTest extends TestCase
 
     $this->writer->create($path, "CA_CLIENT_ID=abc\n");
 
-    self::assertSame('600', $this->permissions($path));
-    self::assertSame('700', $this->permissions($this->directory . '/nested'));
+    // Creating the missing directory and writing the body are asserted on
+    // every platform; only the mode itself is POSIX-only.
+    self::assertFileExists($path);
     self::assertSame("CA_CLIENT_ID=abc\n", file_get_contents($path));
+    self::assertPermissions('600', $path);
+    self::assertPermissions('700', $this->directory . '/nested');
   }
 
   /** An upsert has to leave the hand-written guidance around a variable intact. */
@@ -151,11 +155,13 @@ final class EnvFileWriterTest extends TestCase
 
   /** Writing reapplies the permission, so a loosened file tightens on next use. */
   public function testUpsertReappliesRestrictivePermissions(): void {
+    self::requirePosixPermissions();
+
     $path = $this->writeFile("CA_CLIENT_ID=old\n", 0644);
 
     $this->writer->upsert($path, 'CA_CLIENT_ID', 'new');
 
-    self::assertSame('600', $this->permissions($path));
+    self::assertPermissions('600', $path);
   }
 
   /** Writing to a file that is not there points at the wrong problem; refuse first. */
@@ -171,10 +177,6 @@ final class EnvFileWriterTest extends TestCase
     chmod($path, $mode);
 
     return $path;
-  }
-
-  private function permissions(string $path): string {
-    return decoct((int) fileperms($path) & 0777);
   }
 
   private function trackFile(string $path): string {

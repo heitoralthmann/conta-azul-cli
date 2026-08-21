@@ -12,9 +12,7 @@ use ContaAzulCli\Tests\Integration\Support\MemoryConsoleOutput;
 use Symfony\Component\Console\Command\Command;
 
 use function chmod;
-use function decoct;
 use function file_get_contents;
-use function fileperms;
 
 final class SetCommandTest extends ConfigCommandTestCase
 {
@@ -106,12 +104,14 @@ final class SetCommandTest extends ConfigCommandTestCase
 
   /** A file loosened by hand tightens again on the next write. */
   public function testReappliesRestrictivePermissions(): void {
+    self::requirePosixPermissions();
+
     $path = $this->writeProjectEnv("CA_CLIENT_ID=antigo\n");
     chmod($path, 0644);
 
     $this->runCommand($this->command($this->newOutput()), ['chave' => 'CA_CLIENT_ID', 'valor' => 'novo']);
 
-    self::assertSame('600', decoct((int) fileperms($path) & 0777));
+    self::assertPermissions('600', $path);
   }
 
   private function command(MemoryConsoleOutput $output): SetCommand {

@@ -7,6 +7,7 @@ namespace ContaAzulCli\Tests\Integration\Command\Config;
 use ContaAzulCli\Config\ConfigFileLocator;
 use ContaAzulCli\Tests\Integration\Support\CommandTestCase;
 use ContaAzulCli\Tests\Support\DecodedPayloads;
+use ContaAzulCli\Tests\Support\PosixPermissions;
 use ContaAzulCli\Tests\Support\TemporaryDirectories;
 
 use function file_put_contents;
@@ -24,6 +25,7 @@ use function putenv;
 abstract class ConfigCommandTestCase extends CommandTestCase
 {
   use DecodedPayloads;
+  use PosixPermissions;
   use TemporaryDirectories;
 
   private const array ENV_VARS = ['HOME', 'USERPROFILE', 'HOMEDRIVE', 'HOMEPATH', 'CA_CLI_ENV_FILE'];
