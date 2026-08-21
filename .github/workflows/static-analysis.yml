@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Reutilizável: chamado por `release.yml` como parte do gate da tag.
+  workflow_call:
 
 # Somente leitura: nenhum destes jobs escreve no repositório.
 # Explícito em vez de herdar o default do repo, que é uma

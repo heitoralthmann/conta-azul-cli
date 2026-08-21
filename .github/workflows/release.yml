@@ -10,7 +10,29 @@ permissions:
   contents: write
 
 jobs:
+  # A tag dispara este workflow independentemente dos demais, então sem estes
+  # `needs` um `git push --tags` publica o artefato enquanto os testes ainda
+  # rodam — ou depois de falharem. Foi o que aconteceu na v0.17.0: a release
+  # saiu verde enquanto o job de testes ficava vermelho no Windows.
+  #
+  # Reuso em vez de cópia: os mesmos arquivos que guardam a `main` guardam a
+  # tag, e não há um segundo conjunto de checagens para manter em sincronia.
+  # `docs.yml` fica de fora de propósito — ele publica no GitHub Pages, e
+  # rodá-lo a partir de uma tag tentaria um deploy que não é papel da release.
+  tests:
+    uses: ./.github/workflows/tests.yml
+
+  static-analysis:
+    uses: ./.github/workflows/static-analysis.yml
+
+  code-style:
+    uses: ./.github/workflows/code-style.yml
+
+  security:
+    uses: ./.github/workflows/security.yml
+
   build:
+    needs: [tests, static-analysis, code-style, security]
     runs-on: ubuntu-latest
 
     steps:

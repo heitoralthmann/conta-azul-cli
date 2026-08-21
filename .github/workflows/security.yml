@@ -8,6 +8,9 @@ on:
   schedule:
     # Catches a CVE published in an existing dependency after the last commit.
     - cron: '0 9 * * 1' # Every Monday 9am UTC
+  # Reutilizável: chamado por `release.yml` para que uma tag não publique um
+  # artefato construído sobre dependência com vulnerabilidade conhecida.
+  workflow_call:
 
 # Somente leitura: nenhum destes jobs escreve no repositório.
 # Explícito em vez de herdar o default do repo, que é uma
