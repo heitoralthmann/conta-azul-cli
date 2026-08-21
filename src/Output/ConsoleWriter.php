@@ -18,7 +18,7 @@ use function rtrim;
  */
 final class ConsoleWriter
 {
-  private readonly OutputInterface $output;
+  private OutputInterface $output;
 
   /**
    * Creates a stream writer.
@@ -28,6 +28,18 @@ final class ConsoleWriter
    */
   public function __construct(OutputInterface|null $output = null) {
     $this->output = $output ?? new ConsoleOutput();
+  }
+
+  /**
+   * Points subsequent writes at another output.
+   *
+   * Renderers are built during application construction, before Symfony hands
+   * over the output for the invocation. This is how the shell honors an output
+   * supplied to `Application::run()` instead of writing past it to the real
+   * console — which is also what makes that output assertable in tests.
+   */
+  public function redirectTo(OutputInterface $output): void {
+    $this->output = $output;
   }
 
   /** Writes a successful command payload to stdout. */

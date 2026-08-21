@@ -1,0 +1,80 @@
+<!-- Gerado por tools/generate-docs.php. Não edite à mão.
+     Prosa e endpoints: docs/_data/commands/*.yaml -->
+
+# Configuração
+
+Estes quatro comandos são os únicos do CLI que **não chamam a API**. Eles leem
+e escrevem o arquivo de ambiente local, e por isso continuam registrados
+quando o bootstrap falha por falta de credencial — que é exatamente o estado
+em que `ca config init` precisa funcionar.
+
+Vale então uma ressalva sobre a marca: no resto desta referência, ✅ quer
+dizer "exercitado contra a API de produção". Aqui não existe API para
+exercitar, e a marca quer dizer "coberto por testes e pelo smoke test do
+PHAR". Nenhuma requisição HTTP sai desta página.
+
+**Onde o CLI procura o arquivo.** Um único arquivo é lido — o primeiro
+candidato que existir vence, e **nada é mesclado**:
+
+| Ordem | Candidato | Observação |
+|---|---|---|
+| 1 | o arquivo indicado por `CA_CLI_ENV_FILE` | Escape hatch explícito, por invocação. Se a variável estiver definida e o arquivo não puder ser lido, é **erro duro** — nunca um pulo silencioso para o próximo candidato. |
+| 2 | `<raiz do repo>/.env` | O caminho histórico, que continua valendo num clone. **Pulado dentro de um PHAR**, onde ele resolveria para um `phar://…/.env` que ninguém pode criar. |
+| 3 | `~/.config/conta-azul-cli/.env` | O arquivo do usuário, no mesmo diretório em que já moram `tokens.json` e o log. É o que torna um `ca` global utilizável. |
+
+Mesclar candidatos tornaria `ca config set` ambíguo — gravou em qual arquivo?
+— e transformaria um arquivo esquecido num override parcial silencioso. Por
+isso a regra cabe numa frase, e por isso `ca config path` imprime a decisão
+inteira.
+
+`getcwd() . '/.env'` **não** é candidato, de propósito: rodar o `ca` de dentro
+de qualquer projeto alheio que tenha um `.env` faria o CLI absorver as
+variáveis daquele projeto — credenciais de terceiros, em silêncio.
+`CA_CLI_ENV_FILE` cobre a mesma necessidade de forma explícita, por invocação,
+e aparece em `ca config path`.
+
+Uma variável já exportada no ambiente continua ganhando do arquivo. A
+precedência completa está em [Configuração](../guia/configuracao.md).
+
+## `config path` ✅ { #config-path }
+
+Sem parâmetros. Responde `arquivo` — o caminho que venceu, ou `null` quando nenhum candidato existe — e `candidatos`, a lista inteira na ordem de precedência, com o `status` de cada um: `usado`, `não existe`, `não definido`, `pulado: dentro do PHAR`, `pulado: diretório home não resolvido` ou `ignorado: um candidato anterior venceu`.
+
+É o primeiro comando a rodar quando o CLI não parece enxergar uma credencial que você tem certeza de ter gravado: ele responde **qual arquivo está valendo** antes de qualquer palpite.
+
+## `config init` ✅ { #config-init }
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `--force` | não | Sobrescreve o arquivo do usuário. Sem ela, um arquivo existente faz o comando falhar, em vez de descartar o que está lá |
+
+Escreve o modelo embutido em `~/.config/conta-azul-cli/.env`, criando o diretório com `0700` e o arquivo com `0600`. Responde com o caminho gravado e o próximo passo.
+
+**`init` e `set` têm alvos diferentes, e isso é deliberado.** `config init` grava **sempre** no arquivo do usuário, mesmo que outro candidato esteja valendo agora — a razão de ele existir é criar o arquivo que torna o CLI utilizável fora do diretório do projeto. Já `config set` grava no arquivo **em vigor**, seja ele qual for. Num clone que tenha `.env` na raiz, portanto, `config init` cria um segundo arquivo que só passa a valer quando o primeiro sair do caminho — e `config path` mostra exatamente isso.
+
+O modelo é uma constante compilada no binário, não uma cópia de `.env.example` lida do disco. `.env.example` mora no repositório e não dentro do PHAR: lê-lo de disco funcionaria num clone e falharia em todo o resto, reproduzindo a classe exata de bug que o search path existe para corrigir.
+
+## `config set` ✅ { #config-set }
+
+| Parâmetro | Obrig. | Descrição |
+|---|---|---|
+| `<chave>` | **sim** | Nome da variável (ex.: `CA_CLIENT_ID`). Aceita minúsculas; o arquivo sempre recebe o nome canônico |
+| `<valor>` | **sim** | Valor a gravar. Vazio equivale a não definir a variável |
+
+Insere ou substitui a variável no arquivo em vigor, **preservando comentários, linhas em branco e a ordem** do arquivo, e reaplicando `0600` a cada escrita.
+
+Só as variáveis que o CLI realmente lê são aceitas; qualquer outra é recusada na hora, com a lista das válidas. Sem essa validação, uma chave digitada errado — `CA_CLIENT_IDD`, por exemplo — viraria uma linha no arquivo que nunca faz efeito, e o sintoma reapareceria depois como credencial ausente.
+
+`CA_CLI_ENV_FILE` **não** está na lista, e não poderia estar: ela *escolhe* o arquivo de ambiente em vez de morar dentro de um. Defina-a no shell.
+
+Valor vazio equivale a não definir a variável — o CLI trata variável vazia como ausente e cai no default compilado.
+
+A resposta traz `arquivo` e `chave`, **nunca o valor**: este é o caminho normal pelo qual um client secret chega ao arquivo, e a saída do comando termina no scrollback do terminal e no log do CI.
+
+## `config show` ✅ { #config-show }
+
+Sem parâmetros. Lista as treze variáveis conhecidas com o valor efetivo e a coluna `origem`: `ambiente` para uma variável exportada no shell, `arquivo` para uma definida no arquivo em vigor, `default` para o valor compilado no CLI. `(ausente)` marca o que não tem nem valor nem default.
+
+**A saída nunca contém segredo.** `CA_CLIENT_SECRET` e `CA_BOOTSTRAP_REFRESH_TOKEN` aparecem apenas como `(definido)` ou `(ausente)` — sem máscara parcial e sem opção para revelar. Um prefixo ainda é material aproveitável, e meio segredo num relatório de bug é um segredo num relatório de bug. É essa ausência de saída de emergência que torna a saída deste comando **segura de colar numa issue**.
+
+O arquivo é reinterpretado aqui em vez de lido de volta por `getenv()`: a essa altura o Dotenv já rodou, e `getenv()` não distingue mais um valor que veio do arquivo de um que você exportou — que é justamente o que a coluna `origem` existe para dizer.

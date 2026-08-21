@@ -74,4 +74,18 @@ final class RedactorTest extends TestCase
 
     self::assertSame('[REDACTED]', $result['Authorization']);
   }
+
+  /** The CA_-prefixed environment names are the ones `ca config show` asks about. */
+  public function testRecognizesPrefixedConfigurationVariablesAsSensitive(): void {
+    self::assertTrue($this->redactor->isSensitive('CA_CLIENT_SECRET'));
+    self::assertTrue($this->redactor->isSensitive('CA_BOOTSTRAP_REFRESH_TOKEN'));
+    self::assertTrue($this->redactor->isSensitive('client_secret'));
+  }
+
+  /** Neighbouring variable names must not be swept up by the prefix match. */
+  public function testDoesNotTreatOrdinaryConfigurationVariablesAsSensitive(): void {
+    foreach (['CA_CLIENT_ID', 'CA_CLI_TOKEN_PATH', 'CA_TOKEN_URL', 'CA_SCOPE'] as $name) {
+      self::assertFalse($this->redactor->isSensitive($name), $name);
+    }
+  }
 }

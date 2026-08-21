@@ -9,8 +9,68 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-08-21
+
+Desamarra o CLI do diretório do projeto. As credenciais deixam de precisar
+morar em `<raiz do repo>/.env`, e o PHAR volta como canal de distribuição —
+desta vez com o defeito que o inutilizava corrigido **antes** de o pipeline ser
+religado.
+
+### Added
+
+- **Search path para o arquivo de ambiente.** A ordem é `CA_CLI_ENV_FILE` →
+  `<raiz do repo>/.env` → `~/.config/conta-azul-cli/.env`, e **o primeiro que
+  existir vence, sem mesclagem**. A regra cabe numa frase de propósito: mesclar
+  tornaria `ca config set` ambíguo (gravou em qual arquivo?) e transformaria um
+  arquivo esquecido num override parcial silencioso. O candidato do meio é
+  pulado dentro de um PHAR, onde ele resolveria para um `phar://…/.env` que
+  ninguém pode criar.
+- **`CA_CLI_ENV_FILE`**, o escape hatch explícito, avaliado antes de tudo.
+  Apontar para um arquivo ilegível é **erro duro**, nunca um pulo silencioso
+  para o próximo candidato: cair no arquivo errado autenticaria contra outra
+  conta, e o engano reapareceria muito depois como um `401` sem explicação.
+- **Quatro comandos `ca config`**, registrados **mesmo quando o bootstrap
+  falha** — são justamente o caminho para sair desse estado:
+    - `ca config path` — o caminho resolvido e todos os candidatos, com o
+      motivo de cada um ter vencido ou sido descartado. É a ferramenta de
+      diagnóstico da precedência.
+    - `ca config init` — cria `~/.config/conta-azul-cli/.env` a partir de um
+      modelo embutido no binário, em diretório `0700` e arquivo `0600`. Recusa
+      sobrescrever sem `--force`.
+    - `ca config set <chave> <valor>` — upsert no arquivo **em vigor**,
+      preservando comentários, linhas em branco e ordem. Uma chave fora da
+      lista conhecida é recusada na hora, em vez de virar uma variável que
+      nunca faz efeito.
+    - `ca config show` — toda a configuração efetiva, com a origem de cada
+      valor: `ambiente`, `arquivo` ou `default`.
+- **`ca config show` nunca imprime segredo.** `CA_CLIENT_SECRET` e
+  `CA_BOOTSTRAP_REFRESH_TOKEN` saem como `(definido)` ou `(ausente)` — sem
+  máscara parcial e sem flag para revelar. Meio segredo num relatório de bug
+  ainda é um segredo num relatório de bug; não haver forma de revelar é
+  exatamente o que torna essa saída segura de colar numa issue.
+- **O canal PHAR de volta.** `composer build:phar` produz
+  `build/conta-azul-cli.phar`, e o workflow de release anexa o arquivo mais o
+  `.sha256` a cada tag `v*`. Sem compressão desta vez: ela acrescentaria
+  dependência de `ext-zlib` a um canal cujo argumento inteiro é rodar em
+  qualquer lugar que tenha PHP.
+- **Smoke test do artefato empacotado** (`tools/smoke-test.sh`, também como
+  `composer smoke:phar`), rodando **antes** do upload no CI. São seis
+  verificações executadas contra o `.phar` construído, incluindo a que prova a
+  tese inteira: o binário enxerga credenciais de um arquivo fora dele. Nenhum
+  teste do PHPUnit executa o binário empacotado — a suíte instancia a aplicação
+  in-process —, então este script é a única guarda sobre o artefato que as
+  pessoas baixam.
+- `tools/install-box.sh`, que baixa o Box de uma release fixa e **confere o
+  SHA-256** antes de usá-lo. CI e máquina local rodam o mesmo script. O Box não
+  entra em `require-dev` porque o PHAR precisa de um `vendor/` construído com
+  `--no-dev`, onde ele não estaria.
+
 ### Changed
 
+- **A lista de comandos sempre disponíveis deixou de ser mantida à mão.** Ela
+  passa a ser os built-ins do Symfony mais os nomes vindos do módulo
+  sempre-disponível, para um comando novo de configuração não depender de
+  alguém lembrar de acrescentá-lo a um array.
 - **Preparação para o repositório público.** Os sete workflows passam a
   declarar `permissions: contents: read` explicitamente. Hoje o default do
   repositório já é `read`, mas isso é uma configuração que pode mudar sem
@@ -32,7 +92,6 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
   oferecer, marcar não substitui limpar, e o caminho de volta se confere antes
   da primeira escrita — a API não publica `DELETE` para todo recurso.
 
-
 ### Removed
 
 - `docs/desenvolvimento/going-live.md`. Era um checklist operacional de
@@ -42,6 +101,21 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ### Fixed
 
+- **Os dezesseis PHARs publicados entre a `v0.1.0` e a `v0.15.1` nunca leram um
+  `.env`.** Dentro do arquivo, `__DIR__ . '/../.env'` vira `phar://…/.env`, que
+  não pode existir; o `file_exists()` respondia `false` em silêncio e o binário
+  caía no modo degradado de quatro comandos — que responde JSON válido com exit
+  code `0`, indistinguível de um CLI que legitimamente tem quatro comandos. O
+  canal foi publicado e **nunca exercitado**: nada no CI executava o artefato, e
+  os dezesseis anexos somam zero downloads. É a regressão que o smoke test
+  existe para impedir de voltar, e a razão de o search path vir antes de o
+  pipeline ser religado.
+- **Um `.env` malformado deixa de ser fatal não tratado.** O carregamento do
+  Dotenv saiu de `bin/ca`, onde rodava sem `try/catch` antes de a aplicação
+  existir, e passou para dentro do bootstrap. Um arquivo quebrado ou com
+  permissão errada agora degrada para o mesmo modo "erro acionável, comandos de
+  configuração ainda disponíveis" de credencial ausente — o que passou a
+  importar mais agora que `ca config set` escreve nesse arquivo.
 - **O workflow `Docs` não fica mais vermelho por Pages ainda não existir.** O
   GitHub Pages precisa ser habilitado uma vez à mão em Settings → Pages, e no
   plano Free isso só é oferecido para repositório público; até lá a API de
@@ -827,7 +901,8 @@ Primeira versão tagueada.
 - Pacote renomeado de `contaazul-cli/cli` para `heitoralthmann/conta-azul-cli`,
   com aviso de não-oficialidade adicionado ao README.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.15.2...v0.16.0
 [0.15.2]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.15.1...v0.15.2
 [0.15.1]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.15.0...v0.15.1

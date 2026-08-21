@@ -42,4 +42,33 @@ final class ConsoleWriterTest extends TestCase
     self::assertSame("ok\n", $output->stdout());
     self::assertSame("fail\n", $output->stderr());
   }
+
+  /**
+   * Renderers are built before the invocation's output exists, so the writer
+   * has to be re-pointable after construction.
+   */
+  public function testRedirectSendsSubsequentWritesToTheNewOutput(): void {
+    $first  = new BufferedOutput();
+    $second = new BufferedOutput();
+    $writer = new ConsoleWriter($first);
+
+    $writer->writeSuccess('antes');
+    $writer->redirectTo($second);
+    $writer->writeSuccess('depois');
+
+    self::assertSame("antes\n", $first->fetch());
+    self::assertSame("depois\n", $second->fetch());
+  }
+
+  /** Redirecting also moves the stderr split, not just stdout. */
+  public function testRedirectMovesDiagnosticsToTheNewErrorStream(): void {
+    $output = new MemoryConsoleOutput();
+    $writer = new ConsoleWriter(new BufferedOutput());
+
+    $writer->redirectTo($output);
+    $writer->writeDiagnostic('fail');
+
+    self::assertSame('', $output->stdout());
+    self::assertSame("fail\n", $output->stderr());
+  }
 }

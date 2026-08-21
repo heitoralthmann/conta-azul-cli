@@ -19,6 +19,7 @@ fazer parsing destes documentos.
 
 ## Grupos de comandos
 
+- [Configuração](referencia/config.md): config path, config init, config set, config show
 - [Autenticação](referencia/auth.md): auth login, auth logout
 - [Categorias](referencia/categoria.md): categoria list, categoria configuracao-padrao, categoria dre
 - [Centros de custo](referencia/centro-de-custo.md): centro-de-custo list, centro-de-custo create

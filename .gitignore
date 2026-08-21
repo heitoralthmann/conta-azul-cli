@@ -1,5 +1,7 @@
 /vendor/
 /.env
+*.phar
+/build/
 .phpunit.cache/
 .phpunit.result.cache
 /.certs/

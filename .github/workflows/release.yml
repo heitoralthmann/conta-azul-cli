@@ -1,0 +1,53 @@
+name: Release PHAR
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Escrita é necessária: o job anexa o PHAR e o checksum à release da tag.
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, openssl, posix
+          coverage: none
+
+      # Versão fixa + SHA-256 conferido, o mesmo script que roda na máquina local.
+      # O caminho antigo (`composer global require humbug/box`) instalava a versão
+      # que estivesse no ar naquele dia, num diretório que já nem existia mais.
+      - name: Install Box
+        run: tools/install-box.sh
+
+      - name: Install production dependencies
+        run: composer install --no-dev --no-interaction --prefer-dist --classmap-authoritative --optimize-autoloader
+
+      # phar.readonly vem On na maioria dos php.ini; sem isso o compile falha.
+      - name: Build PHAR
+        run: php -d phar.readonly=0 build/box.phar compile
+
+      # O passo que faltava. Sem ele, 16 artefatos quebrados foram publicados sem
+      # que nada no CI reclamasse: nenhum teste do projeto executa o binário empacotado.
+      - name: Smoke test the PHAR
+        run: tools/smoke-test.sh build/conta-azul-cli.phar
+
+      - name: Generate checksum
+        working-directory: build
+        run: sha256sum conta-azul-cli.phar > conta-azul-cli.phar.sha256
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          files: |
+            build/conta-azul-cli.phar
+            build/conta-azul-cli.phar.sha256

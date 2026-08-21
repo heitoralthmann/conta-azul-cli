@@ -44,4 +44,17 @@ final class ResponseRendererTest extends TestCase
     $renderer->render(['a' => 1]);
     self::assertSame("{\"a\":1}\n", $output->fetch());
   }
+
+  /** The shell re-points renderers built during construction at run()'s output. */
+  public function testRedirectSendsSubsequentRendersToTheNewOutput(): void {
+    $first    = new BufferedOutput();
+    $second   = new BufferedOutput();
+    $renderer = new ResponseRenderer($first, new MutableFormatterSelector(new JsonFormatter()));
+
+    $renderer->redirectTo($second);
+    $renderer->render(['a' => 1]);
+
+    self::assertSame('', $first->fetch());
+    self::assertSame("{\"a\":1}\n", $second->fetch());
+  }
 }

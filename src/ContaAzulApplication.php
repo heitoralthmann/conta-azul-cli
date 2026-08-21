@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace ContaAzulCli;
 
 use ContaAzulCli\Bootstrap\ApplicationFactory;
+use ContaAzulCli\Command\Module\ConfigCommandModule;
+use ContaAzulCli\Config\ConfigFileLocator;
+use ContaAzulCli\Config\EnvFileWriter;
+use ContaAzulCli\Config\EnvironmentSnapshot;
 use ContaAzulCli\Error\CliException;
 use ContaAzulCli\Error\ErrorKind;
 use ContaAzulCli\Output\ErrorEnvelope;
@@ -13,6 +17,8 @@ use ContaAzulCli\Output\FormatterSelectorInterface;
 use ContaAzulCli\Output\Logger;
 use ContaAzulCli\Output\MutableFormatterSelector;
 use ContaAzulCli\Output\OutputFormatResolver;
+use ContaAzulCli\Output\Redactor;
+use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Output\ToonFormatter;
 use LogicException;
 use Ramsey\Uuid\Uuid;
@@ -26,6 +32,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
 use function array_filter;
+use function array_keys;
 use function array_slice;
 use function array_values;
 use function file_get_contents;
@@ -41,49 +48,105 @@ final class ContaAzulApplication extends Application
 {
   private Logger|null $logger            = null;
   private Throwable|null $bootstrapError = null;
-  private FormatterRegistry $formatterRegistry;
-  private FormatterSelectorInterface $formatterSelector;
-  private OutputFormatResolver $outputFormatResolver;
+  private readonly FormatterRegistry $formatterRegistry;
+  private readonly FormatterSelectorInterface $formatterSelector;
+  private readonly OutputFormatResolver $outputFormatResolver;
+  private readonly ErrorEnvelope $errorEnvelope;
+  private readonly ResponseRenderer $responseRenderer;
 
   /** @var list<string> */
   private array $applicationCommandNames = [];
+
+  /** @var list<string> */
+  private array $alwaysAvailableCommandNames = [];
 
   private bool $renderSymfonyErrors = false;
 
   /** Builds the application and registers feature modules from the factory. */
   public function __construct() {
+    // Captured before anything loads a .env file: once Dotenv has run with
+    // usePutenv(true), nothing can tell a variable the operator exported from
+    // one that came out of the file. `ca config show` needs that distinction.
+    $environment = EnvironmentSnapshot::capture();
+
     parent::__construct('ca', self::version());
 
-    $factory = new ApplicationFactory();
+    // Read back rather than listed by hand: these are whatever Symfony
+    // Console registers on its own, and they exist regardless of this
+    // project's bootstrap. Taken before any project command is added.
+    $symfonyCommands = array_keys($this->all());
+
+    // Owned here rather than by the factory, because the always-available
+    // commands are registered before the factory runs and every renderer in
+    // the process has to share this one selector for `--format` to hold.
+    $this->formatterRegistry    = FormatterRegistry::withDefaults();
+    $this->formatterSelector    = new MutableFormatterSelector($this->formatterRegistry->default());
+    $this->outputFormatResolver = new OutputFormatResolver($this->formatterRegistry);
+
+    // One envelope and one renderer, shared by the shell and the
+    // always-available commands. Both start on the real console and are
+    // pointed at the invocation's output by run(), so everything this shell
+    // owns writes to the same place.
+    $this->errorEnvelope    = new ErrorEnvelope(null, $this->formatterSelector);
+    $this->responseRenderer = new ResponseRenderer(null, $this->formatterSelector);
+
+    // Registered outside the try: `ca config init` has to exist precisely in
+    // the state where bootstrap fails, since it is what creates the
+    // credentials whose absence made it fail.
+    $alwaysAvailable                   = new ConfigCommandModule(
+        ConfigFileLocator::forRuntime(),
+        new EnvFileWriter(),
+        new Redactor(),
+        $environment,
+        $this->errorEnvelope,
+        $this->responseRenderer,
+    );
+    $this->alwaysAvailableCommandNames = [
+      ...$symfonyCommands,
+      ...$this->registerCommands($alwaysAvailable->commands()),
+    ];
+
+    $factory = new ApplicationFactory($this->formatterSelector);
     try {
-      $components              = $factory->build();
-      $this->logger            = $components->logger();
-      $this->formatterRegistry = $components->formatterRegistry();
-      $this->formatterSelector = $components->formatterSelector();
-      $commands                = $components->commands();
-      foreach ($commands as $command) {
-        $this->configureOutputFormat($command);
-        $this->applicationCommandNames[] = (string) $command->getName();
-        foreach ($command->getAliases() as $alias) {
-          if (! is_string($alias)) {
-            throw new LogicException('Command aliases must be strings.');
-          }
-
-          $this->applicationCommandNames[] = $alias;
-        }
-      }
-
-      $this->addCommands($commands);
+      $components   = $factory->build();
+      $this->logger = $components->logger();
+      $this->registerCommands($components->commands());
     } catch (Throwable $e) {
-      // Keep discovery/help available when configuration or an adapter
-      // fails during bootstrap; run() renders the actionable error.
-      $this->logger            = $factory->logger();
-      $this->bootstrapError    = $e;
-      $this->formatterRegistry = FormatterRegistry::withDefaults();
-      $this->formatterSelector = new MutableFormatterSelector($this->formatterRegistry->default());
+      // Keep discovery/help and the config family available when
+      // configuration or an adapter fails during bootstrap; run() renders the
+      // actionable error for everything else.
+      $this->logger         = $factory->logger();
+      $this->bootstrapError = $e;
+    }
+  }
+
+  /**
+   * Registers commands and returns the names they answer to.
+   *
+   * @param list<Command> $commands
+   *
+   * @return list<string>
+   */
+  private function registerCommands(array $commands): array {
+    $names = [];
+    foreach ($commands as $command) {
+      $this->configureOutputFormat($command);
+      $names[] = (string) $command->getName();
+      foreach ($command->getAliases() as $alias) {
+        if (! is_string($alias)) {
+          throw new LogicException('Command aliases must be strings.');
+        }
+
+        $names[] = $alias;
+      }
     }
 
-    $this->outputFormatResolver = new OutputFormatResolver($this->formatterRegistry);
+    $this->addCommands($commands);
+    foreach ($names as $name) {
+      $this->applicationCommandNames[] = $name;
+    }
+
+    return $names;
   }
 
   /** Keeps Symfony diagnostics for built-ins; project commands render structured errors themselves. */
@@ -97,6 +160,16 @@ final class ContaAzulApplication extends Application
 
   /** Runs the CLI while preserving structured bootstrap error behavior. */
   public function run(InputInterface|null $input = null, OutputInterface|null $output = null): int {
+    // Symfony's contract is that a caller-supplied output receives everything
+    // this run writes. Renderers are built during construction, before that
+    // output exists, so they are pointed at it here — otherwise the shell and
+    // its always-available commands would write past it to the real console,
+    // which is both a contract violation and untestable.
+    if ($output !== null) {
+      $this->errorEnvelope->redirectTo($output);
+      $this->responseRenderer->redirectTo($output);
+    }
+
     if ($input === null) {
       $rawArgv = $_SERVER['argv'] ?? [];
       $argv    = array_values(array_filter(is_array($rawArgv) ? $rawArgv : [], 'is_string'));
@@ -115,14 +188,14 @@ final class ContaAzulApplication extends Application
       try {
         $this->applyOutputFormat($input);
       } catch (CliException $e) {
-        $this->errorEnvelope()->renderToStderr($e);
+        $this->errorEnvelope->renderToStderr($e);
 
         return 1;
       }
     }
 
     if ($this->bootstrapError !== null && ! $this->isAlwaysAvailableCommand($input)) {
-      $this->errorEnvelope()->renderToStderr(
+      $this->errorEnvelope->renderToStderr(
           new CliException(
               ErrorKind::ClientError,
               false,
@@ -145,13 +218,17 @@ final class ContaAzulApplication extends Application
   }
 
   /**
-   * Discovery and help remain available when bootstrap failed.
+   * Discovery, help, and the config family remain available when bootstrap failed.
+   *
+   * The list is derived from the always-available module rather than written
+   * out by hand, so adding a config command cannot silently leave it locked
+   * behind the very failure it exists to fix.
    */
   private function isAlwaysAvailableCommand(InputInterface $input): bool {
     $name = $input->getFirstArgument();
 
     return $name === null
-    || in_array($name, ['list', 'help', 'completion'], true)
+    || in_array($name, $this->alwaysAvailableCommandNames, true)
     || $input->hasParameterOption(['--help', '-h', '--version', '-V'], true);
   }
 
@@ -166,11 +243,6 @@ final class ContaAzulApplication extends Application
   private function applyOutputFormat(InputInterface $input): void {
     $name = $this->outputFormatResolver->resolve($input);
     $this->formatterSelector->select($this->formatterRegistry->get($name));
-  }
-
-  /** Builds an error renderer that follows the currently selected format. */
-  private function errorEnvelope(): ErrorEnvelope {
-    return new ErrorEnvelope(null, $this->formatterSelector);
   }
 
   /** Adds the shared response-format option to one project command. */

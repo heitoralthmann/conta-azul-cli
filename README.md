@@ -24,7 +24,7 @@ O consumidor primário é um **agente**, não um humano. Por isso a saída padr�
 
 | | |
 |---|---|
-| [Referência de comandos](docs/referencia/index.md) | Os 83 comandos, agrupados por endpoint, com cada parâmetro |
+| [Referência de comandos](docs/referencia/index.md) | Os 87 comandos, agrupados por endpoint, com cada parâmetro |
 | [Instalação](docs/guia/instalacao.md) · [Configuração](docs/guia/configuracao.md) · [Autenticação](docs/guia/autenticacao.md) | Requisitos, variáveis de ambiente e o callback HTTPS que a Conta Azul exige |
 | [Contrato de saída](docs/guia/contrato-de-saida.md) | Formatos, exit codes, envelope de erro e valores de `kind` |
 | [Notas para quem for estender](docs/guia/estendendo.md) | As armadilhas confirmadas da API. Leitura obrigatória antes de mexer na integração |
@@ -38,11 +38,27 @@ Para agentes, a mesma documentação sai em forma de dados:
 ## Requisitos
 
 - PHP **8.4+** com as extensões `mbstring`, `openssl` e `posix`
-- Composer
+- Composer — só para o clone e para construir o PHAR; o PHAR pronto roda com PHP e mais nada
 - Uma aplicação registrada no portal de desenvolvedores da Conta Azul (`client_id` + `client_secret`)
 - Uma conta Conta Azul com **plano elegível para uso da API**
 
 ## Instalação
+
+Dois canais. O PHAR é o caminho de uso; o clone é o caminho de desenvolvimento.
+
+**Binário único (PHAR)** — um `ca` global, sem repositório por perto:
+
+```bash
+curl -LO https://github.com/heitoralthmann/conta-azul-cli/releases/latest/download/conta-azul-cli.phar
+curl -LO https://github.com/heitoralthmann/conta-azul-cli/releases/latest/download/conta-azul-cli.phar.sha256
+shasum -a 256 -c conta-azul-cli.phar.sha256    # Linux: sha256sum -c
+mkdir -p ~/.local/bin
+install -m 0755 conta-azul-cli.phar ~/.local/bin/ca
+```
+
+`~/.local/bin` precisa estar no `PATH`. Para construir o mesmo artefato a partir do fonte, `composer build:phar` — e `composer smoke:phar` para conferi-lo antes de instalar.
+
+**Clone + Composer** — para mexer no código:
 
 ```bash
 git clone git@github.com:heitoralthmann/conta-azul-cli.git
@@ -55,11 +71,18 @@ composer install
 
 ## Configuração
 
+Numa instalação global, os comandos `ca config` funcionam **sem credencial nenhuma** — são justamente o caminho para criá-la:
+
 ```bash
-cp .env.example .env    # preencha CA_CLIENT_ID e CA_CLIENT_SECRET
+ca config init                          # cria ~/.config/conta-azul-cli/.env (0600)
+ca config set CA_CLIENT_ID <id>
+ca config set CA_CLIENT_SECRET <secret>
+ca config show                          # o secret sai como "(definido)", nunca em claro
 ```
 
-A precedência é: **flag de CLI → variável de ambiente → arquivo `.env` → default compilado**. Em produção, use variáveis de ambiente. `.env` e `tokens.json` **nunca** devem ser versionados.
+Num clone, `cp .env.example .env` continua funcionando.
+
+O arquivo de ambiente é procurado nesta ordem, e **o primeiro que existir vence, sem mesclagem**: `CA_CLI_ENV_FILE` → `<raiz do repo>/.env` → `~/.config/conta-azul-cli/.env`. `ca config path` responde qual está valendo e por quê. A precedência geral é: **flag de CLI → variável de ambiente → arquivo → default compilado**. Em produção, use variáveis de ambiente. `.env` e `tokens.json` **nunca** devem ser versionados.
 
 O provedor da Conta Azul **recusa `redirect_uri` em `http://localhost`**: exige HTTPS e um domínio real. A receita completa — incluindo por que o domínio precisa ser `*.ddev.site` e por que `CA_AUTHORIZE_URL` e `CA_TOKEN_URL` andam em par — está em [Configuração](docs/guia/configuracao.md).
 

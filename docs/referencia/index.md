@@ -38,6 +38,10 @@ Cada endpoint traz uma marca de confiança:
 
 | Comando | Endpoint | |
 |---|---|---|
+| [`config path`](config.md#config-path) | `— (local)` | ✅ |
+| [`config init`](config.md#config-init) | `— (local)` | ✅ |
+| [`config set`](config.md#config-set) | `— (local)` | ✅ |
+| [`config show`](config.md#config-show) | `— (local)` | ✅ |
 | [`auth login`](auth.md#auth-login) | `— (local)` | ✅ |
 | [`auth logout`](auth.md#auth-logout) | `— (local)` | ✅ |
 | [`categoria list`](categoria.md#categoria-list) | `GET /v1/categorias` | ✅ |

@@ -75,7 +75,9 @@
         "stan:tests": "phpstan analyse tests/ --level=6 --memory-limit=1G",
         "mutation": "infection --threads=max",
         "docs:generate": "php tools/generate-docs.php",
-        "docs:check": "php tools/generate-docs.php --check"
+        "docs:check": "php tools/generate-docs.php --check",
+        "build:phar": "set -e; trap '\"${COMPOSER_BINARY:-composer}\" install --no-interaction' EXIT HUP INT TERM; tools/install-box.sh; \"${COMPOSER_BINARY:-composer}\" install --no-dev --no-interaction --classmap-authoritative --optimize-autoloader; php -d phar.readonly=0 build/box.phar compile",
+        "smoke:phar": "tools/smoke-test.sh build/conta-azul-cli.phar"
     },
     "scripts-descriptions": {
         "test": "Runs the PHPUnit test suite.",
@@ -84,7 +86,9 @@
         "stan": "Runs PHPStan on src/ (level max, per phpstan.neon) and tests/ (level 6).",
         "mutation": "Runs Infection mutation testing.",
         "docs:generate": "Regenerates docs/referencia/, commands.json and llms*.txt from the Console definitions plus docs/_data/commands/*.yaml.",
-        "docs:check": "Fails when the generated documentation is out of date, or when a curated note names a command or parameter the CLI no longer has."
+        "docs:check": "Fails when the generated documentation is out of date, or when a curated note names a command or parameter the CLI no longer has.",
+        "build:phar": "Builds build/conta-azul-cli.phar. Box is downloaded by tools/install-box.sh because the PHAR needs a --no-dev vendor/, where a require-dev Box would not exist; the trap restores the dev dependencies even when the build fails or is interrupted. phar.readonly is forced off since most php.ini ship it On.",
+        "smoke:phar": "Runs tools/smoke-test.sh against the built PHAR. Nothing in the PHPUnit suite executes the packaged binary, so this is the only guard on it."
     },
     "config": {
         "sort-packages": true,

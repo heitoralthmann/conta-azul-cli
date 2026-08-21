@@ -53,4 +53,17 @@ final class ErrorEnvelopeTest extends TestCase
         $output->fetch(),
     );
   }
+
+  /** The shell re-points the envelope built during construction at run()'s output. */
+  public function testRedirectSendsSubsequentEnvelopesToTheNewOutput(): void {
+    $first    = new BufferedOutput();
+    $second   = new BufferedOutput();
+    $envelope = new ErrorEnvelope($first, new MutableFormatterSelector(new JsonFormatter()));
+
+    $envelope->redirectTo($second);
+    $envelope->renderToStderr(new CliException(ErrorKind::ClientError, false, 'Falhou'));
+
+    self::assertSame('', $first->fetch());
+    self::assertStringContainsString('Falhou', $second->fetch());
+  }
 }

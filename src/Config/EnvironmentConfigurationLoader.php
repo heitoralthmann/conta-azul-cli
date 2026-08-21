@@ -85,7 +85,8 @@ final class EnvironmentConfigurationLoader
     if ($value === false || $value === '') {
       throw new ConfigException(
           'Variável de ambiente obrigatória não definida: ' . $name
-              . '. Configure em .env ou exporte antes de executar.',
+              . '. Defina com "ca config set ' . $name . ' <valor>", ou exporte antes de executar. '
+              . 'Use "ca config path" para ver qual arquivo está valendo e "ca config init" para criar um.',
       );
     }
 

@@ -29,15 +29,17 @@ use ContaAzulCli\Command\Module\ProdutoCommandModule;
 use ContaAzulCli\Command\Module\ServicoCommandModule;
 use ContaAzulCli\Command\Module\VendaCommandModule;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
+use ContaAzulCli\Config\ConfigException;
+use ContaAzulCli\Config\ConfigFileLocator;
 use ContaAzulCli\Config\Configuration;
 use ContaAzulCli\Config\EnvironmentConfigurationLoader;
 use ContaAzulCli\Output\ErrorEnvelope;
-use ContaAzulCli\Output\FormatterRegistry;
+use ContaAzulCli\Output\FormatterSelectorInterface;
 use ContaAzulCli\Output\Logger;
-use ContaAzulCli\Output\MutableFormatterSelector;
 use ContaAzulCli\Output\Redactor;
 use ContaAzulCli\Output\ResponseRenderer;
 use ContaAzulCli\Output\WarningEnvelope;
+use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\HttpClient\HttpClient;
 
 /** Builds the application's external adapters, services, and command modules. */
@@ -46,23 +48,34 @@ final class ApplicationFactory
   private Logger|null $logger = null;
 
   /**
+   * Binds the factory to the formatter selector shared with the shell.
+   *
+   * The selector is owned by {@see \ContaAzulCli\ContaAzulApplication}, which
+   * needs it before this factory runs so the always-available commands render
+   * through the very same instance. Two selectors would mean `--format`
+   * silently applied to only half the commands.
+   */
+  public function __construct(private readonly FormatterSelectorInterface $formatterSelector) {
+  }
+
+  /**
    * Assembles the complete console dependency graph.
    *
    * Configuration and adapter construction deliberately remain here: this
    * composition root is the only place that needs to know concrete classes.
    */
   public function build(): ApplicationComponents {
+    $this->loadEnvironmentFile();
+
     $config       = $this->loadConfiguration();
     $redactor     = new Redactor();
     $this->logger = new Logger($redactor);
     $httpClient   = HttpClient::create();
 
-    $formatterRegistry   = FormatterRegistry::withDefaults();
-    $formatterSelector   = new MutableFormatterSelector($formatterRegistry->default());
-    $errorEnvelope       = new ErrorEnvelope(null, $formatterSelector);
-    $responseRenderer    = new ResponseRenderer(null, $formatterSelector);
+    $errorEnvelope       = new ErrorEnvelope(null, $this->formatterSelector);
+    $responseRenderer    = new ResponseRenderer(null, $this->formatterSelector);
     $paginationValidator = new PaginationValidator();
-    $warningEnvelope     = new WarningEnvelope(null, $formatterSelector);
+    $warningEnvelope     = new WarningEnvelope(null, $this->formatterSelector);
     $periodoPadrao       = new PeriodoPadrao();
 
     $tokenStore     = new TokenStore($config);
@@ -119,14 +132,37 @@ final class ApplicationFactory
           new OrcamentoCommandModule($orcamentosClient, $errorEnvelope, $responseRenderer, $paginationValidator),
           new CapturaCommandModule($capturaClient, $errorEnvelope, $responseRenderer, $paginationValidator),
         ],
-        $formatterRegistry,
-        $formatterSelector,
     );
   }
 
   /** Returns the logger created before a later adapter fails to initialize. */
   public function logger(): Logger|null {
     return $this->logger;
+  }
+
+  /**
+   * Loads the resolved `.env` file into the process environment.
+   *
+   * This runs here, and not in `bin/ca`, so a malformed or unreadable file
+   * degrades to the same actionable error as a missing credential instead of
+   * escaping as an uncaught fatal before any error envelope exists.
+   *
+   * @throws ConfigException When the explicit override cannot be read.
+   */
+  private function loadEnvironmentFile(): void {
+    $path = ConfigFileLocator::forRuntime()->locate()->path();
+    if ($path === null) {
+      return;
+    }
+
+    $dotenv = new Dotenv();
+    // usePutenv is load-bearing: the whole app reads configuration through
+    // getenv(), which never sees $_ENV/$_SERVER on its own.
+    $dotenv->usePutenv(true);
+    // load(), never overload(): the real environment has to keep beating the
+    // file. The documented precedence and the docs generator's stub
+    // credentials both depend on it.
+    $dotenv->load($path);
   }
 
   /** Loads configuration through the dedicated environment boundary. */

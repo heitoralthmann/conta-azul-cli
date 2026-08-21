@@ -4,7 +4,6 @@
 declare(strict_types=1);
 
 use ContaAzulCli\ContaAzulApplication;
-use Symfony\Component\Dotenv\Dotenv;
 
 $autoloadPaths = [
   __DIR__ . '/../vendor/autoload.php',
@@ -38,12 +37,8 @@ if ($autoloadFile === null) {
 
 require $autoloadFile;
 
-$envFile = __DIR__ . '/../.env';
-if (file_exists($envFile)) {
-  $dotenv = new Dotenv();
-  $dotenv->usePutenv(true);
-  $dotenv->load($envFile);
-}
-
+// The .env file is located and loaded inside ContaAzulApplication, not here:
+// this script has no error envelope yet, and a malformed file would surface
+// as an uncaught fatal instead of an actionable message.
 $application = new ContaAzulApplication();
 exit($application->run());

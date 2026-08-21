@@ -1,12 +1,53 @@
 # Configuração
 
-Copie `.env.example` para `.env` e preencha as credenciais:
+A precedência de configuração é: **flag de CLI → variável de ambiente → arquivo `.env` → default compilado**. Uma variável já exportada no ambiente ganha do arquivo, sempre. Em produção, use variáveis de ambiente.
+
+## Onde o arquivo é procurado
+
+O CLI lê **um** arquivo de ambiente. O primeiro candidato que existir vence, e **nada é mesclado**:
+
+| Ordem | Candidato | Observação |
+|---|---|---|
+| 1 | o arquivo indicado por `CA_CLI_ENV_FILE` | Escape hatch explícito, por invocação. Se a variável estiver definida e o arquivo não puder ser lido, o CLI **falha** — nunca cai em silêncio para o próximo candidato. |
+| 2 | `<raiz do repo>/.env` | O caminho de sempre, ao lado de `bin/`, independentemente do diretório de onde você invoca o CLI. **Pulado dentro de um PHAR**: ali ele resolveria para um `phar://…/.env` que ninguém pode criar. |
+| 3 | `~/.config/conta-azul-cli/.env` | O arquivo do usuário, no mesmo diretório em que já moram `tokens.json` e o log. É o que torna um `ca` global utilizável. |
+
+Mesclar candidatos tornaria `ca config set` ambíguo — gravou em qual arquivo? — e transformaria um arquivo esquecido num override parcial silencioso. A regra cabe numa frase de propósito, e `ca config path` imprime a decisão inteira, com o motivo de cada candidato ter vencido ou sido descartado:
+
+```bash
+ca config path
+```
+
+> **`getcwd()/.env` não é candidato, e isso é deliberado.** Se o diretório de trabalho entrasse na busca, rodar o `ca` de dentro de qualquer projeto alheio que tenha um `.env` faria o CLI absorver as variáveis daquele projeto — credenciais de terceiros, em silêncio, sem nada na saída indicando de onde vieram. `CA_CLI_ENV_FILE` cobre a mesma necessidade de forma explícita, por invocação, e aparece em `ca config path`.
+
+## Configurando uma instalação global
+
+Com o `ca` instalado como binário ([Instalação](instalacao.md)), não há repositório por perto e o candidato 3 é o que vale. Os comandos `ca config` funcionam **mesmo sem credencial nenhuma** — são o caminho para sair desse estado:
+
+```bash
+ca config init                        # cria ~/.config/conta-azul-cli/.env (0600, em diretório 0700)
+ca config set CA_CLIENT_ID <id>
+ca config set CA_CLIENT_SECRET <secret>
+ca config show                        # confere o resultado
+```
+
+`ca config set` valida a chave contra a lista de variáveis conhecidas: um nome digitado errado é recusado na hora, em vez de virar uma linha no arquivo que nunca faz efeito.
+
+**`init` e `set` não têm o mesmo alvo.** `ca config init` grava **sempre** em `~/.config/conta-azul-cli/.env`, mesmo que outro candidato esteja valendo — é a razão de ele existir. Já `ca config set` grava no arquivo **em vigor**, seja ele qual for. Num clone que tenha `.env` na raiz, `init` cria um segundo arquivo que só passa a valer quando o primeiro sair do caminho; `ca config path` mostra isso.
+
+`ca config show` lista todas as variáveis com o valor efetivo e a origem de cada uma — `ambiente`, `arquivo` ou `default`. **A saída nunca contém segredo:** `CA_CLIENT_SECRET` e `CA_BOOTSTRAP_REFRESH_TOKEN` aparecem só como `(definido)` ou `(ausente)`, sem máscara parcial e sem opção para revelar. É o que torna essa saída segura para colar numa issue.
+
+Os quatro comandos, com o que cada um responde: [Configuração na referência](../referencia/config.md).
+
+## Configurando um clone
+
+Num clone, o candidato 2 vence. Copie `.env.example` para `.env` e preencha as credenciais:
 
 ```bash
 cp .env.example .env
 ```
 
-A precedência de configuração é: **flag de CLI → variável de ambiente → arquivo `.env` → default compilado**. O `.env` é procurado na raiz do projeto (ao lado de `bin/`), independentemente do diretório de onde você invoca o CLI, e variáveis já presentes no ambiente têm precedência sobre ele. Em produção, use variáveis de ambiente.
+## Variáveis
 
 | Variável | Obrigatória | Default |
 |---|---|---|
@@ -23,6 +64,9 @@ A precedência de configuração é: **flag de CLI → variável de ambiente →
 | `CA_CALLBACK_TIMEOUT` | não | `300` (segundos) |
 | `CA_CLI_TOKEN_PATH` | não | `~/.config/conta-azul-cli/tokens.json` |
 | `CA_BOOTSTRAP_REFRESH_TOKEN` | não | — |
+| `CA_CLI_ENV_FILE` | não | — (veja abaixo) |
+
+`CA_CLI_ENV_FILE` é a única da lista que **só funciona no ambiente**, nunca dentro de um arquivo: ela *escolhe* o arquivo, então defini-la lá dentro jamais poderia fazer efeito. Por isso `ca config set` a recusa, e é `ca config path` que mostra seu valor.
 
 `.env` e `tokens.json` **nunca** devem ser versionados.
 

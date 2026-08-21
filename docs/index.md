@@ -31,6 +31,17 @@ estruturado com um campo `kind` estável. JSON compacto continua disponível com
 
 ## Começando
 
+Um binário global, a partir da release:
+
+```bash
+curl -LO https://github.com/heitoralthmann/conta-azul-cli/releases/latest/download/conta-azul-cli.phar
+mkdir -p ~/.local/bin
+install -m 0755 conta-azul-cli.phar ~/.local/bin/ca
+ca config init
+```
+
+Ou um clone, para mexer no código:
+
 ```bash
 git clone git@github.com:heitoralthmann/conta-azul-cli.git
 cd conta-azul-cli
@@ -38,8 +49,9 @@ composer install
 ./bin/ca list
 ```
 
-Depois, [configure as credenciais](guia/configuracao.md) e rode
-`ca auth login` uma vez.
+Os dois caminhos, com a conferência do checksum, estão em
+[Instalação](guia/instalacao.md). Depois,
+[configure as credenciais](guia/configuracao.md) e rode `ca auth login` uma vez.
 
 ```bash
 ca pessoa list --tamanho-pagina=10
@@ -53,7 +65,7 @@ ca parcela get <id> --format=json | jq '.evento'
 
 - :material-rocket-launch: **[Instalação](guia/instalacao.md)**
 
-    Requisitos, clone e primeira execução.
+    Requisitos, os dois canais — PHAR global e clone — e primeira execução.
 
 - :material-key: **[Configuração e autenticação](guia/configuracao.md)**
 
@@ -61,7 +73,7 @@ ca parcela get <id> --format=json | jq '.evento'
 
 - :material-console: **[Referência de comandos](referencia/index.md)**
 
-    Os 83 comandos, agrupados pelo endpoint que consomem, com cada parâmetro.
+    Os 87 comandos, agrupados pelo endpoint que consomem, com cada parâmetro.
 
 - :material-file-document-alert: **[Notas para quem for estender](guia/estendendo.md)**
 

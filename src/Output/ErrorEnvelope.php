@@ -33,6 +33,11 @@ final class ErrorEnvelope
     $this->selector = $selector ?? new MutableFormatterSelector(new ToonFormatter());
   }
 
+  /** Points subsequent writes at the output supplied for this invocation. */
+  public function redirectTo(OutputInterface $output): void {
+    $this->writer->redirectTo($output);
+  }
+
   /** Renders a known CLI exception using the stable error envelope schema. */
   public function renderToStderr(CliException $e): void {
     $this->writeEnvelope(

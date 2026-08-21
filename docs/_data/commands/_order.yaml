@@ -1,4 +1,5 @@
 groups:
+  - config
   - auth
   - categoria
   - centro-de-custo

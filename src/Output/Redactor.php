@@ -8,6 +8,7 @@ use function in_array;
 use function is_array;
 use function preg_quote;
 use function preg_replace;
+use function str_ends_with;
 use function strtolower;
 
 /** Recursively replaces known credential fields before values are logged. */
@@ -42,6 +43,25 @@ final class Redactor
     }
 
     return $result;
+  }
+
+  /**
+   * Whether a configuration variable names a credential.
+   *
+   * `ca config show` asks this so the sensitive-key list stays defined in one
+   * place. The match allows a prefix because environment variables carry one
+   * (`CA_CLIENT_SECRET`) while the API payload fields {@see self::redact()}
+   * handles do not (`client_secret`).
+   */
+  public function isSensitive(string $key): bool {
+    $normalized = strtolower($key);
+    foreach (self::SENSITIVE_KEYS as $sensitive) {
+      if ($normalized === $sensitive || str_ends_with($normalized, '_' . $sensitive)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /** Redacts credential fields embedded in a JSON-like string. */

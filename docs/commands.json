@@ -367,6 +367,63 @@
         },
         {
             "arguments": [],
+            "description": "Cria ~/.config/conta-azul-cli/.env a partir do modelo embutido",
+            "endpoint": null,
+            "group": "config",
+            "name": "config init",
+            "options": [
+                {
+                    "default": false,
+                    "description": "Sobrescreve o arquivo do usuário se ele já existir",
+                    "multiple": false,
+                    "name": "--force",
+                    "takes_value": false
+                }
+            ],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Mostra qual arquivo de configuração o CLI usa e por quê",
+            "endpoint": null,
+            "group": "config",
+            "name": "config path",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [
+                {
+                    "array": false,
+                    "description": "Nome da variável (ex.: CA_CLIENT_ID)",
+                    "name": "chave",
+                    "required": true
+                },
+                {
+                    "array": false,
+                    "description": "Valor a gravar; vazio equivale a não definir a variável",
+                    "name": "valor",
+                    "required": true
+                }
+            ],
+            "description": "Grava uma variável no arquivo de configuração em vigor",
+            "endpoint": null,
+            "group": "config",
+            "name": "config set",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
+            "description": "Mostra a configuração efetiva e a origem de cada valor",
+            "endpoint": null,
+            "group": "config",
+            "name": "config show",
+            "options": [],
+            "verified": true
+        },
+        {
+            "arguments": [],
             "description": "Cria uma conta a pagar",
             "endpoint": "POST /v1/financeiro/eventos-financeiros/contas-a-pagar",
             "group": "conta-a-pagar",
@@ -2202,5 +2259,5 @@
         "version"
     ],
     "output_default": "toon",
-    "version": "0.16.0"
+    "version": "0.17.0"
 }

@@ -95,6 +95,7 @@ nav:
       - Solução de problemas: guia/solucao-de-problemas.md
   - Referência:
       - Todos os comandos: referencia/index.md
+      - Configuração: referencia/config.md
       - Autenticação: referencia/auth.md
       - Categorias: referencia/categoria.md
       - Centros de custo: referencia/centro-de-custo.md

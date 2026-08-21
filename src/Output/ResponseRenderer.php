@@ -31,6 +31,11 @@ final class ResponseRenderer
     $this->selector = $selector ?? new MutableFormatterSelector(new ToonFormatter());
   }
 
+  /** Points subsequent writes at the output supplied for this invocation. */
+  public function redirectTo(OutputInterface $output): void {
+    $this->writer->redirectTo($output);
+  }
+
   /** Renders a successful command result in the currently selected format. */
   public function render(mixed $data): void {
     $this->writer->writeSuccess($this->selector->current()->format($data));
