@@ -49,8 +49,8 @@ composer install
 ./bin/ca list
 ```
 
-Os dois caminhos, com a conferência do checksum, estão em
-[Instalação](guia/instalacao.md). Depois,
+Os dois caminhos, com a conferência do checksum e a receita para Windows, estão
+em [Instalação](guia/instalacao.md). Depois,
 [configure as credenciais](guia/configuracao.md) e rode `ca auth login` uma vez.
 
 ```bash

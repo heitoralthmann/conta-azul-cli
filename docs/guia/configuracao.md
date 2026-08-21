@@ -25,11 +25,13 @@ ca config path
 Com o `ca` instalado como binário ([Instalação](instalacao.md)), não há repositório por perto e o candidato 3 é o que vale. Os comandos `ca config` funcionam **mesmo sem credencial nenhuma** — são o caminho para sair desse estado:
 
 ```bash
-ca config init                        # cria ~/.config/conta-azul-cli/.env (0600, em diretório 0700)
+ca config init                        # cria ~/.config/conta-azul-cli/.env
 ca config set CA_CLIENT_ID <id>
 ca config set CA_CLIENT_SECRET <secret>
 ca config show                        # confere o resultado
 ```
+
+O arquivo nasce `0600`, dentro de um diretório `0700` — em Unix. No Windows, essa garantia não existe; veja [Permissões dos arquivos](#permissoes).
 
 `ca config set` valida a chave contra a lista de variáveis conhecidas: um nome digitado errado é recusado na hora, em vez de virar uma linha no arquivo que nunca faz efeito.
 
@@ -69,6 +71,25 @@ cp .env.example .env
 `CA_CLI_ENV_FILE` é a única da lista que **só funciona no ambiente**, nunca dentro de um arquivo: ela *escolhe* o arquivo, então defini-la lá dentro jamais poderia fazer efeito. Por isso `ca config set` a recusa, e é `ca config path` que mostra seu valor.
 
 `.env` e `tokens.json` **nunca** devem ser versionados.
+
+## Permissões dos arquivos { #permissoes }
+
+O CLI grava dois arquivos que carregam credencial:
+
+| Arquivo | O que guarda |
+|---|---|
+| `~/.config/conta-azul-cli/.env` | `CA_CLIENT_SECRET` — e o `CA_BOOTSTRAP_REFRESH_TOKEN`, se você o definir ali |
+| `~/.config/conta-azul-cli/tokens.json` | O access token e o **refresh token** do OAuth, a credencial de longa duração |
+
+Nos dois casos o CLI cria o diretório com `0700` e o arquivo com `0600`, e **reaplica a permissão a cada escrita**, não só na criação. Em Unix isso significa o que promete: nenhum outro usuário da máquina lê esses arquivos.
+
+> **No Windows essa garantia não existe.** O `chmod` do PHP naquela plataforma só liga e desliga o atributo de somente-leitura — ele não escreve bits de modo POSIX, porque o sistema de arquivos não os tem. O código chama `chmod` em todas as plataformas e está correto; o que não existe no Windows é o efeito. Quem protege os arquivos ali são as ACLs do próprio perfil do usuário (`C:\Users\<você>`), que por padrão já barram os demais usuários locais.
+>
+> Numa máquina Windows de um usuário só, isso costuma ser suficiente. O que **não** é verdade é a garantia: num perfil com ACL afrouxada, numa pasta sincronizada para a nuvem ou num diretório compartilhado, não há um `0600` segurando a ponta. Se for o seu caso, restrinja o diretório à mão (`icacls`) ou mantenha as credenciais em variáveis de ambiente, fora de arquivo.
+>
+> A suíte de testes se comporta do mesmo jeito: em Windows, os casos que verificam bits de permissão são pulados explicitamente, em vez de afirmar algo que a plataforma não sustenta.
+
+Uma ressalva sobre o caminho de clone: `cp .env.example .env` cria o arquivo com o que o seu `umask` mandar — tipicamente `0644`, legível por qualquer usuário da máquina. Só `ca config init` e `ca config set` aplicam `0600`. Num clone em máquina compartilhada, vale um `chmod 600 .env` depois de copiar.
 
 ## Sobre `CA_SCOPE`
 

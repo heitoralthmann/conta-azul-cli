@@ -2,7 +2,8 @@
 
 ## Requisitos
 
-- PHP **8.4+** com as extensões `mbstring`, `openssl` e `posix`
+- PHP **8.4+** com as extensões `mbstring`, `openssl` e `ctype` (esta última já vem habilitada na maioria das builds)
+- `posix` é **opcional**, e só existe em Unix. Toda chamada a ela é guardada por `function_exists`, e o CLI roda sem ela — é por isso que a suíte passa em `windows-latest` no CI, onde a extensão nem é instalada
 - Composer — só para o caminho de clone e para construir o PHAR; o PHAR pronto roda com PHP e mais nada
 - Uma aplicação registrada no portal de desenvolvedores da Conta Azul (`client_id` + `client_secret`)
 - Uma conta Conta Azul com **plano elegível para uso da API** (veja [Solução de problemas](solucao-de-problemas.md))
@@ -18,6 +19,9 @@ Os dois leem o mesmo arquivo de ambiente, encontrado pelo mesmo
 [search path](configuracao.md). A diferença prática é que, dentro do PHAR, o
 `.env` da raiz do repositório não é candidato — as credenciais precisam morar
 em `~/.config/conta-azul-cli/.env` (ou onde `CA_CLI_ENV_FILE` apontar).
+
+Os comandos das próximas duas seções assumem um shell Unix. Para Windows, vá
+direto para [Windows](#windows).
 
 ## PHAR
 
@@ -109,3 +113,112 @@ comportamento de sempre. `ca config path` responde qual arquivo está valendo em
 qualquer situação.
 
 > Distribuição via `composer global require` está prevista, mas o pacote ainda não foi publicado no Packagist.
+
+## Windows
+
+**O código é exercitado no Windows a cada push.** A matriz do CI roda
+`windows-latest` em PHP 8.4 e 8.5, e a suíte inteira passa nas duas. `posix`
+não entra nessa matriz de propósito — a extensão não existe naquela plataforma,
+e o CLI guarda toda chamada a ela.
+
+O nível de suporte, porém, merece ser dito com precisão: o que é exercitado é o
+**código**. O ferramental de build e esta própria seção são novos e muito menos
+rodados. Se algo aqui divergir da realidade, é aqui que está o erro, não no CLI.
+
+### Rodar o PHAR
+
+O PHAR não tem shebang que o Windows entenda, então quem o invoca é o PHP:
+
+```powershell
+php conta-azul-cli.phar --version
+```
+
+Para um `ca` seco, crie um `ca.cmd` **ao lado** do `.phar`:
+
+```bat
+@php "%~dp0conta-azul-cli.phar" %*
+```
+
+`%~dp0` é o diretório do próprio `.cmd`, então o par (`ca.cmd` +
+`conta-azul-cli.phar`) pode morar em qualquer lugar, desde que os dois fiquem
+juntos. `%APPDATA%\conta-azul-cli\bin` é um destino razoável. Acrescente esse
+diretório ao `PATH` do usuário:
+
+```powershell
+$bin  = "$env:APPDATA\conta-azul-cli\bin"
+$path = [Environment]::GetEnvironmentVariable('Path', 'User')
+[Environment]::SetEnvironmentVariable('Path', "$path;$bin", 'User')
+```
+
+Repare na leitura do escopo `User` antes da escrita: concatenar `$env:Path`, que
+é o `PATH` já resolvido do processo, copiaria as entradas da máquina inteira
+para dentro do seu perfil. Abra um terminal novo e `ca --version` responde.
+
+### Conferir o checksum
+
+`shasum` e `sha256sum` não existem no Windows; o PowerShell traz `Get-FileHash`:
+
+```powershell
+$publicado = (Get-Content conta-azul-cli.phar.sha256).Split(' ')[0]
+$local     = (Get-FileHash conta-azul-cli.phar -Algorithm SHA256).Hash.ToLower()
+if ($local -eq $publicado) { 'ok' } else { 'DIVERGE' }
+```
+
+O `.sha256` publicado vem no formato do `sha256sum` — `<hash>  <arquivo>` —,
+daí o `Split`. Vale aqui a mesma ressalva do caminho Unix: o checksum viaja
+pelo mesmo canal que o binário, então ele prova integridade do download, não
+autenticidade. Não há assinatura.
+
+### Construir do fonte precisa de bash
+
+`composer build:phar` e `composer smoke:phar` chamam `tools/install-box.sh` e
+`tools/smoke-test.sh`, que são scripts bash. Eles rodam sob **WSL** ou **Git
+Bash**; no `cmd.exe` ou no PowerShell puro, não. No Windows, baixar o artefato
+da release é o caminho de menor resistência.
+
+### Onde a configuração fica
+
+O CLI resolve o diretório do usuário por `USERPROFILE` (ou `HOMEDRIVE` +
+`HOMEPATH`), então o `~/.config/conta-azul-cli/` que esta documentação cita
+vira:
+
+```
+C:\Users\<você>\.config\conta-azul-cli\.env
+C:\Users\<você>\.config\conta-azul-cli\tokens.json
+```
+
+Funciona — mas **não é a convenção `%APPDATA%`** que um usuário de Windows
+espera encontrar, e vale dizer isso em voz alta para ninguém tratar como bug. É
+o mesmo caminho relativo em todas as plataformas, o que deixa uma única regra
+para documentar e depurar.
+
+Uma armadilha real: `HOME` é consultada **antes** de `USERPROFILE`, e shells
+como o Git Bash e o WSL definem `HOME` por conta própria. O mesmo CLI invocado
+do PowerShell e de um Git Bash pode, portanto, resolver arquivos diferentes.
+Quando a dúvida aparecer, `ca config path` responde qual está valendo — em
+qualquer shell.
+
+### Permissões
+
+O `0600` que o CLI aplica ao `.env` e ao `tokens.json` **não vale no Windows**:
+o `chmod` do PHP ali só liga e desliga o atributo de somente-leitura. Os dois
+arquivos guardam credencial — client secret e refresh token —, então leia
+[Permissões dos arquivos](configuracao.md#permissoes) antes de usar o CLI numa
+máquina compartilhada.
+
+### Clone
+
+O caminho de desenvolvimento funciona igual:
+
+```powershell
+git clone https://github.com/heitoralthmann/conta-azul-cli.git
+cd conta-azul-cli
+composer install
+copy .env.example .env
+php bin\ca list
+```
+
+Invoque pelo `php`: `bin/ca` não tem extensão, e o Windows decide o que é
+executável pela lista `PATHEXT`. `composer test`, `composer lint` e
+`composer stan` rodam normalmente — são os mesmos comandos que o CI executa em
+`windows-latest`.

@@ -37,7 +37,8 @@ Para agentes, a mesma documentação sai em forma de dados:
 
 ## Requisitos
 
-- PHP **8.4+** com as extensões `mbstring`, `openssl` e `posix`
+- PHP **8.4+** com as extensões `mbstring`, `openssl` e `ctype` (esta última já vem habilitada na maioria das builds)
+- `posix` é **opcional** e só existe em Unix; toda chamada a ela é guardada, e o CLI roda sem ela — é assim que a suíte passa em `windows-latest` no CI
 - Composer — só para o clone e para construir o PHAR; o PHAR pronto roda com PHP e mais nada
 - Uma aplicação registrada no portal de desenvolvedores da Conta Azul (`client_id` + `client_secret`)
 - Uma conta Conta Azul com **plano elegível para uso da API**
@@ -58,6 +59,8 @@ install -m 0755 conta-azul-cli.phar ~/.local/bin/ca
 
 `~/.local/bin` precisa estar no `PATH`. Para construir o mesmo artefato a partir do fonte, `composer build:phar` — e `composer smoke:phar` para conferi-lo antes de instalar.
 
+**No Windows** o PHAR é invocado por `php conta-azul-cli.phar` (ou por um `ca.cmd` de uma linha), o checksum se confere com `Get-FileHash`, e o build local precisa de WSL ou Git Bash. A receita está em [Instalação](docs/guia/instalacao.md).
+
 **Clone + Composer** — para mexer no código:
 
 ```bash
@@ -74,13 +77,15 @@ composer install
 Numa instalação global, os comandos `ca config` funcionam **sem credencial nenhuma** — são justamente o caminho para criá-la:
 
 ```bash
-ca config init                          # cria ~/.config/conta-azul-cli/.env (0600)
+ca config init                          # cria ~/.config/conta-azul-cli/.env
 ca config set CA_CLIENT_ID <id>
 ca config set CA_CLIENT_SECRET <secret>
 ca config show                          # o secret sai como "(definido)", nunca em claro
 ```
 
 Num clone, `cp .env.example .env` continua funcionando.
+
+O `.env` e o `tokens.json` nascem `0600`, em diretório `0700` — em Unix. **No Windows o PHP não escreve bits de permissão**, e a proteção desses dois arquivos fica por conta das ACLs do perfil do usuário: a seção "Permissões dos arquivos" de [Configuração](docs/guia/configuracao.md) explica o que a garantia cobre e o que não cobre.
 
 O arquivo de ambiente é procurado nesta ordem, e **o primeiro que existir vence, sem mesclagem**: `CA_CLI_ENV_FILE` → `<raiz do repo>/.env` → `~/.config/conta-azul-cli/.env`. `ca config path` responde qual está valendo e por quê. A precedência geral é: **flag de CLI → variável de ambiente → arquivo → default compilado**. Em produção, use variáveis de ambiente. `.env` e `tokens.json` **nunca** devem ser versionados.
 
