@@ -19,20 +19,51 @@ jobs:
   # tag, e não há um segundo conjunto de checagens para manter em sincronia.
   # `docs.yml` fica de fora de propósito — ele publica no GitHub Pages, e
   # rodá-lo a partir de uma tag tentaria um deploy que não é papel da release.
+  # Os checks acima provam que o código da tag é *bom*; nenhum deles prova que
+  # é o código que passou por main. Tag vive em `refs/tags/*`, e nenhuma regra
+  # de proteção de branch alcança esse namespace: um `git tag` em qualquer
+  # commit local, seguido de `git push origin <tag>`, dispara esta release sem
+  # nunca tocar em main. Este job é o que fecha isso — e mora aqui, versionado
+  # e revisável, em vez de numa configuração que alguém desliga sem deixar
+  # rastro no repositório.
+  provenance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # O default é profundidade 1: sem o histórico não há como responder
+          # se este commit descende de main.
+          fetch-depth: 0
+
+      - name: A tag precisa apontar para um commit contido em main
+        run: |
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          if git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "Commit $GITHUB_SHA está contido em main."
+            exit 0
+          fi
+          echo "::error title=Tag fora de main::O commit $GITHUB_SHA não é alcançável a partir de main. Publicar a partir dele entregaria código que nunca passou pelo histórico revisado."
+          exit 1
+
   tests:
+    needs: provenance
     uses: ./.github/workflows/tests.yml
 
   static-analysis:
+    needs: provenance
     uses: ./.github/workflows/static-analysis.yml
 
   code-style:
+    needs: provenance
     uses: ./.github/workflows/code-style.yml
 
   security:
+    needs: provenance
     uses: ./.github/workflows/security.yml
 
   build:
-    needs: [tests, static-analysis, code-style, security]
+    needs: [provenance, tests, static-analysis, code-style, security]
     runs-on: ubuntu-latest
 
     steps:
