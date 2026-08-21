@@ -9,6 +9,46 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+## [0.17.1] - 2026-08-21
+
+Nada mudou em `src/`: esta versão corrige documentação, endurece a publicação
+e conserta asserções de teste que não valiam no Windows.
+
+### Fixed
+
+- **`posix` não é obrigatória**, ao contrário do que o README e o guia de
+  instalação afirmavam. Ela está em `suggest`, toda chamada a ela é guardada
+  por `function_exists`, e a matriz de CI a omite de propósito no Windows —
+  onde a extensão não existe. A documentação exigia justamente na plataforma
+  em que a exigência é impossível de satisfazer.
+- **As asserções de permissão agora dizem a verdade no Windows.** O `chmod` do
+  PHP naquela plataforma só alterna o atributo de somente-leitura, então
+  `0600`/`0700` nunca são gravados. O código sempre esteve certo; os testes é
+  que afirmavam algo que a plataforma não sustenta, e quebravam nas duas pernas
+  Windows da matriz.
+
+### Added
+
+- **Seção de Windows no guia de instalação**, que antes não existia: rodar o
+  PHAR com `php`, o shim `ca.cmd`, `Get-FileHash` no lugar de `shasum`, e o
+  aviso de que os scripts de build são bash e pedem WSL ou Git Bash.
+- **Documentada a ressalva de permissões**: em Unix o `0600` do `.env` e do
+  `tokens.json` significa o que promete; no Windows a proteção fica por conta
+  das ACLs do perfil. Documentado também que `cp .env.example .env` cria o
+  arquivo com o `umask` do usuário — tipicamente `0644` —, e que só
+  `ca config init` e `ca config set` aplicam `0600`.
+
+### Changed
+
+- **A release passou a depender dos mesmos checks que guardam a `main`.** Uma
+  tag disparava `release.yml` sozinha: na v0.17.0 o artefato foi publicado
+  enquanto o job de testes ficava vermelho no Windows.
+- **Uma tag só publica se apontar para um commit contido em `main`.** Tags
+  vivem em `refs/tags/*`, que nenhuma regra de proteção de branch alcança, de
+  modo que um `git tag` em qualquer commit local disparava uma release a partir
+  de código que nunca passou pelo histórico revisado. Os checks de qualidade
+  provavam que o código era bom, nunca que era o código revisado.
+
 ## [0.17.0] - 2026-08-21
 
 Desamarra o CLI do diretório do projeto. As credenciais deixam de precisar
@@ -901,7 +941,8 @@ Primeira versão tagueada.
 - Pacote renomeado de `contaazul-cli/cli` para `heitoralthmann/conta-azul-cli`,
   com aviso de não-oficialidade adicionado ao README.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.17.1...HEAD
+[0.17.1]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.15.2...v0.16.0
 [0.15.2]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.15.1...v0.15.2
