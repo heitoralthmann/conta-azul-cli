@@ -194,15 +194,15 @@ trait ApiClientFactory
     );
   }
 
-  /** AuthManager backed by mocked collaborators; only getValidAccessToken/refreshAfter401 are wired. */
+  /** AuthManager backed by stubbed collaborators; only getValidAccessToken/refreshAfter401 are wired. */
   private function testAuthManager(string $accessToken): AuthManager {
-    $accessTokens = $this->createMock(AccessTokenServiceInterface::class);
+    $accessTokens = $this->createStub(AccessTokenServiceInterface::class);
     $accessTokens->method('getValidAccessToken')->willReturn($accessToken);
     $accessTokens->method('refreshAfter401')->willReturn($accessToken);
 
     return new AuthManager(
-        $this->createMock(TokenRepositoryInterface::class),
-        $this->createMock(OAuthGatewayInterface::class),
+        $this->createStub(TokenRepositoryInterface::class),
+        $this->createStub(OAuthGatewayInterface::class),
         $this->testConfiguration(),
         $accessTokens,
     );
