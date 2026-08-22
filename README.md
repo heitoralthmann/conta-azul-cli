@@ -72,6 +72,14 @@ install -m 0755 conta-azul-cli.phar ~/.local/bin/ca
 
 `~/.local/bin` precisa estar no `PATH`. Para construir o mesmo artefato a partir do fonte, `composer build:phar` — e `composer smoke:phar` para conferi-lo antes de instalar.
 
+O `.sha256` prova que o download não corrompeu. Para provar também que o binário saiu deste repositório, cada release traz uma atestação de proveniência:
+
+```bash
+gh attestation verify conta-azul-cli.phar --repo heitoralthmann/conta-azul-cli
+```
+
+O que ela garante — e o que não garante — está em [Proveniência](docs/guia/instalacao.md#proveniencia).
+
 **No Windows** o PHAR é invocado por `php conta-azul-cli.phar` (ou por um `ca.cmd` de uma linha), o checksum se confere com `Get-FileHash`, e o build local precisa de WSL ou Git Bash. A receita está em [Instalação](docs/guia/instalacao.md).
 
 **Clone + Composer** — para mexer no código:

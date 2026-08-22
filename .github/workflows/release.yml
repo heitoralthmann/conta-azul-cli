@@ -66,6 +66,16 @@ jobs:
     needs: [provenance, tests, static-analysis, code-style, security]
     runs-on: ubuntu-latest
 
+    # Declarar `permissions` no job substitui o bloco de topo em vez de somar a
+    # ele, então `contents: write` — que anexa os artefatos à release — precisa
+    # ser repetido aqui. `id-token` é o que permite ao runner obter o token OIDC
+    # que a Sigstore usa para assinar; `attestations` é o que deixa gravar a
+    # atestação no repositório.
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
     # Exposto para o job `homebrew` abaixo. A alternativa seria ele rebaixar o
     # `.phar` e recalcular o hash, o que responderia sobre o arquivo que o
     # download trouxe, não sobre o que este job publicou.
@@ -100,6 +110,16 @@ jobs:
       - name: Smoke test the PHAR
         run: tools/smoke-test.sh build/conta-azul-cli.phar
 
+      # Depois do smoke test de propósito: não faz sentido atestar um artefato
+      # que não passou pela verificação. Isto grava, via Sigstore, uma declaração
+      # assinada ligando o digest deste `.phar` ao workflow, ao repositório e ao
+      # commit que o construíram — verificável com `gh attestation verify`.
+      # É a diferença entre "o download não corrompeu" e "isto saiu daqui".
+      - name: Atestar a proveniência do PHAR
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: build/conta-azul-cli.phar
+
       - name: Generate checksum
         id: checksum
         working-directory: build
@@ -129,6 +149,20 @@ jobs:
       # O GITHUB_TOKEN desta workflow não alcança outro repositório. O
       # HOMEBREW_TAP_TOKEN é um PAT fine-grained com escopo apenas em
       # heitoralthmann/homebrew-tap e permissão Contents: read and write.
+      # Um secret ausente e um secret vazio chegam aqui iguais, e o
+      # actions/checkout responde aos dois com "Input required and not
+      # supplied: token" — que não diz qual é a causa. Aconteceu de verdade na
+      # v0.18.0: `gh secret set` sem terminal lê stdin vazio, sai com código 0 e
+      # grava o secret em branco.
+      - name: O secret do tap precisa ter valor
+        env:
+          TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          [ -n "$TOKEN" ] || {
+            echo "::error title=HOMEBREW_TAP_TOKEN ausente ou vazio::Crie um PAT fine-grained com escopo em heitoralthmann/homebrew-tap e Contents: read and write, e grave-o com 'pbpaste | gh secret set HOMEBREW_TAP_TOKEN'. Um 'gh secret set' sem terminal grava vazio em silêncio."
+            exit 1
+          }
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: heitoralthmann/homebrew-tap
