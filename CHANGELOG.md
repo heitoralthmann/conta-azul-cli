@@ -9,6 +9,8 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-08-22
+
 ### Added
 
 - **Tap do Homebrew.** `brew tap heitoralthmann/tap && brew install
@@ -958,6 +960,7 @@ Primeira versão tagueada.
   com aviso de não-oficialidade adicionado ao README.
 
 [Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.17.1...HEAD
+[0.18.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.17.1...v0.18.0
 [0.17.1]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.15.2...v0.16.0
