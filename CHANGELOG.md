@@ -9,6 +9,27 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+### Added
+
+- **Atestação de proveniência nos artefatos da release.** Cada `.phar` publicado
+  passa a carregar uma declaração assinada, via Sigstore, ligando o digest do
+  arquivo ao workflow, ao repositório e ao commit que o construíram. Confere-se
+  com `gh attestation verify conta-azul-cli.phar --repo heitoralthmann/conta-azul-cli`.
+  A documentação diz o que isso prova — que o binário saiu daqui — e o que não
+  prova: a atestação é emitida pela identidade do workflow, não pela minha, e
+  não existe assinatura GPG do autor sobre o artefato.
+- **Guarda para o secret do tap.** Um `HOMEBREW_TAP_TOKEN` ausente e um vazio
+  chegavam iguais ao `actions/checkout`, que respondia aos dois com `Input
+  required and not supplied: token`. O job agora falha antes, dizendo a causa.
+  Não é hipótese: foi como a v0.18.0 terminou com o tap uma versão atrás.
+
+### Changed
+
+- **`composer.json` passa a declarar `type: library`.** `project` sinaliza
+  "instale com `create-project`", o oposto do que se quer de uma ferramenta
+  instalada globalmente. Preparação para a publicação no Packagist; `support.docs`
+  passa a apontar para o site da documentação.
+
 ## [0.18.0] - 2026-08-22
 
 ### Added

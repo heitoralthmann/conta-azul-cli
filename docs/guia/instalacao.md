@@ -69,9 +69,12 @@ responder pelo nome. Se o `ca` que atrapalha for outro programa, use
 O `sha256` que o `brew` confere antes de instalar está versionado em
 [`heitoralthmann/homebrew-tap`](https://github.com/heitoralthmann/homebrew-tap),
 com histórico de git — um canal diferente daquele por onde o binário viaja. É
-melhor que o `.sha256` ao lado do `.phar` da seção seguinte, e ainda **não é
-assinatura**: quem controla os dois repositórios é a mesma conta. A fórmula é
-reescrita automaticamente pelo workflow de release a cada tag.
+melhor que o `.sha256` ao lado do `.phar` da seção seguinte, porque não viaja
+junto com o que ele descreve. A fórmula é reescrita automaticamente pelo
+workflow de release a cada tag.
+
+Para provar também a **origem** do `.phar` que o `brew` baixou, veja
+[Proveniência](#proveniencia).
 
 ## PHAR
 
@@ -84,8 +87,9 @@ shasum -a 256 -c conta-azul-cli.phar.sha256   # Linux: sha256sum -c
 ```
 
 O `.sha256` é gerado pelo mesmo workflow que publica o `.phar` e viaja pelo
-mesmo canal: ele prova que o download não veio corrompido, não que o artefato é
-autêntico. Não há assinatura.
+mesmo canal: sozinho, ele prova que o download não veio corrompido, não de onde
+o arquivo veio. Quem quiser a segunda garantia, use a atestação de proveniência
+descrita [abaixo](#proveniencia).
 
 Depois:
 
@@ -128,6 +132,46 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc   # ou ~/.bashrc
 
 Qualquer outro diretório já no `PATH` serve igual — `~/.local/bin` é só a
 convenção mais comum para binário de usuário.
+
+## Proveniência
+
+O workflow de release atesta a proveniência de cada `.phar` que publica: uma
+declaração assinada, ligando o digest daquele arquivo ao workflow, ao
+repositório e ao commit que o construíram. Para conferir:
+
+```bash
+gh attestation verify conta-azul-cli.phar --repo heitoralthmann/conta-azul-cli
+```
+
+Funciona com o arquivo baixado da release e também com o que o Homebrew
+instalou:
+
+```bash
+gh attestation verify "$(brew --prefix conta-azul-cli)/libexec/conta-azul-cli.phar" \
+  --repo heitoralthmann/conta-azul-cli
+```
+
+Precisa do [GitHub CLI](https://cli.github.com/) e de rede — a verificação
+consulta o registro público de atestações do GitHub.
+
+Artefatos publicados antes de o passo existir no workflow não têm atestação
+nenhuma, e para eles o comando responde que não encontrou nada. Isso não diz que
+o arquivo é falso; diz que ele é anterior a esta garantia.
+
+### O que isso prova, e o que não prova
+
+**Prova** que o binário na sua mão saiu do workflow de release deste
+repositório, a partir de um commit específico — não de uma release forjada, nem
+de um arquivo trocado no caminho. É uma garantia diferente da do `.sha256`, que
+diz apenas que o download não corrompeu.
+
+**Não prova** que eu revisei ou aprovei aquela versão. A atestação é emitida
+pela identidade do workflow, não pela minha: quem conseguisse alterar o
+workflow e disparar uma release produziria uma atestação igualmente válida. O
+que ela fecha é o caminho entre o build e o seu disco, não o que aconteceu antes
+do build.
+
+Não há assinatura GPG minha sobre o artefato.
 
 ## Primeira configuração
 
@@ -218,9 +262,10 @@ if ($local -eq $publicado) { 'ok' } else { 'DIVERGE' }
 ```
 
 O `.sha256` publicado vem no formato do `sha256sum` — `<hash>  <arquivo>` —,
-daí o `Split`. Vale aqui a mesma ressalva do caminho Unix: o checksum viaja
-pelo mesmo canal que o binário, então ele prova integridade do download, não
-autenticidade. Não há assinatura.
+daí o `Split`. Vale aqui a mesma ressalva do caminho Unix: o checksum viaja pelo
+mesmo canal que o binário, então sozinho ele prova integridade do download, não
+origem. A [atestação de proveniência](#proveniencia) responde essa outra
+pergunta, e o `gh attestation verify` funciona igual no PowerShell.
 
 ### Construir do fonte precisa de bash
 
