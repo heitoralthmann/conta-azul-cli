@@ -169,6 +169,43 @@ O histórico segue [Conventional Commits](https://www.conventionalcommits.org/):
 `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`, `style:`. Mensagens
 de commit são superfície de máquina — em inglês.
 
+## Cortando uma release
+
+A branch `main` é protegida por um ruleset **sem bypass**: exige pull request
+e os checks verdes (`PHP 8.4`/`8.5` em ubuntu e windows, `phpstan`, `lint`,
+`audit`, `Reference is in sync`, `Build site`). Isso vale para todo mundo,
+inclusive para o commit de release — `git push origin main` é recusado.
+
+O ciclo, então:
+
+```bash
+git switch -c chore/release-X.Y.Z
+# 1. CHANGELOG.md: troque `## [Unreleased]` por uma seção `## [X.Y.Z] - AAAA-MM-DD`,
+#    deixando `[Unreleased]` vazio acima dela, e acrescente as duas referências
+#    de link no rodapé (`[Unreleased]` passa a comparar de vX.Y.Z...HEAD).
+# 2. VERSION: só o número, sem `v`.
+composer docs:generate   # 3. regenera docs/commands.json, que carrega a versão
+git commit -am "chore: release X.Y.Z"
+gh pr create --fill && gh pr merge --merge --delete-branch
+```
+
+Só depois do merge é que a tag entra, apontando para o commit **já em `main`**:
+
+```bash
+git switch main && git pull
+git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z
+```
+
+A ordem não é preferência: `release.yml` recusa uma tag cujo commit não esteja
+contido em `main`, e ele reexecuta testes, PHPStan, phpcs e `composer audit`
+antes de publicar qualquer artefato. O ruleset cobre só `refs/heads/main`, então
+o `git push` da tag continua direto — não existe PR para tag.
+
+A tag dispara o `release.yml`, que compila o PHAR, gera a atestação de
+proveniência via Sigstore, publica a release e **reescreve a fórmula do tap do
+Homebrew** (`url` e `sha256`) com o `HOMEBREW_TAP_TOKEN`. Não edite
+`Formula/conta-azul-cli.rb` à mão: a tag seguinte sobrescreve.
+
 ## Licença
 
 Ao contribuir, você concorda que sua contribuição será licenciada sob a
