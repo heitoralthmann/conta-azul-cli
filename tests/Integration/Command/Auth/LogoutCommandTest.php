@@ -26,8 +26,8 @@ final class LogoutCommandTest extends CommandTestCase
     $accessTokens->expects(self::once())->method('logout');
 
     $authManager = new AuthManager(
-        $this->createMock(TokenRepositoryInterface::class),
-        $this->createMock(OAuthGatewayInterface::class),
+        $this->createStub(TokenRepositoryInterface::class),
+        $this->createStub(OAuthGatewayInterface::class),
         $this->testConfiguration(),
         $accessTokens,
     );
