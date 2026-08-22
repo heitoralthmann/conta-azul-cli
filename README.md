@@ -53,10 +53,11 @@ desenvolvimento.
 
 ```bash
 brew tap heitoralthmann/tap
+brew trust --formula heitoralthmann/tap/conta-azul-cli
 brew install conta-azul-cli
 ```
 
-Instala o mesmo `.phar` da release, sob dois nomes: `ca` e `conta-azul-cli`. Se
+O `brew trust` é exigido pelo Homebrew 6 para fórmulas de taps não oficiais — a receita confia na fórmula, não no tap inteiro. Instala o mesmo `.phar` da release, sob dois nomes: `ca` e `conta-azul-cli`. Se
 você já tem outro `ca` no `PATH` — inclusive de uma instalação manual anterior —
 o `brew install` avisa que o nome está sombreado.
 

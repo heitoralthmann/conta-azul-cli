@@ -32,6 +32,7 @@ para [Windows](#windows).
 
 ```bash
 brew tap heitoralthmann/tap
+brew trust --formula heitoralthmann/tap/conta-azul-cli
 brew install conta-azul-cli
 ca --version
 ```
@@ -40,6 +41,26 @@ Atualizar é `brew upgrade conta-azul-cli`; sair é `brew uninstall
 conta-azul-cli`. Nenhum dos dois toca em `~/.config/conta-azul-cli/` — o CLI
 resolve a configuração por `HOME`, não pelo prefixo do Homebrew, então
 desinstalar não leva junto as suas credenciais.
+
+### Por que o `brew trust`
+
+A partir do **Homebrew 6**, fórmula de tap que não seja oficial não é carregada
+sem consentimento explícito. Sem essa linha, o `install` — e depois o
+`upgrade` — param com:
+
+```
+Error: Refusing to load formula heitoralthmann/tap/conta-azul-cli from
+untrusted tap heitoralthmann/tap.
+```
+
+Em versões anteriores do Homebrew o comando `brew trust` não existe, e tapar já
+bastava; se o seu `brew` reclamar que o comando é desconhecido, é só pular a
+linha.
+
+Note que a receita acima confia **na fórmula**, não no tap inteiro. A diferença
+importa: `brew trust heitoralthmann/tap` passaria a aceitar qualquer fórmula
+que eu venha a adicionar ali depois, sem você olhar. O próprio Homebrew
+recomenda o recorte mais estreito, e é ele que está documentado aqui.
 
 ### O que o tap instala
 
