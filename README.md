@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/tests.yml/badge.svg)](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/tests.yml)
 [![Docs](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/docs.yml/badge.svg)](https://github.com/heitoralthmann/conta-azul-cli/actions/workflows/docs.yml)
-![PHP Version](https://img.shields.io/badge/PHP-8.4%2B-777BB4?logo=php&logoColor=white)
+![PHP Version](https://img.shields.io/badge/PHP-8.4.1%2B-777BB4?logo=php&logoColor=white)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 
 > **English:** unofficial PHP CLI wrapping the Conta Azul API (Financeiro, Pessoas, Produtos, Serviços, Contratos, Notas Fiscais, Vendas, Orçamentos, Captura) for consumption by AI agents. The Conta Azul API is Brazil-only, so the rest of this documentation is in Portuguese.
@@ -37,7 +37,7 @@ Para agentes, a mesma documentação sai em forma de dados:
 
 ## Requisitos
 
-- PHP **8.4+** com as extensões `mbstring`, `openssl` e `ctype` (esta última já vem habilitada na maioria das builds)
+- PHP **8.4.1+** com as extensões `mbstring`, `openssl` e `ctype` (esta última já vem habilitada na maioria das builds)
 - `posix` é **opcional** e só existe em Unix; toda chamada a ela é guardada, e o CLI roda sem ela — é assim que a suíte passa em `windows-latest` no CI
 - Composer — só para o clone e para construir o PHAR; o PHAR pronto roda com PHP e mais nada
 - Uma aplicação registrada no portal de desenvolvedores da Conta Azul (`client_id` + `client_secret`)
@@ -49,7 +49,7 @@ Três canais. O Homebrew é o caminho de uso em macOS e Linux; o PHAR é o mesmo
 binário sem Homebrew por perto (e o caminho do Windows); o clone é o caminho de
 desenvolvimento.
 
-**Homebrew** — resolve o PHP 8.4+ como dependência e dá `brew upgrade`:
+**Homebrew** — resolve o PHP 8.4.1+ como dependência e dá `brew upgrade`:
 
 ```bash
 brew tap heitoralthmann/tap

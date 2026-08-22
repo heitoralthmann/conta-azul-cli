@@ -17,7 +17,7 @@
         "docs": "https://heitoralthmann.github.io/conta-azul-cli/"
     },
     "require": {
-        "php": "^8.4",
+        "php": "^8.4.1",
         "ext-ctype": "*",
         "ext-mbstring": "*",
         "ext-openssl": "*",

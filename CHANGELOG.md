@@ -9,6 +9,17 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+### Changed
+
+- **Requisito mínimo de PHP subiu de 8.4 para 8.4.1.** O código do CLI não
+  precisa de nada que só exista no 8.4.1 — quem exige é o PHPUnit 13, adotado
+  junto com as outras atualizações de ferramentas de desenvolvimento. Declarar
+  `^8.4` enquanto o `require-dev` exige `>= 8.4.1` deixava um install de
+  desenvolvimento em 8.4.0 exato falhar na resolução em vez de na validação,
+  então o piso passou a dizer a verdade. Para quem só instala o CLI o efeito é
+  nulo na prática: o `require-dev` não é resolvido, e o 8.4.1 substituiu o
+  8.4.0 na sequência.
+
 ## [0.19.1] - 2026-08-22
 
 ### Fixed
