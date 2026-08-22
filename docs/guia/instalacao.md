@@ -2,7 +2,7 @@
 
 ## Requisitos
 
-- PHP **8.4+** com as extensões `mbstring`, `openssl` e `ctype` (esta última já vem habilitada na maioria das builds)
+- PHP **8.4.1+** com as extensões `mbstring`, `openssl` e `ctype` (esta última já vem habilitada na maioria das builds)
 - `posix` é **opcional**, e só existe em Unix. Toda chamada a ela é guardada por `function_exists`, e o CLI roda sem ela — é por isso que a suíte passa em `windows-latest` no CI, onde a extensão nem é instalada
 - Composer — só para o caminho de clone e para construir o PHAR; o PHAR pronto roda com PHP e mais nada
 - Pelo [Homebrew](#homebrew) nada disso é pré-requisito: o PHP entra como dependência da fórmula
@@ -64,7 +64,7 @@ recomenda o recorte mais estreito, e é ele que está documentado aqui.
 
 ### O que o tap instala
 
-**PHP 8.4+ vira dependência declarada, não pré-requisito documentado.** A
+**PHP 8.4.1+ vira dependência declarada, não pré-requisito documentado.** A
 fórmula tem `depends_on "php"`: se você não tem o PHP do Homebrew, ele é
 instalado junto — é um download grande na primeira vez. O executável instalado é
 um wrapper de uma linha que chama esse PHP, em vez de depender do shebang
