@@ -9,6 +9,8 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+## [0.19.1] - 2026-08-22
+
 ### Fixed
 
 - **A receita de instalação pelo Homebrew estava incompleta.** O Homebrew 6 não
@@ -998,7 +1000,8 @@ Primeira versão tagueada.
 - Pacote renomeado de `contaazul-cli/cli` para `heitoralthmann/conta-azul-cli`,
   com aviso de não-oficialidade adicionado ao README.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.17.1...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.19.1...HEAD
+[0.19.1]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.17.1...v0.18.0
 [0.17.1]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.17.0...v0.17.1
