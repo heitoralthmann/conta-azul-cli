@@ -31,7 +31,15 @@ estruturado com um campo `kind` estável. JSON compacto continua disponível com
 
 ## Começando
 
-Um binário global, a partir da release:
+Um binário global, pelo Homebrew:
+
+```bash
+brew tap heitoralthmann/tap
+brew install conta-azul-cli
+ca config init
+```
+
+Ou o mesmo binário direto da release, sem Homebrew:
 
 ```bash
 curl -LO https://github.com/heitoralthmann/conta-azul-cli/releases/latest/download/conta-azul-cli.phar

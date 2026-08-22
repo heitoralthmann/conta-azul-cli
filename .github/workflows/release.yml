@@ -66,6 +66,12 @@ jobs:
     needs: [provenance, tests, static-analysis, code-style, security]
     runs-on: ubuntu-latest
 
+    # Exposto para o job `homebrew` abaixo. A alternativa seria ele rebaixar o
+    # `.phar` e recalcular o hash, o que responderia sobre o arquivo que o
+    # download trouxe, não sobre o que este job publicou.
+    outputs:
+      sha256: ${{ steps.checksum.outputs.sha256 }}
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -95,8 +101,11 @@ jobs:
         run: tools/smoke-test.sh build/conta-azul-cli.phar
 
       - name: Generate checksum
+        id: checksum
         working-directory: build
-        run: sha256sum conta-azul-cli.phar > conta-azul-cli.phar.sha256
+        run: |
+          sha256sum conta-azul-cli.phar > conta-azul-cli.phar.sha256
+          echo "sha256=$(cut -d' ' -f1 conta-azul-cli.phar.sha256)" >> "$GITHUB_OUTPUT"
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
@@ -104,3 +113,60 @@ jobs:
           files: |
             build/conta-azul-cli.phar
             build/conta-azul-cli.phar.sha256
+
+  # A fórmula do tap não é uma segunda fonte da verdade: ela é derivada da tag e
+  # do checksum que o job acima calculou sobre o artefato que acabou de publicar.
+  # Sem isto o tap fica uma versão atrás a cada release, em silêncio — que é a
+  # forma mais comum de um tap apodrecer.
+  homebrew:
+    needs: build
+    runs-on: ubuntu-latest
+    # Um fork que empurre uma tag não tem o segredo, e não tem o que consertar:
+    # sem esta guarda o job ficaria vermelho em toda release do fork.
+    if: github.repository == 'heitoralthmann/conta-azul-cli'
+
+    steps:
+      # O GITHUB_TOKEN desta workflow não alcança outro repositório. O
+      # HOMEBREW_TAP_TOKEN é um PAT fine-grained com escopo apenas em
+      # heitoralthmann/homebrew-tap e permissão Contents: read and write.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: heitoralthmann/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: tap
+
+      - name: Atualizar a fórmula
+        env:
+          TAG: ${{ github.ref_name }}
+          SHA256: ${{ needs.build.outputs.sha256 }}
+        working-directory: tap
+        run: |
+          formula=Formula/conta-azul-cli.rb
+
+          # Só `url` e `sha256`: a fórmula não tem linha `version` de propósito
+          # — o Homebrew extrai a versão do `/vX.Y.Z/` da própria URL, e
+          # `brew audit --strict` recusa a duplicata.
+          sed -i \
+            -e "s|^  url \".*\"$|  url \"https://github.com/heitoralthmann/conta-azul-cli/releases/download/${TAG}/conta-azul-cli.phar\"|" \
+            -e "s|^  sha256 \".*\"$|  sha256 \"${SHA256}\"|" \
+            "$formula"
+
+          # `sed` não falha quando o padrão não casa: ele apenas não faz nada.
+          # Sem estas duas provas, uma reformatação da fórmula transformaria o
+          # bump num no-op verde, e o tap ficaria parado sem ninguém notar.
+          grep -q "download/${TAG}/conta-azul-cli.phar" "$formula" \
+            || { echo "::error title=Bump falhou::url não foi reescrita em ${formula}"; exit 1; }
+          grep -q "\"${SHA256}\"" "$formula" \
+            || { echo "::error title=Bump falhou::sha256 não foi reescrito em ${formula}"; exit 1; }
+
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$formula"
+
+          if git diff --cached --quiet; then
+            echo "Fórmula já aponta para ${TAG}; nada a fazer."
+            exit 0
+          fi
+
+          git commit -m "conta-azul-cli ${TAG#v}"
+          git push
