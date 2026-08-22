@@ -45,7 +45,20 @@ Para agentes, a mesma documentação sai em forma de dados:
 
 ## Instalação
 
-Dois canais. O PHAR é o caminho de uso; o clone é o caminho de desenvolvimento.
+Três canais. O Homebrew é o caminho de uso em macOS e Linux; o PHAR é o mesmo
+binário sem Homebrew por perto (e o caminho do Windows); o clone é o caminho de
+desenvolvimento.
+
+**Homebrew** — resolve o PHP 8.4+ como dependência e dá `brew upgrade`:
+
+```bash
+brew tap heitoralthmann/tap
+brew install conta-azul-cli
+```
+
+Instala o mesmo `.phar` da release, sob dois nomes: `ca` e `conta-azul-cli`. Se
+você já tem outro `ca` no `PATH` — inclusive de uma instalação manual anterior —
+o `brew install` avisa que o nome está sombreado.
 
 **Binário único (PHAR)** — um `ca` global, sem repositório por perto:
 

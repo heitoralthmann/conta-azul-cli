@@ -9,6 +9,22 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+### Added
+
+- **Tap do Homebrew.** `brew tap heitoralthmann/tap && brew install
+  conta-azul-cli` instala o mesmo `.phar` que a release publica, com PHP 8.4+
+  resolvido como dependência da fórmula em vez de pré-requisito documentado, e
+  `brew upgrade` no lugar de repetir o `curl`/`shasum`/`install` a cada versão.
+  A fórmula vive em [`heitoralthmann/homebrew-tap`](https://github.com/heitoralthmann/homebrew-tap)
+  e instala dois nomes para o mesmo wrapper: `ca`, o da documentação, e
+  `conta-azul-cli`, para quando `ca` já estiver ocupado no `PATH`.
+- **`release.yml` atualiza o tap sozinho.** Um job novo reescreve `url` e
+  `sha256` da fórmula a cada tag `v*`, a partir do checksum que o job de build
+  já calculava sobre o artefato publicado. O passo tem guarda: `sed` não falha
+  quando o padrão não casa, então o job confere que as duas linhas mudaram de
+  fato antes de commitar — sem isso, uma reformatação da fórmula viraria um
+  no-op verde e o tap ficaria para trás em silêncio.
+
 ## [0.17.1] - 2026-08-21
 
 Nada mudou em `src/`: esta versão corrige documentação, endurece a publicação

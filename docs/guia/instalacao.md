@@ -5,23 +5,73 @@
 - PHP **8.4+** com as extensões `mbstring`, `openssl` e `ctype` (esta última já vem habilitada na maioria das builds)
 - `posix` é **opcional**, e só existe em Unix. Toda chamada a ela é guardada por `function_exists`, e o CLI roda sem ela — é por isso que a suíte passa em `windows-latest` no CI, onde a extensão nem é instalada
 - Composer — só para o caminho de clone e para construir o PHAR; o PHAR pronto roda com PHP e mais nada
+- Pelo [Homebrew](#homebrew) nada disso é pré-requisito: o PHP entra como dependência da fórmula
 - Uma aplicação registrada no portal de desenvolvedores da Conta Azul (`client_id` + `client_secret`)
 - Uma conta Conta Azul com **plano elegível para uso da API** (veja [Solução de problemas](solucao-de-problemas.md))
 
-## Dois canais
+## Três canais
 
 | Canal | Para quê |
 |---|---|
-| **PHAR** | Ter um `ca` global na máquina, longe do diretório do projeto. É o caminho de uso. |
+| **Homebrew** | Um `ca` global em macOS ou Linux, com `brew upgrade` para atualizar. É o caminho de uso. |
+| **PHAR** | O mesmo binário, sem Homebrew por perto — e o caminho do Windows. |
 | **Clone + Composer** | Mexer no código, rodar os testes, regenerar a documentação. É o caminho de desenvolvimento. |
 
-Os dois leem o mesmo arquivo de ambiente, encontrado pelo mesmo
-[search path](configuracao.md). A diferença prática é que, dentro do PHAR, o
-`.env` da raiz do repositório não é candidato — as credenciais precisam morar
-em `~/.config/conta-azul-cli/.env` (ou onde `CA_CLI_ENV_FILE` apontar).
+Os três leem o mesmo arquivo de ambiente, encontrado pelo mesmo
+[search path](configuracao.md). Os dois primeiros entregam o mesmo artefato: o
+Homebrew instala exatamente o `.phar` que a release publica. A diferença prática
+é que, dentro do PHAR, o `.env` da raiz do repositório não é candidato — as
+credenciais precisam morar em `~/.config/conta-azul-cli/.env` (ou onde
+`CA_CLI_ENV_FILE` apontar).
 
-Os comandos das próximas duas seções assumem um shell Unix. Para Windows, vá
-direto para [Windows](#windows).
+Os comandos das próximas seções assumem um shell Unix. Para Windows, vá direto
+para [Windows](#windows).
+
+## Homebrew
+
+```bash
+brew tap heitoralthmann/tap
+brew install conta-azul-cli
+ca --version
+```
+
+Atualizar é `brew upgrade conta-azul-cli`; sair é `brew uninstall
+conta-azul-cli`. Nenhum dos dois toca em `~/.config/conta-azul-cli/` — o CLI
+resolve a configuração por `HOME`, não pelo prefixo do Homebrew, então
+desinstalar não leva junto as suas credenciais.
+
+### O que o tap instala
+
+**PHP 8.4+ vira dependência declarada, não pré-requisito documentado.** A
+fórmula tem `depends_on "php"`: se você não tem o PHP do Homebrew, ele é
+instalado junto — é um download grande na primeira vez. O executável instalado é
+um wrapper de uma linha que chama esse PHP, em vez de depender do shebang
+`#!/usr/bin/env php` do artefato, que pegaria o primeiro `php` do `PATH` — que
+pode ser anterior ao 8.4 exigido, ou não existir.
+
+**Dois nomes, o mesmo wrapper:** `ca` e `conta-azul-cli`. `ca` é curto e
+genérico, e pode já estar ocupado na sua máquina — inclusive por uma instalação
+manual anterior deste mesmo CLI em `~/.local/bin/ca`. Quando esse for o caso, o
+próprio `brew install` avisa:
+
+```
+The following conta-azul-cli executables are shadowed by other commands
+earlier in your PATH:
+  ca (shadowed by /Users/você/.local/bin/ca)
+```
+
+Vindo do caminho manual, `rm ~/.local/bin/ca` resolve — o Homebrew passa a
+responder pelo nome. Se o `ca` que atrapalha for outro programa, use
+`conta-azul-cli`.
+
+### Integridade
+
+O `sha256` que o `brew` confere antes de instalar está versionado em
+[`heitoralthmann/homebrew-tap`](https://github.com/heitoralthmann/homebrew-tap),
+com histórico de git — um canal diferente daquele por onde o binário viaja. É
+melhor que o `.sha256` ao lado do `.phar` da seção seguinte, e ainda **não é
+assinatura**: quem controla os dois repositórios é a mesma conta. A fórmula é
+reescrita automaticamente pelo workflow de release a cada tag.
 
 ## PHAR
 
@@ -79,10 +129,10 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc   # ou ~/.bashrc
 Qualquer outro diretório já no `PATH` serve igual — `~/.local/bin` é só a
 convenção mais comum para binário de usuário.
 
-### Primeira configuração
+## Primeira configuração
 
-Recém-instalado e longe de qualquer repositório, o CLI ainda não tem
-credenciais. Os comandos `ca config` funcionam nesse estado justamente para
+Vale igual para o Homebrew e para o PHAR. Recém-instalado e longe de qualquer
+repositório, o CLI ainda não tem credenciais. Os comandos `ca config` funcionam nesse estado justamente para
 resolvê-lo:
 
 ```bash
@@ -124,6 +174,9 @@ e o CLI guarda toda chamada a ela.
 O nível de suporte, porém, merece ser dito com precisão: o que é exercitado é o
 **código**. O ferramental de build e esta própria seção são novos e muito menos
 rodados. Se algo aqui divergir da realidade, é aqui que está o erro, não no CLI.
+
+O tap do Homebrew não atende o Windows: aqui o caminho é o PHAR, com o `ca.cmd`
+descrito abaixo.
 
 ### Rodar o PHAR
 
