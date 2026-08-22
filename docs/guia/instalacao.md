@@ -9,15 +9,16 @@
 - Uma aplicação registrada no portal de desenvolvedores da Conta Azul (`client_id` + `client_secret`)
 - Uma conta Conta Azul com **plano elegível para uso da API** (veja [Solução de problemas](solucao-de-problemas.md))
 
-## Três canais
+## Quatro canais
 
 | Canal | Para quê |
 |---|---|
 | **Homebrew** | Um `ca` global em macOS ou Linux, com `brew upgrade` para atualizar. É o caminho de uso. |
 | **PHAR** | O mesmo binário, sem Homebrew por perto — e o caminho do Windows. |
+| **Composer** | Para quem já vive no ecossistema PHP e quer o `ca` junto das outras ferramentas globais. |
 | **Clone + Composer** | Mexer no código, rodar os testes, regenerar a documentação. É o caminho de desenvolvimento. |
 
-Os três leem o mesmo arquivo de ambiente, encontrado pelo mesmo
+Os quatro leem o mesmo arquivo de ambiente, encontrado pelo mesmo
 [search path](configuracao.md). Os dois primeiros entregam o mesmo artefato: o
 Homebrew instala exatamente o `.phar` que a release publica. A diferença prática
 é que, dentro do PHAR, o `.env` da raiz do repositório não é candidato — as
@@ -173,10 +174,31 @@ do build.
 
 Não há assinatura GPG minha sobre o artefato.
 
+## Composer
+
+O pacote está no Packagist como
+[`heitoralthmann/conta-azul-cli`](https://packagist.org/packages/heitoralthmann/conta-azul-cli):
+
+```bash
+composer global require heitoralthmann/conta-azul-cli
+ca --version
+```
+
+O `ca` vai parar em `$COMPOSER_HOME/vendor/bin`, que precisa estar no `PATH`
+(`composer global config bin-dir --absolute` responde qual é o caminho na sua
+máquina). Atualizar é `composer global update heitoralthmann/conta-azul-cli`.
+
+Uma ressalva que os outros canais não têm: `composer global` instala num espaço
+de dependências **compartilhado com as suas outras ferramentas globais**, então
+duas ferramentas que exijam versões incompatíveis do mesmo pacote entram em
+conflito. O PHAR e o Homebrew não sofrem disso — dentro do PHAR as dependências
+vêm empacotadas e isoladas. Se o `ca` for a única coisa que você quer, prefira
+um daqueles dois.
+
 ## Primeira configuração
 
-Vale igual para o Homebrew e para o PHAR. Recém-instalado e longe de qualquer
-repositório, o CLI ainda não tem credenciais. Os comandos `ca config` funcionam nesse estado justamente para
+Vale igual para o Homebrew, o PHAR e o Composer. Recém-instalado e longe de
+qualquer repositório, o CLI ainda não tem credenciais. Os comandos `ca config` funcionam nesse estado justamente para
 resolvê-lo:
 
 ```bash
@@ -205,8 +227,6 @@ cp .env.example .env    # preencha CA_CLIENT_ID e CA_CLIENT_SECRET
 Num clone, o `.env` da raiz do repositório vence o arquivo do usuário — o
 comportamento de sempre. `ca config path` responde qual arquivo está valendo em
 qualquer situação.
-
-> Distribuição via `composer global require` está prevista, mas o pacote ainda não foi publicado no Packagist.
 
 ## Windows
 

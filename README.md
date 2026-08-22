@@ -91,7 +91,13 @@ composer install
 ./bin/ca list
 ```
 
-> Distribuição via `composer global require` está prevista, mas o pacote ainda não foi publicado no Packagist.
+**Composer** — para quem já vive no ecossistema PHP:
+
+```bash
+composer global require heitoralthmann/conta-azul-cli
+```
+
+O pacote está no Packagist como [`heitoralthmann/conta-azul-cli`](https://packagist.org/packages/heitoralthmann/conta-azul-cli). Vale a ressalva de que `composer global` usa um espaço de dependências compartilhado com as suas outras ferramentas globais; o PHAR e o Homebrew não têm esse problema.
 
 ## Configuração
 
