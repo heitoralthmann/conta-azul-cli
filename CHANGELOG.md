@@ -11,6 +11,13 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ### Added
 
+- **Publicado no Packagist** como
+  [`heitoralthmann/conta-azul-cli`](https://packagist.org/packages/heitoralthmann/conta-azul-cli):
+  `composer global require heitoralthmann/conta-azul-cli`. A documentação
+  prometia esse canal desde a v0.1.0 e agora ele existe — com a ressalva dita em
+  voz alta de que `composer global` compartilha o espaço de dependências com as
+  outras ferramentas globais, coisa que o PHAR e o Homebrew não fazem.
+
 - **Atestação de proveniência nos artefatos da release.** Cada `.phar` publicado
   passa a carregar uma declaração assinada, via Sigstore, ligando o digest do
   arquivo ao workflow, ao repositório e ao commit que o construíram. Confere-se
