@@ -72,7 +72,7 @@ install -m 0755 conta-azul-cli.phar ~/.local/bin/ca
 
 `~/.local/bin` precisa estar no `PATH`. Para construir o mesmo artefato a partir do fonte, `composer build:phar` — e `composer smoke:phar` para conferi-lo antes de instalar.
 
-O `.sha256` prova que o download não corrompeu. Para provar também que o binário saiu deste repositório, cada release traz uma atestação de proveniência:
+O `.sha256` prova que o download não corrompeu. Para provar também que o binário saiu deste repositório, o workflow de release atesta a proveniência do que publica:
 
 ```bash
 gh attestation verify conta-azul-cli.phar --repo heitoralthmann/conta-azul-cli

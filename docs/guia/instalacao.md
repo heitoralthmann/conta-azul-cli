@@ -135,9 +135,9 @@ convenção mais comum para binário de usuário.
 
 ## Proveniência
 
-A partir da v0.19.0, cada `.phar` publicado carrega uma **atestação de
-proveniência**: uma declaração assinada, ligando o digest daquele arquivo ao
-workflow, ao repositório e ao commit que o construíram. Para conferir:
+O workflow de release atesta a proveniência de cada `.phar` que publica: uma
+declaração assinada, ligando o digest daquele arquivo ao workflow, ao
+repositório e ao commit que o construíram. Para conferir:
 
 ```bash
 gh attestation verify conta-azul-cli.phar --repo heitoralthmann/conta-azul-cli
@@ -153,6 +153,10 @@ gh attestation verify "$(brew --prefix conta-azul-cli)/libexec/conta-azul-cli.ph
 
 Precisa do [GitHub CLI](https://cli.github.com/) e de rede — a verificação
 consulta o registro público de atestações do GitHub.
+
+Artefatos publicados antes de o passo existir no workflow não têm atestação
+nenhuma, e para eles o comando responde que não encontrou nada. Isso não diz que
+o arquivo é falso; diz que ele é anterior a esta garantia.
 
 ### O que isso prova, e o que não prova
 
