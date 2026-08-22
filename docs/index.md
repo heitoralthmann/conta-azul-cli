@@ -35,6 +35,7 @@ Um binário global, pelo Homebrew:
 
 ```bash
 brew tap heitoralthmann/tap
+brew trust --formula heitoralthmann/tap/conta-azul-cli
 brew install conta-azul-cli
 ca config init
 ```

@@ -9,6 +9,15 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A receita de instalação pelo Homebrew estava incompleta.** O Homebrew 6 não
+  carrega fórmula de tap não oficial sem consentimento explícito, então
+  `brew tap` + `brew install` parava em `Refusing to load formula ... from
+  untrusted tap`. A documentação passa a trazer o
+  `brew trust --formula heitoralthmann/tap/conta-azul-cli` — recorte na fórmula,
+  não no tap inteiro, para que uma fórmula futura não seja aceita sem revisão.
+
 ## [0.19.0] - 2026-08-22
 
 ### Added
