@@ -68,7 +68,7 @@ Cada endpoint traz uma marca de confiança:
 | [`baixa get`](baixa.md#baixa-get) | `GET /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ✅ |
 | [`baixa update`](baixa.md#baixa-update) | `PATCH /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ✅ |
 | [`baixa delete`](baixa.md#baixa-delete) | `DELETE /v1/financeiro/eventos-financeiros/parcelas/baixa/{id}` | ✅ |
-| [`financeiro alteracoes`](financeiro.md#financeiro-alteracoes) | `ISO 8601 **sem timezone**` | ✅ |
+| [`financeiro alteracoes`](financeiro.md#financeiro-alteracoes) | `GET /v1/financeiro/eventos-financeiros/alteracoes` | ✅ |
 | [`financeiro saldo-inicial`](financeiro.md#financeiro-saldo-inicial) | `GET /v1/financeiro/eventos-financeiros/saldo-inicial` | ✅ |
 | [`protocolo get`](protocolo.md#protocolo-get) | `GET /v1/protocolo/{id}` | ✅ |
 | [`contrato list`](contrato.md#contrato-list) | `GET /v1/contratos` | ✅ |

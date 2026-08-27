@@ -5,7 +5,7 @@ sections:
       - 'financeiro alteracoes'
     status: verified
     endpoints:
-      'financeiro alteracoes': 'ISO 8601 **sem timezone**'
+      'financeiro alteracoes': 'GET /v1/financeiro/eventos-financeiros/alteracoes'
     params:
       data-inicio:
         label: '`--data-inicio`'
@@ -17,6 +17,16 @@ sections:
         required: não¹
         default: 'fim do mês corrente'
         description: 'ISO 8601 **sem timezone**'
+      pagina:
+        label: '`--pagina`'
+        required: não
+        default: '`1`'
+        description: 'Número da página'
+      tamanho-pagina:
+        label: '`--tamanho-pagina`'
+        required: não
+        default: '`50`'
+        description: 'Itens por página'
     body: |
       Feed de alterações no período — o caminho para reconciliar escritas que terminaram em `ambiguous`.
 

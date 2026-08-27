@@ -425,22 +425,24 @@ final class FinanceiroClient
    * As datas vão em ISO 8601 **sem timezone** (`2026-08-01T00:00:00`). Com
    * sufixo `Z` ou offset a API responde 400.
    *
-   * @param array<string, mixed> $filters
-   *
    * @return array<mixed>
    */
-  public function getAlteracoes(string $dataInicio, string $dataFim, array $filters = []): array {
+  public function getAlteracoes(
+      string $dataInicio,
+      string $dataFim,
+      int $pagina = 1,
+      int $tamanhoPagina = 50,
+  ): array {
     return $this->support->request(
         'GET',
         '/v1/financeiro/eventos-financeiros/alteracoes',
         [
-          'query' => array_merge(
-              [
-                'data_fim'    => $dataFim,
-                'data_inicio' => $dataInicio,
-              ],
-              $filters,
-          ),
+          'query' => [
+            'data_fim'       => $dataFim,
+            'data_inicio'    => $dataInicio,
+            'pagina'         => $pagina,
+            'tamanho_pagina' => $tamanhoPagina,
+          ],
         ],
     );
   }

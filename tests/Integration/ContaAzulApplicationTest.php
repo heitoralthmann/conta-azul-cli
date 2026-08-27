@@ -114,10 +114,12 @@ final class ContaAzulApplicationTest extends TestCase
   /** Registering the shared --format option must not crowd out an invokable command's own #[Option] attributes. */
   public function testInvokableOptionsSurviveFormatRegistration(): void {
     $application = new ContaAzulApplication();
-    $definition  = $application->get('categoria list')->getDefinition();
 
-    self::assertTrue($definition->hasOption('pagina'));
-    self::assertTrue($definition->hasOption('tamanho-pagina'));
+    foreach (['categoria list', 'financeiro alteracoes', 'financeiro saldo-inicial'] as $name) {
+      $definition = $application->get($name)->getDefinition();
+      self::assertTrue($definition->hasOption('pagina'), $name);
+      self::assertTrue($definition->hasOption('tamanho-pagina'), $name);
+    }
   }
 
   /** The removed JSON alias is rejected on project commands before any API request. */

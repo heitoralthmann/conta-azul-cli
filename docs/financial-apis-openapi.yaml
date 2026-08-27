@@ -47,7 +47,7 @@ paths:
   /v1/financeiro/eventos-financeiros/{id_evento}/parcelas:
     get: { summary: "Parcelas de um evento financeiro (sem comando no CLI)" }
   /v1/financeiro/eventos-financeiros/alteracoes:
-    get: { summary: "Feed de alterações; params data_inicio e data_fim em ISO 8601 SEM timezone" }
+    get: { summary: "Feed de alterações; params data_inicio e data_fim em ISO 8601 SEM timezone, pagina e tamanho_pagina" }
   /v1/financeiro/eventos-financeiros/saldo-inicial:
     get: { summary: "Saldo inicial no período; params data_inicio e data_fim em ISO 8601 SEM timezone" }
   /v1/protocolo/{id}:

@@ -9,6 +9,14 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`financeiro alteracoes` não paginava.** A API aceita `pagina` e
+  `tamanho_pagina` (iguais às outras listagens financeiras), mas o comando
+  não expunha `--pagina`/`--tamanho-pagina` e o cliente nem mandava os
+  parâmetros. Passa a enviar os dois, com o mesmo default do restante do
+  CLI (`1` / `50`).
+
 ### Changed
 
 - **Requisito mínimo de PHP subiu de 8.4 para 8.4.1.** O código do CLI não

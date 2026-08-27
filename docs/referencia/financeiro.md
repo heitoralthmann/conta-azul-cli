@@ -5,12 +5,14 @@
 
 ## `financeiro alteracoes` ✅ { #financeiro-alteracoes }
 
-`ISO 8601 **sem timezone**`
+`GET /v1/financeiro/eventos-financeiros/alteracoes`
 
 | Parâmetro | Obrig. | Padrão | Descrição |
 |---|---|---|---|
 | `--data-inicio` | não¹ | início do mês corrente | ISO 8601 **sem timezone** |
 | `--data-fim` | não¹ | fim do mês corrente | ISO 8601 **sem timezone** |
+| `--pagina` | não | `1` | Número da página |
+| `--tamanho-pagina` | não | `50` | Itens por página |
 
 Feed de alterações no período — o caminho para reconciliar escritas que terminaram em `ambiguous`.
 

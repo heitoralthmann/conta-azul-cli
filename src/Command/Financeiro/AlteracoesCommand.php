@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace ContaAzulCli\Command\Financeiro;
 
 use ContaAzulCli\Api\FinanceiroClient;
+use ContaAzulCli\Api\PaginationValidator;
 use ContaAzulCli\Command\Support\CommandExecutor;
+use ContaAzulCli\Command\Support\PaginationOptions;
 use ContaAzulCli\Command\Support\PeriodoPadrao;
 use ContaAzulCli\Output\ErrorEnvelope;
 use ContaAzulCli\Output\ResponseRenderer;
@@ -28,6 +30,7 @@ final class AlteracoesCommand extends Command
       private readonly FinanceiroClient $client,
       private readonly ErrorEnvelope $errorEnvelope,
       private readonly ResponseRenderer $responseRenderer,
+      private readonly PaginationValidator $paginationValidator,
       private readonly WarningEnvelope $warningEnvelope,
       private readonly PeriodoPadrao $periodoPadrao,
       CommandExecutor|null $commandExecutor = null,
@@ -49,9 +52,13 @@ final class AlteracoesCommand extends Command
           description: 'Fim em ISO 8601 sem timezone (ex: 2026-08-31T23:59:59). Padrão: fim do mês corrente',
       )]
       string|null $dataFim = null,
+      #[Option(description: 'Número da página')]
+      int $pagina = 1,
+      #[Option(name: 'tamanho-pagina', description: 'Itens por página')]
+      int $tamanhoPagina = 50,
   ): int {
     return $this->commandExecutor->execute(
-        function () use ($dataInicio, $dataFim): void {
+        function () use ($dataInicio, $dataFim, $pagina, $tamanhoPagina): void {
           $inicio = $dataInicio !== null && $dataInicio !== '' ? $dataInicio : $this->periodoPadrao->primeiroInstante();
           $fim    = $dataFim !== null && $dataFim !== ''       ? $dataFim    : $this->periodoPadrao->ultimoInstante();
 
@@ -62,7 +69,11 @@ final class AlteracoesCommand extends Command
               );
           }
 
-          $this->responseRenderer->render($this->client->getAlteracoes($inicio, $fim));
+          $pagination = PaginationOptions::fromValues($pagina, $tamanhoPagina, $this->paginationValidator);
+
+          $this->responseRenderer->render(
+              $this->client->getAlteracoes($inicio, $fim, $pagination->page(), $pagination->pageSize()),
+          );
         },
     );
   }
