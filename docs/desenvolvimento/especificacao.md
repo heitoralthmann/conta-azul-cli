@@ -195,13 +195,13 @@ CLI em PHP/Symfony que expõe endpoints das famílias Financeiro (Finanças, Bai
 ### 11.1. Fluxo inicial — `ca auth login`
 
 1. CLI gera `state` aleatório.
-2. CLI inicia listener HTTP local em `http://localhost:9876/callback` (porta fixa, pré-registrada no app na Conta Azul).
+2. CLI inicia listener HTTPS local em `https://conta-azul-cli.ddev.site:9876/callback` (porta fixa, pré-registrada no app na Conta Azul). O certificado TLS é emitido em `~/.config/conta-azul-cli/certs/` na primeira vez, e a CA entra no trust store do usuário.
 3. CLI imprime a URL de autorização e pede ao usuário que abra em um navegador.
 4. Usuário completa login no IdP (AWS Cognito, por trás da Conta Azul).
 5. O redirect captura `code`; CLI valida `state` e troca por tokens via `POST https://auth.contaazul.com/oauth2/token` com `Authorization: Basic base64(client_id:client_secret)`.
 6. CLI persiste tokens; listener encerra; processo sai com `0`.
 
-**Justificativa.** Loopback local é o padrão estabelecido para OAuth em CLIs e funciona em qualquer máquina dev com navegador. PHP tem suporte nativo via `stream_socket_server`, dispensando dependências adicionais.
+**Justificativa.** Loopback local é o padrão estabelecido para OAuth em CLIs e funciona em qualquer máquina com navegador. O provedor recusa `http://localhost` e exige HTTPS com domínio; `*.ddev.site` já resolve para `127.0.0.1` via DNS público. PHP gera o par TLS com a extensão `openssl` (já requisito) e instala a CA no trust store do usuário, então um `brew install` numa máquina nova basta para reautenticar — sem checkout, sem `.certs/`, sem `mkcert`.
 
 **Trade-off aceito.** Porta fixa (`9876`). Se já estiver ocupada, o login falha com mensagem clara em pt-BR. Aceitável.
 
@@ -273,7 +273,7 @@ Operador roda `ca auth login` uma vez em máquina dev, depois copia o refresh to
 |---|---|---|
 | `CA_CLIENT_ID` | sim | client_id do app Conta Azul |
 | `CA_CLIENT_SECRET` | sim | client_secret do app |
-| `CA_REDIRECT_URI` | não | default `http://localhost:9876/callback` |
+| `CA_REDIRECT_URI` | não | default `https://conta-azul-cli.ddev.site:9876/callback` |
 | `CA_API_BASE_URL` | não | default `https://api-v2.contaazul.com` |
 | `CA_AUTH_BASE_URL` | não | default `https://auth.contaazul.com` |
 | `CA_CLI_TOKEN_PATH` | não | default `~/.config/conta-azul-cli/tokens.json` |

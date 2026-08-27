@@ -65,7 +65,10 @@ final class EnvironmentConfigurationLoader
       'callbackTimeout'       => $this->callbackTimeout(),
       'clientId'              => $this->requireEnv('CA_CLIENT_ID'),
       'clientSecret'          => $this->requireEnv('CA_CLIENT_SECRET'),
-      'redirectUri'           => $this->getEnv('CA_REDIRECT_URI', 'http://localhost:9876/callback'),
+      'redirectUri'           => $this->getEnv(
+          'CA_REDIRECT_URI',
+          'https://conta-azul-cli.ddev.site:9876/callback',
+      ),
       'scope'                 => $this->nullableEnv('CA_SCOPE'),
       'tokenPath'             => $this->expandHome($this->getEnv(
           'CA_CLI_TOKEN_PATH',

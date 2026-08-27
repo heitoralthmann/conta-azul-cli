@@ -181,6 +181,10 @@ final class ConfigFileLocatorTest extends TestCase
     $this->writeEnv($this->projectRoot . '/.env');
 
     self::assertSame(
+        $this->home . '/.config/conta-azul-cli',
+        (new ConfigFileLocator($this->projectRoot, null))->userDirectory(),
+    );
+    self::assertSame(
         $this->home . '/.config/conta-azul-cli/.env',
         (new ConfigFileLocator($this->projectRoot, null))->userFile(),
     );

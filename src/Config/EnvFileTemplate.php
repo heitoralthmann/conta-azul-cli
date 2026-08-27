@@ -39,9 +39,11 @@ final class EnvFileTemplate
     # CA_SCOPE='openid profile aws.cognito.signin.user.admin'
 
     # URI de redirecionamento OAuth2, igual à cadastrada no portal.
-    # CA_REDIRECT_URI=http://localhost:9876/callback
+    # O default (HTTPS em conta-azul-cli.ddev.site) é o que o portal aceita.
+    # CA_REDIRECT_URI=https://conta-azul-cli.ddev.site:9876/callback
 
-    # Certificado TLS local do servidor de callback, quando o portal exigir HTTPS.
+    # Override do certificado TLS do callback. Sem isto, "ca auth login"
+    # gera e instala um em ~/.config/conta-azul-cli/certs/.
     # CA_CALLBACK_CERT=/caminho/para/cert.pem
     # CA_CALLBACK_KEY=/caminho/para/key.pem
 

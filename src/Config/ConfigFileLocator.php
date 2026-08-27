@@ -27,8 +27,8 @@ final class ConfigFileLocator
   /** Explicit per-invocation escape hatch, evaluated before anything else. */
   public const string OVERRIDE_VARIABLE = 'CA_CLI_ENV_FILE';
 
-  /** Directory, under the user's home, that already holds tokens and the log. */
-  private const string USER_DIRECTORY = '/.config/conta-azul-cli';
+  /** Directory, under the user's home, that already holds tokens, certs, and the log. */
+  public const string USER_DIRECTORY = '/.config/conta-azul-cli';
 
   /**
    * Binds the locator to a project root and a PHAR context.
@@ -88,14 +88,25 @@ final class ConfigFileLocator
   }
 
   /**
+   * Returns the user-level directory that holds `.env`, tokens, and certs.
+   *
+   * Null means the platform gave us no home directory at all.
+   */
+  public function userDirectory(): string|null {
+    $home = HomeDirectory::resolve();
+
+    return $home === null ? null : $home . self::USER_DIRECTORY;
+  }
+
+  /**
    * Returns the user-level file, which `ca config init` always targets.
    *
    * Null means the platform gave us no home directory at all.
    */
   public function userFile(): string|null {
-    $home = HomeDirectory::resolve();
+    $directory = $this->userDirectory();
 
-    return $home === null ? null : $home . self::USER_DIRECTORY . '/.env';
+    return $directory === null ? null : $directory . '/.env';
   }
 
   /**

@@ -9,6 +9,19 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`auth login` deixou de depender de `.certs/` num checkout local.** O
+  Homebrew instala o PHAR, não o repositório, então numa máquina nova
+  `brew install` não bastava para reautenticar: o callback HTTPS procurava
+  certificados que só existiam ao lado de `bin/`. O comando agora emite uma
+  CA e um certificado em `~/.config/conta-azul-cli/certs/` e instala a CA no
+  trust store do usuário. O default compilado de `CA_REDIRECT_URI` passa a
+  ser `https://conta-azul-cli.ddev.site:9876/callback`, que é o valor que o
+  portal da Conta Azul aceita. `CA_CALLBACK_CERT` / `CA_CALLBACK_KEY`
+  continuam como override; caminhos apontando para um checkout que não
+  existe nesta máquina são ignorados.
+
 ## [0.19.2] - 2026-08-26
 
 ### Fixed

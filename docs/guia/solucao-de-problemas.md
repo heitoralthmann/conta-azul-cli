@@ -12,4 +12,4 @@ Não é um erro do CLI: a autenticação funcionou e a chamada chegou à API. A 
 
 **Erro ao subir o servidor de callback** — a porta 9876 está ocupada. Libere-a; ela é fixa porque precisa bater com o `redirect_uri` registrado no app.
 
-**Navegador acusa certificado inválido no callback** — rode `mkcert -install` para instalar a CA local no trust store do sistema.
+**Navegador acusa certificado inválido no callback** — a CA local ainda não está no trust store. Rode `ca auth login` de novo e aceite o diálogo do sistema; se isso não aparecer, confie manualmente em `~/.config/conta-azul-cli/certs/ca.pem` (no macOS, Keychain Access; no Windows, `certutil -user -addstore Root`).

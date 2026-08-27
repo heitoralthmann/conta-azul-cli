@@ -17,9 +17,10 @@ $config->addPathToScan(__DIR__ . '/bin/ca', false);
 // ci.yml's Windows extensions comment).
 $config->ignoreErrorsOnExtension('ext-posix', [ErrorType::SHADOW_DEPENDENCY]);
 
-// ext-mbstring and ext-openssl are required by Symfony components internally
-// (Console formatting, HTTPS transport) without this codebase calling their
-// functions directly, so static usage scanning can't see the need.
-$config->ignoreErrorsOnExtensions(['ext-mbstring', 'ext-openssl'], [ErrorType::UNUSED_DEPENDENCY]);
+// ext-mbstring is required by Symfony components internally (Console
+// formatting) without this codebase calling its functions directly, so
+// static usage scanning can't see the need. ext-openssl is called from
+// LocalCertificateAuthority for the login callback certs.
+$config->ignoreErrorsOnExtensions(['ext-mbstring'], [ErrorType::UNUSED_DEPENDENCY]);
 
 return $config;
