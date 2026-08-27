@@ -188,6 +188,7 @@ final class FinanceiroCommandModule implements CommandModuleInterface
           $this->client,
           $this->errorEnvelope,
           $this->responseRenderer,
+          $this->paginationValidator,
           $this->warningEnvelope,
           $this->periodoPadrao,
       ),

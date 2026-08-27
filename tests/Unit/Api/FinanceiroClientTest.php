@@ -393,7 +393,22 @@ final class FinanceiroClientTest extends TestCase
     parse_str((string) parse_url($captured['url'], PHP_URL_QUERY), $query);
     self::assertSame('2026-08-01T00:00:00', $query['data_inicio'] ?? null);
     self::assertSame('2026-08-31T23:59:59', $query['data_fim'] ?? null);
+    self::assertSame('1', $query['pagina'] ?? null);
+    self::assertSame('50', $query['tamanho_pagina'] ?? null);
     self::assertArrayNotHasKey('desde', $query);
+  }
+
+  /** Paginação vai na query, iguais às outras listagens financeiras. */
+  public function testAlteracoesSendsPagination(): void {
+    $captured = null;
+    $client   = $this->clientRecording($captured);
+
+    $client->getAlteracoes('2026-08-01T00:00:00', '2026-08-31T23:59:59', 2, 25);
+
+    self::assertNotNull($captured);
+    parse_str((string) parse_url($captured['url'], PHP_URL_QUERY), $query);
+    self::assertSame('2', $query['pagina'] ?? null);
+    self::assertSame('25', $query['tamanho_pagina'] ?? null);
   }
 
   /** Assim como `getAlteracoes`, o instante ISO 8601 vai sem timezone. */

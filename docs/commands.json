@@ -744,7 +744,7 @@
         {
             "arguments": [],
             "description": "Lista alterações de eventos financeiros num intervalo (útil para reconciliação)",
-            "endpoint": "ISO 8601 **sem timezone**",
+            "endpoint": "GET /v1/financeiro/eventos-financeiros/alteracoes",
             "group": "financeiro",
             "name": "financeiro alteracoes",
             "options": [
@@ -760,6 +760,20 @@
                     "description": "Fim em ISO 8601 sem timezone (ex: 2026-08-31T23:59:59). Padrão: fim do mês corrente",
                     "multiple": false,
                     "name": "--data-fim",
+                    "takes_value": true
+                },
+                {
+                    "default": 1,
+                    "description": "Número da página",
+                    "multiple": false,
+                    "name": "--pagina",
+                    "takes_value": true
+                },
+                {
+                    "default": 50,
+                    "description": "Itens por página",
+                    "multiple": false,
+                    "name": "--tamanho-pagina",
                     "takes_value": true
                 }
             ],
