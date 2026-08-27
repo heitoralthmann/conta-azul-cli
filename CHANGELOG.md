@@ -9,6 +9,8 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+## [0.19.2] - 2026-08-26
+
 ### Fixed
 
 - **`financeiro alteracoes` não paginava.** A API aceita `pagina` e
@@ -1019,7 +1021,8 @@ Primeira versão tagueada.
 - Pacote renomeado de `contaazul-cli/cli` para `heitoralthmann/conta-azul-cli`,
   com aviso de não-oficialidade adicionado ao README.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.19.1...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.19.2...HEAD
+[0.19.2]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.19.1...v0.19.2
 [0.19.1]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.17.1...v0.18.0
