@@ -55,7 +55,7 @@ cp .env.example .env
 |---|---|---|
 | `CA_CLIENT_ID` | sim | — |
 | `CA_CLIENT_SECRET` | sim | — |
-| `CA_REDIRECT_URI` | não | `http://localhost:9876/callback` |
+| `CA_REDIRECT_URI` | não | `https://conta-azul-cli.ddev.site:9876/callback` |
 | `CA_SCOPE` | não | omitido da requisição |
 | `CA_CALLBACK_CERT` | não | — |
 | `CA_CALLBACK_KEY` | não | — |
@@ -74,14 +74,15 @@ cp .env.example .env
 
 ## Permissões dos arquivos { #permissoes }
 
-O CLI grava dois arquivos que carregam credencial:
+O CLI grava arquivos que carregam credencial:
 
 | Arquivo | O que guarda |
 |---|---|
 | `~/.config/conta-azul-cli/.env` | `CA_CLIENT_SECRET` — e o `CA_BOOTSTRAP_REFRESH_TOKEN`, se você o definir ali |
 | `~/.config/conta-azul-cli/tokens.json` | O access token e o **refresh token** do OAuth, a credencial de longa duração |
+| `~/.config/conta-azul-cli/certs/` | A CA e a chave privada do certificado TLS do callback, gerados por `ca auth login` |
 
-Nos dois casos o CLI cria o diretório com `0700` e o arquivo com `0600`, e **reaplica a permissão a cada escrita**, não só na criação. Em Unix isso significa o que promete: nenhum outro usuário da máquina lê esses arquivos.
+Em todos esses caminhos o CLI cria o diretório com `0700` e o arquivo com `0600`, e **reaplica a permissão a cada escrita**, não só na criação. Em Unix isso significa o que promete: nenhum outro usuário da máquina lê esses arquivos.
 
 > **No Windows essa garantia não existe.** O `chmod` do PHP naquela plataforma só liga e desliga o atributo de somente-leitura — ele não escreve bits de modo POSIX, porque o sistema de arquivos não os tem. O código chama `chmod` em todas as plataformas e está correto; o que não existe no Windows é o efeito. Quem protege os arquivos ali são as ACLs do próprio perfil do usuário (`C:\Users\<você>`), que por padrão já barram os demais usuários locais.
 >
@@ -118,23 +119,16 @@ Na prática, só mexa nessas variáveis se a Conta Azul mudar os endpoints — e
 
 ## Callback OAuth com HTTPS
 
-O provedor da Conta Azul **recusa `redirect_uri` em `http://localhost`**: exige HTTPS e um domínio real. A saída é usar `mkcert` com um domínio que já resolve para `127.0.0.1` via DNS público — `*.ddev.site` — sem mexer em `/etc/hosts`.
+O provedor da Conta Azul **recusa `redirect_uri` em `http://localhost`**: exige HTTPS e um domínio real. O default compilado já é esse valor:
+
+```
+https://conta-azul-cli.ddev.site:9876/callback
+```
+
+`ca auth login` emite sozinho o certificado TLS em `~/.config/conta-azul-cli/certs/` e instala a CA no trust store do usuário (no macOS, o login keychain — pode pedir a senha da conta uma vez). Não depende de um checkout, de `.certs/` na raiz do repositório, nem de `mkcert`. É o que torna `brew install` + `ca auth login` suficiente numa máquina nova.
 
 > **Não altere esse domínio.** O nome sugere uma dependência de DDEV que **não existe**: o projeto não usa DDEV, e `*.ddev.site` é apenas um wildcard DNS público apontando para `127.0.0.1`. A escolha é imposta pelo provedor — já tentamos trocar por um nome mais neutro e não funcionou. Ao registrar a aplicação com `conta-azul-cli.localtest.me`, que tem exatamente a mesma propriedade de DNS, o portal da Conta Azul respondeu **erro interno de servidor** e recusou o cadastro; com `ddev.site` aceitou. O critério de validação de domínio deles não é documentado, então vale o valor que funciona.
 
-```bash
-brew install mkcert
-mkcert -install
-mkdir -p .certs
-mkcert -cert-file .certs/cert.pem -key-file .certs/key.pem conta-azul-cli.ddev.site
-```
+Registre exatamente esse `redirect_uri` no painel do app na Conta Azul.
 
-E no `.env`:
-
-```bash
-CA_REDIRECT_URI=https://conta-azul-cli.ddev.site:9876/callback
-CA_CALLBACK_CERT=/caminho/absoluto/.certs/cert.pem
-CA_CALLBACK_KEY=/caminho/absoluto/.certs/key.pem
-```
-
-Registre exatamente esse `redirect_uri` no painel do app na Conta Azul. Quando `CA_CALLBACK_CERT` e `CA_CALLBACK_KEY` estão presentes, o servidor de callback abre um socket TLS; sem elas, ele cai no modo `http://` simples.
+`CA_CALLBACK_CERT` e `CA_CALLBACK_KEY` continuam valendo como override: se os dois arquivos existirem, o CLI usa-os e não mexe no trust store. Caminhos copiados de um checkout antigo que não existem nesta máquina são ignorados, e o CLI cai no par gerado. Sem as duas variáveis, o servidor de callback abre um socket TLS com o certificado gerado; um `CA_REDIRECT_URI` em `http://` (não o default) cai no modo `http://` simples.

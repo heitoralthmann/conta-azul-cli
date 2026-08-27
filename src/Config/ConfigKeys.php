@@ -35,7 +35,7 @@ final class ConfigKeys
     'CA_CLIENT_ID'               => null,
     'CA_CLIENT_SECRET'           => null,
     'CA_CLI_TOKEN_PATH'          => '~/.config/conta-azul-cli/tokens.json',
-    'CA_REDIRECT_URI'            => 'http://localhost:9876/callback',
+    'CA_REDIRECT_URI'            => 'https://conta-azul-cli.ddev.site:9876/callback',
     'CA_SCOPE'                   => null,
     'CA_TOKEN_URL'               => '{CA_AUTH_BASE_URL}/oauth2/token',
   ];

@@ -4,7 +4,7 @@
 ca auth login
 ```
 
-O comando imprime uma URL, sobe um listener local na porta **9876** e aguarda o redirect. Abra a URL no navegador, complete o login, e os tokens são gravados em `~/.config/conta-azul-cli/tokens.json` com permissão `0600`.
+O comando imprime uma URL, sobe um listener HTTPS local na porta **9876** e aguarda o redirect. Na primeira vez, emite um certificado em `~/.config/conta-azul-cli/certs/` e instala a CA no trust store do usuário — no macOS isso pode pedir a senha da conta, uma vez. Abra a URL no navegador, complete o login, e os tokens são gravados em `~/.config/conta-azul-cli/tokens.json` com permissão `0600`.
 
 O arquivo guarda o **refresh token**, que é a credencial de longa duração. O `0600` vale em Unix; no Windows o PHP não escreve bits de permissão e a proteção fica por conta das ACLs do perfil do usuário — o detalhe está em [Permissões dos arquivos](configuracao.md#permissoes).
 

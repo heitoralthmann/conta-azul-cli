@@ -231,9 +231,11 @@ ca auth login
 ```
 
 O `ca auth login` só completa depois de o `redirect_uri` estar registrado no
-painel do app — e o provedor da Conta Azul **recusa `http://localhost`**, o
-default compilado. A receita com `mkcert`, e o detalhe de cada variável, estão
-em [Configuração](configuracao.md).
+painel do app — o default compilado já é
+`https://conta-azul-cli.ddev.site:9876/callback`, que é o valor que o provedor
+aceita. O próprio login emite o certificado TLS e instala a CA no trust store
+do usuário; não é preciso clonar o repositório nem rodar `mkcert`. O detalhe
+de cada variável está em [Configuração](configuracao.md).
 
 ## Clone + Composer
 

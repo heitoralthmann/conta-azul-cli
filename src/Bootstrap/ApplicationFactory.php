@@ -15,7 +15,7 @@ use ContaAzulCli\Api\ProdutosClient;
 use ContaAzulCli\Api\ServicosClient;
 use ContaAzulCli\Api\VendasClient;
 use ContaAzulCli\Auth\AuthManager;
-use ContaAzulCli\Auth\CallbackServer;
+use ContaAzulCli\Auth\CallbackCertificateProvisioner;
 use ContaAzulCli\Auth\OAuthClient;
 use ContaAzulCli\Auth\TokenStore;
 use ContaAzulCli\Command\Module\AuthCommandModule;
@@ -78,14 +78,10 @@ final class ApplicationFactory
     $warningEnvelope     = new WarningEnvelope(null, $this->formatterSelector);
     $periodoPadrao       = new PeriodoPadrao();
 
-    $tokenStore     = new TokenStore($config);
-    $oauthClient    = new OAuthClient($httpClient, $config);
-    $authManager    = new AuthManager($tokenStore, $oauthClient, $config);
-    $callbackServer = new CallbackServer(
-        timeoutSeconds: $config->callbackTimeout,
-        certFile: $config->callbackCertFile,
-        keyFile: $config->callbackKeyFile,
-    );
+    $tokenStore   = new TokenStore($config);
+    $oauthClient  = new OAuthClient($httpClient, $config);
+    $authManager  = new AuthManager($tokenStore, $oauthClient, $config);
+    $certificates = new CallbackCertificateProvisioner();
 
     $financeiroClient   = new FinanceiroClient($config, $authManager, $this->logger, $redactor, $httpClient);
     $pessoasClient      = new PessoasClient($config, $authManager, $this->logger, $redactor, $httpClient);
@@ -100,7 +96,7 @@ final class ApplicationFactory
     return new ApplicationComponents(
         $this->logger,
         [
-          new AuthCommandModule($authManager, $callbackServer, $errorEnvelope),
+          new AuthCommandModule($authManager, $certificates, $config, $errorEnvelope),
           new FinanceiroCommandModule(
               $financeiroClient,
               $errorEnvelope,

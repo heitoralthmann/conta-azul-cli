@@ -86,6 +86,15 @@ final class ConfigurationTest extends TestCase
     self::assertSame('https://auth.contaazul.com', $config->authBaseUrl);
   }
 
+  public function testRedirectUriDefaultsToTheHttpsCallbackHost(): void {
+    putenv('CA_CLIENT_ID=id');
+    putenv('CA_CLIENT_SECRET=secret');
+
+    $config = new Configuration();
+
+    self::assertSame('https://conta-azul-cli.ddev.site:9876/callback', $config->redirectUri);
+  }
+
   public function testCallbackTimeoutDefaultsToFiveMinutes(): void {
     putenv('CA_CLIENT_ID=id');
     putenv('CA_CLIENT_SECRET=secret');

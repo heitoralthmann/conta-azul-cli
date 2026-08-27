@@ -117,7 +117,7 @@ O `.env` e o `tokens.json` nascem `0600`, em diretório `0700` — em Unix. **No
 
 O arquivo de ambiente é procurado nesta ordem, e **o primeiro que existir vence, sem mesclagem**: `CA_CLI_ENV_FILE` → `<raiz do repo>/.env` → `~/.config/conta-azul-cli/.env`. `ca config path` responde qual está valendo e por quê. A precedência geral é: **flag de CLI → variável de ambiente → arquivo → default compilado**. Em produção, use variáveis de ambiente. `.env` e `tokens.json` **nunca** devem ser versionados.
 
-O provedor da Conta Azul **recusa `redirect_uri` em `http://localhost`**: exige HTTPS e um domínio real. A receita completa — incluindo por que o domínio precisa ser `*.ddev.site` e por que `CA_AUTHORIZE_URL` e `CA_TOKEN_URL` andam em par — está em [Configuração](docs/guia/configuracao.md).
+O provedor da Conta Azul **recusa `redirect_uri` em `http://localhost`**: exige HTTPS e um domínio real. O default compilado já é `https://conta-azul-cli.ddev.site:9876/callback`, e `ca auth login` emite o certificado TLS em `~/.config/conta-azul-cli/certs/` — sem checkout e sem `mkcert`. A receita completa — incluindo por que o domínio precisa ser `*.ddev.site` e por que `CA_AUTHORIZE_URL` e `CA_TOKEN_URL` andam em par — está em [Configuração](docs/guia/configuracao.md).
 
 ## Autenticação
 
