@@ -9,6 +9,17 @@ no [contrato de saída](docs/guia/contrato-de-saida.md).
 
 ## [Unreleased]
 
+## [0.19.4] - 2026-08-28
+
+### Changed
+
+- **`--version` passa a reportar só o número.** A saída era `ca 0.19.3`: o
+  Symfony Console monta a versão longa concatenando o nome da aplicação, e o
+  nome aqui é justamente `ca`. Para quem lê, o prefixo é ruído; para quem
+  automatiza, é um campo a mais para descartar antes de comparar com um
+  semver. Passa a sair `0.19.4`, e nada no repositório dependia do formato
+  antigo.
+
 ## [0.19.3] - 2026-08-26
 
 ### Fixed
@@ -1036,7 +1047,8 @@ Primeira versão tagueada.
 - Pacote renomeado de `contaazul-cli/cli` para `heitoralthmann/conta-azul-cli`,
   com aviso de não-oficialidade adicionado ao README.
 
-[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.19.3...HEAD
+[Unreleased]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.19.4...HEAD
+[0.19.4]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.19.3...v0.19.4
 [0.19.3]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.19.2...v0.19.3
 [0.19.2]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.19.1...v0.19.2
 [0.19.1]: https://github.com/heitoralthmann/conta-azul-cli/compare/v0.19.0...v0.19.1
