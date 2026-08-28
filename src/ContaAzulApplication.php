@@ -296,6 +296,11 @@ final class ContaAzulApplication extends Application
     return new ArgvInput($argv);
   }
 
+  /** Reports the bare semver, without the "ca" prefix Symfony adds by default. */
+  public function getLongVersion(): string {
+    return $this->getVersion();
+  }
+
   /** Reads the version from the single-source VERSION file next to the project root. */
   private static function version(): string {
     $path = __DIR__ . '/../VERSION';
